@@ -12,9 +12,15 @@ namespace Player.Movement
             _playerMovement = playerMovement;
         }
 
+        public override void Update()
+        {
+            _playerMovement.ApplyDrag();
+        }
+
         public override void FixedUpdate()
         {
-            _playerMovement.Move();
+            _playerMovement.Walk();
+            
         }
     }
 }

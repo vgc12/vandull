@@ -12,9 +12,11 @@ namespace Player.Movement
             _playerMovement = playerMovement;
         }
 
-        public override void Enter()
+        
+        public override void Update()
         {
-            Debug.Log("Entered Idle State");
+            _playerMovement.ApplyDrag();
+            _playerMovement.CheckForGround();
         }
     }
 }

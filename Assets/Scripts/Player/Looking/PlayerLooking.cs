@@ -19,8 +19,8 @@ namespace Player.PlayerLooking
 
         private enum LeanDirection
         {
-            Left = -1,
-            Right = 1,
+            Right = -1,
+            Left = 1,
             None = 0
         }
 
@@ -63,7 +63,8 @@ namespace Player.PlayerLooking
 
                 _stateMachine.AddTransition(standingState, leaningState,
                     new FuncPredicate(() => _leanDirection != LeanDirection.None));
-                _stateMachine.AddTransition(leaningState, standingState, new FuncPredicate(() => _leanDirection == LeanDirection.None));
+                _stateMachine.AddTransition(leaningState, standingState, 
+                    new FuncPredicate(() => _leanDirection == LeanDirection.None));
 
                 _stateMachine.SetState(standingState);
             }
@@ -97,6 +98,8 @@ namespace Player.PlayerLooking
         private void OnLean(InputAction.CallbackContext context)
         {
             _leanDirection = (LeanDirection)context.ReadValue<float>();
+            Logger.Log($"Lean Direction: {_leanDirection}");
+     
         }
 
         public void OnMouseMove(InputAction.CallbackContext context)
@@ -113,7 +116,14 @@ namespace Player.PlayerLooking
 
         public void Lean()
         {
-            
+            //leanPoint.Rotate(orientation.forward, -(float)_leanDirection * leanAngle);
+            leanPoint.rotation = Quaternion.Euler(0, _cameraRotation.y, -(float)_leanDirection * leanAngle);
+            cameraHolder.rotation = Quaternion.Euler(_cameraRotation.x, _cameraRotation.y, 0);
+        }
+        
+        public void StopLean()
+        {
+            leanPoint.rotation = Quaternion.Euler(0, 0, 0);
         }
 
         public void Look()
