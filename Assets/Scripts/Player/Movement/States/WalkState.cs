@@ -1,7 +1,6 @@
 ﻿using StateMachines;
-using UnityEngine;
 
-namespace Player.Movement
+namespace Player.Movement.States
 {
     public class WalkState : BaseState
     {
@@ -15,11 +14,14 @@ namespace Player.Movement
         public override void Update()
         {
             _sm.PlayerMovement.ApplyDrag();
+            _sm.PlayerLooking.Look();
+            _sm.PlayerLooking.CameraBob(_sm.PlayerLooking.cameraBobConfig.walkBob);
+            _sm.PlayerLooking.Lean();
         }
 
         public override void FixedUpdate()
         {
-            _sm.PlayerMovement.Walk();
+            _sm.PlayerMovement.Move(_sm.PlayerMovement.config.WalkSpeed);
             
         }
     }

@@ -1,7 +1,6 @@
 ﻿using StateMachines;
-using UnityEngine;
 
-namespace Player.Movement
+namespace Player.Movement.States
 {
     public class JumpState : BaseState
     {

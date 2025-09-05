@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 6
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -256,6 +257,26 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4b117b0eadf7d840a93a6f4504f5889, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  bobFrequency: 2
+  bobHorizontalAmplitude: 0.1
+  bobVerticalAmplitude: 0.05
+  speedCurve: 1.5
+  maxBobSpeed: 10
+  initialPosition: {x: 0, y: 0, z: 0}
+  bobTimer: 0
+  characterController: {fileID: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -675,7 +696,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: a5abc405647fd894c8ceb0d9bbf880a0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -809,6 +830,8 @@ GameObject:
   - component: {fileID: 2126911730}
   - component: {fileID: 2126911733}
   - component: {fileID: 2126911734}
+  - component: {fileID: 2126911736}
+  - component: {fileID: 2126911735}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -830,9 +853,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   leanAngle: 15
   sensitivity: 50
+  cameraBobConfig: {fileID: 0}
+  swayConfig: {fileID: 11400000, guid: 20e4e2dc2a14eb54591591cfbdae95f4, type: 2}
   cameraHolder: {fileID: 1009160419}
   orientation: {fileID: 1562738704}
   leanPoint: {fileID: 711312598}
+  cameraTransform: {fileID: 330585546}
 --- !u!54 &2126911731
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -890,17 +916,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   orientation: {fileID: 1562738704}
-  walkSpeed: 100
-  sprintSpeed: 200
-  movementMultiplier: 40
-  jumpForce: 5
-  airDrag: 1
-  groundDrag: 8
-  groundCheckRadius: 0.48
-  groundCheckOffset: {x: 0, y: 0.4, z: 0}
-  excludedLayers:
-    serializedVersion: 2
-    m_Bits: 118
+  config: {fileID: 11400000, guid: 34175344a672cc6449be954e0001dfbd, type: 2}
   debugMode: 1
 --- !u!114 &2126911734
 MonoBehaviour:
@@ -914,6 +930,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1b3ddf63f164744a9d8dbe64a7579c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!114 &2126911735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2126911729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ecb2af2c57647e4b4ace348c884ff98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player.Movement.PlayerStateMachine
+--- !u!114 &2126911736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2126911729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dbf520cc3714296b0e64e6e20bf49eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player.GroundChecker
+  groundCheckRadius: 0.3
+  groundCheckOffset: {x: 0, y: 0.4, z: 0}
+  excludedLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  debugMode: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

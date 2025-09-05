@@ -1,12 +1,12 @@
 using Attributes;
-using Player.PlayerLooking.States;
+using Player.Looking.Player.Looking;
 using StateMachines;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Player.Looking
 {
-    [RequireComponent(typeof(GroundChecker))]
+    [RequireComponent(typeof(GroundChecker), typeof(PlayerInput), typeof(Rigidbody))]
     public class PlayerLooking : MonoBehaviour
     {
         #region Variables
@@ -20,7 +20,7 @@ namespace Player.Looking
             None = 0
         }
 
-        private StateMachine _stateMachine;
+  
         private PlayerInputActions _input;
 
         private Vector2 _mouseDelta;
@@ -31,11 +31,15 @@ namespace Player.Looking
         
         private GroundChecker _groundChecker;
         
+        private Rigidbody _rigidbody;
+        
         [SerializeField] private float leanAngle = 15f;
         
         [SerializeField] private float sensitivity = 50f;
         
-        [Required] public SwayConfig swayConfig;
+        [Required, ScriptableObjectDropdown] public CameraBobConfig cameraBobConfig;
+        
+        [Required, ScriptableObjectDropdown] public SwayConfig swayConfig;
         
         [Header("Transforms")] 
         
@@ -44,48 +48,27 @@ namespace Player.Looking
         [SerializeField, Required] private Transform orientation;
 
         [SerializeField, Required] private Transform leanPoint;
+
+        [SerializeField, Required] private Transform cameraTransform;
         
         #endregion
 
         #region UnityFunctions
 
-            private class LookingStates
-            {
-                public IdleState IdleState { get; init; }
-                public WalkingState WalkingState { get; init; }
-                public LeaningState LeaningState { get; init; }
-            }
-
             private void Awake()
             {
         
+                
                 
                 InitializeControls();
 
                 _groundChecker = GetComponent<GroundChecker>();
                 
-                _stateMachine = new StateMachine();
-
-                var idleState = new IdleState(this);
-                var leaningState = new LeaningState(this);
-
-                _stateMachine.AddTransition(idleState, leaningState,
-                    new FuncPredicate(() => _leanDirection != LeanDirection.None));
-                _stateMachine.AddTransition(leaningState, idleState, 
-                    new FuncPredicate(() => _leanDirection == LeanDirection.None));
-
-                _stateMachine.SetState(idleState);
+                _initialPosition = cameraTransform.localPosition;
+                
+           
             }
             
-            private void Update()
-            {
-                _stateMachine.Update();
-            }
-            
-            private void FixedUpdate()
-            {
-                _stateMachine.FixedUpdate();
-            }
         #endregion
 
 
@@ -99,10 +82,19 @@ namespace Player.Looking
             _input.Player.Look.performed += OnMouseMove;
             _input.Player.Look.canceled += OnMouseMove;
 
+            _input.Player.Move.performed += OnMove;
+            _input.Player.Move.canceled += OnMove;
+            
             _input.Player.Lean.started += OnLean;
             _input.Player.Lean.canceled += OnLean;
         }
-        
+
+        private Vector2 _keyboardDelta;
+        private void OnMove(InputAction.CallbackContext obj)
+        {
+            _keyboardDelta = obj.ReadValue<Vector2>();
+        }
+
         private void OnLean(InputAction.CallbackContext context)
         {
             _leanDirection = (LeanDirection)context.ReadValue<float>();
@@ -150,11 +142,51 @@ namespace Player.Looking
        
         }
 
-        public void Sway(float currentMultiplier = 1)
+
+        private Vector3 _initialPosition;
+        private float bobTimer;
+        public void CameraBob(CameraBobSetting cameraBobSetting)
         {
-            cameraHolder.transform.position +=
-                new Vector3(Mathf.Cos(Time.time * swayConfig.horizontalSwaySpeed) * swayConfig.horizontalSwayAmount * currentMultiplier
-                    ,Mathf.Sin(Time.time * swayConfig.verticalSwaySpeed) * swayConfig.verticalSwayAmount, 0);
+     
+            // Check if player is moving
+            Vector3 velocity = _rigidbody.linearVelocity;
+            float horizontalSpeed = new Vector3(velocity.x, 0, velocity.z).magnitude;
+            bool isMoving = horizontalSpeed > 0.1f;
+        
+            if (isMoving)
+            {
+                // Increment timer based on speed
+                bobTimer += Time.deltaTime * cameraBobSetting.frequency * Mathf.Min(horizontalSpeed, cameraBobSetting.maxSpeed);
+            
+                // Calculate bob offset using sine waves
+                float horizontalBob = Mathf.Sin(bobTimer) * cameraBobSetting.horizontalAmplitude;
+                float verticalBob = Mathf.Sin(bobTimer * 2) * cameraBobSetting.verticalAmplitude; // Double frequency for realistic bob
+            
+                // Apply speed multiplier
+                float speedMultiplier = Mathf.Min(horizontalSpeed / cameraBobSetting.speedCurve, 1f);
+            
+                Vector3 bobOffset = new Vector3(
+                    horizontalBob * speedMultiplier,
+                    verticalBob * speedMultiplier,
+                    0
+                );
+            
+                cameraTransform.localPosition = _initialPosition + bobOffset;
+            }
+            else
+            {
+                // Smoothly return to initial position when stopped
+                cameraTransform.localPosition = Vector3.Lerp(transform.localPosition, _initialPosition, Time.deltaTime * 4f);
+                bobTimer = 0f;
+            }
+        }
+        
+        
+        public void Sway(Sway sway)
+        {
+            cameraTransform.localPosition =
+                new Vector3( Mathf.Cos(Time.time * sway.horizontalSwaySpeed) * sway.horizontalSwayAmount * sway.swayMultiplier
+                    ,  Mathf.Sin(Time.time * sway.verticalSwaySpeed) * sway.verticalSwayAmount * sway.swayMultiplier, cameraHolder.transform.localPosition.z);
         }
         
    

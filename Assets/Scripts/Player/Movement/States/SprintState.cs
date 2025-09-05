@@ -1,6 +1,6 @@
 ﻿using StateMachines;
 
-namespace Player.Movement
+namespace Player.Movement.States
 {
     public class SprintState : BaseState
     {
@@ -19,11 +19,15 @@ namespace Player.Movement
         public override void Update()
         {
             _sm.PlayerMovement.ApplyDrag();
+            
+            _sm.PlayerLooking.Look();
+            _sm.PlayerLooking.CameraBob(_sm.PlayerLooking.cameraBobConfig.sprintBob);
+            _sm.PlayerLooking.Lean();
         }
 
         public override void FixedUpdate()
         {
-            _sm.PlayerMovement.Sprint();
+            _sm.PlayerMovement.Move(_sm.PlayerMovement.config.SprintSpeed);
         }
     }
 }
