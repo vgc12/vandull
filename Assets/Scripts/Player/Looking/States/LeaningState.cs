@@ -4,8 +4,8 @@ namespace Player.PlayerLooking.States
 {
     public class LeaningState : BaseState
     {
-        private readonly PlayerLooking _playerLooking;
-        public LeaningState(PlayerLooking playerLooking) 
+        private readonly Looking.PlayerLooking _playerLooking;
+        public LeaningState(Looking.PlayerLooking playerLooking) 
         {
             _playerLooking = playerLooking;
         }

@@ -22,16 +22,15 @@ namespace Editor
             EditorGUI.EndProperty();
         
             // Show error below
-            if (property.objectReferenceValue == null)
-            {
-                Rect helpBoxRect = new Rect(
-                    position.x, 
-                    position.y + EditorGUIUtility.singleLineHeight + 2,
-                    position.width, 
-                    EditorGUIUtility.singleLineHeight);
+            if (property.objectReferenceValue != null) return;
+            Logger.LogError($"{property.name} is required but not assigned in the inspector.");
+            Rect helpBoxRect = new Rect(
+                position.x, 
+                position.y + EditorGUIUtility.singleLineHeight + 2,
+                position.width, 
+                EditorGUIUtility.singleLineHeight);
                 
-                EditorGUI.HelpBox(helpBoxRect, requiredAttribute.ErrorMessage, MessageType.Error);
-            }
+            EditorGUI.HelpBox(helpBoxRect, requiredAttribute.ErrorMessage, MessageType.Error);
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

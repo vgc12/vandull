@@ -1,16 +1,12 @@
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Attributes;
 using Player.PlayerLooking.States;
 using StateMachines;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Player.PlayerLooking
+namespace Player.Looking
 {
-    
+    [RequireComponent(typeof(GroundChecker))]
     public class PlayerLooking : MonoBehaviour
     {
         #region Variables
@@ -33,10 +29,14 @@ namespace Player.PlayerLooking
 
         private Vector2 _cameraRotation = Vector2.zero;
         
+        private GroundChecker _groundChecker;
         
         [SerializeField] private float leanAngle = 15f;
+        
         [SerializeField] private float sensitivity = 50f;
-
+        
+        [Required] public SwayConfig swayConfig;
+        
         [Header("Transforms")] 
         
         [SerializeField, Required] private Transform cameraHolder;
@@ -49,6 +49,12 @@ namespace Player.PlayerLooking
 
         #region UnityFunctions
 
+            private class LookingStates
+            {
+                public IdleState IdleState { get; init; }
+                public WalkingState WalkingState { get; init; }
+                public LeaningState LeaningState { get; init; }
+            }
 
             private void Awake()
             {
@@ -56,17 +62,19 @@ namespace Player.PlayerLooking
                 
                 InitializeControls();
 
+                _groundChecker = GetComponent<GroundChecker>();
+                
                 _stateMachine = new StateMachine();
 
-                var standingState = new StandingState(this);
+                var idleState = new IdleState(this);
                 var leaningState = new LeaningState(this);
 
-                _stateMachine.AddTransition(standingState, leaningState,
+                _stateMachine.AddTransition(idleState, leaningState,
                     new FuncPredicate(() => _leanDirection != LeanDirection.None));
-                _stateMachine.AddTransition(leaningState, standingState, 
+                _stateMachine.AddTransition(leaningState, idleState, 
                     new FuncPredicate(() => _leanDirection == LeanDirection.None));
 
-                _stateMachine.SetState(standingState);
+                _stateMachine.SetState(idleState);
             }
             
             private void Update()
@@ -116,7 +124,7 @@ namespace Player.PlayerLooking
 
         public void Lean()
         {
-            //leanPoint.Rotate(orientation.forward, -(float)_leanDirection * leanAngle);
+  
             leanPoint.rotation = Quaternion.Euler(0, _cameraRotation.y, -(float)_leanDirection * leanAngle);
             cameraHolder.rotation = Quaternion.Euler(_cameraRotation.x, _cameraRotation.y, 0);
         }
@@ -141,7 +149,15 @@ namespace Player.PlayerLooking
             orientation.rotation = Quaternion.Euler(0, _cameraRotation.y, 0);
        
         }
+
+        public void Sway(float currentMultiplier = 1)
+        {
+            cameraHolder.transform.position +=
+                new Vector3(Mathf.Cos(Time.time * swayConfig.horizontalSwaySpeed) * swayConfig.horizontalSwayAmount * currentMultiplier
+                    ,Mathf.Sin(Time.time * swayConfig.verticalSwaySpeed) * swayConfig.verticalSwayAmount, 0);
+        }
         
+   
         
         #endregion
     }

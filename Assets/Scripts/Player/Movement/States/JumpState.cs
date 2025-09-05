@@ -5,24 +5,23 @@ namespace Player.Movement
 {
     public class JumpState : BaseState
     {
-        private readonly PlayerMovement _playerMovement;
+        private readonly PlayerStateMachine _sm;
         
-        public JumpState(PlayerMovement playerMovement)
+        public JumpState(PlayerStateMachine sm)
         {
-            _playerMovement = playerMovement;
+            _sm = sm;
         }
 
         public override void Enter()
         {
             
-            _playerMovement.Jump();
+            _sm.PlayerMovement.Jump();
         }
         
         
         public override void Update()
         {
-            _playerMovement.ApplyDrag();
-            _playerMovement.CheckForGround();
+            _sm.PlayerMovement.ApplyDrag();
         }
     }
 }

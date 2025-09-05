@@ -1,22 +1,20 @@
 ﻿using StateMachines;
-using UnityEngine;
 
-namespace Player.Movement
+namespace Player.Movement.States
 {
     public class IdleState : BaseState
     {
-        private readonly PlayerMovement _playerMovement;
+        private readonly PlayerStateMachine _sm;
         
-        public IdleState(PlayerMovement playerMovement)
+        public IdleState(PlayerStateMachine sm)
         {
-            _playerMovement = playerMovement;
+            _sm = sm;
         }
 
         
         public override void Update()
         {
-            _playerMovement.ApplyDrag();
-            _playerMovement.CheckForGround();
+            _sm.PlayerMovement.ApplyDrag();
         }
     }
 }

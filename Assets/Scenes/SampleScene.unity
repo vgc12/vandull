@@ -415,7 +415,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1562738704}
+  m_Father: {fileID: 711312598}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &571391915
 CapsuleCollider:
@@ -525,7 +525,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1562738704}
+  - {fileID: 571391914}
+  - {fileID: 1009160419}
   m_Father: {fileID: 2126911732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
@@ -601,13 +602,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1009160418}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.62, z: 0.125}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.6199999, z: 0.125}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 330585546}
-  m_Father: {fileID: 1562738704}
+  m_Father: {fileID: 711312598}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1213325619
 GameObject:
@@ -748,10 +749,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 571391914}
-  - {fileID: 1009160419}
-  m_Father: {fileID: 711312598}
+  m_Children: []
+  m_Father: {fileID: 2126911732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1970554854
 GameObject:
@@ -842,7 +841,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2126911729}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 70
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -875,6 +874,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 711312598}
+  - {fileID: 1562738704}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2126911733
@@ -890,8 +890,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   orientation: {fileID: 1562738704}
-  walkSpeed: 50
-  sprintSpeed: 80
+  walkSpeed: 100
+  sprintSpeed: 200
+  movementMultiplier: 40
   jumpForce: 5
   airDrag: 1
   groundDrag: 8

@@ -4,11 +4,11 @@ namespace Player.Movement
 {
     public class SprintState : BaseState
     {
-        private readonly PlayerMovement _playerMovement;
+        private readonly PlayerStateMachine _sm;
 
-        public SprintState(PlayerMovement pm)
+        public SprintState(PlayerStateMachine pm)
         {
-            _playerMovement = pm;
+            _sm = pm;
         }
         
         public override void Enter()
@@ -18,12 +18,12 @@ namespace Player.Movement
 
         public override void Update()
         {
-            _playerMovement.ApplyDrag();
+            _sm.PlayerMovement.ApplyDrag();
         }
 
         public override void FixedUpdate()
         {
-            _playerMovement.Sprint();
+            _sm.PlayerMovement.Sprint();
         }
     }
 }

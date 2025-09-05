@@ -5,21 +5,21 @@ namespace Player.Movement
 {
     public class WalkState : BaseState
     {
-        private readonly PlayerMovement _playerMovement;
+        private readonly PlayerStateMachine _sm;
         
-        public WalkState(PlayerMovement playerMovement)
+        public WalkState(PlayerStateMachine sm)
         {
-            _playerMovement = playerMovement;
+            _sm = sm;
         }
 
         public override void Update()
         {
-            _playerMovement.ApplyDrag();
+            _sm.PlayerMovement.ApplyDrag();
         }
 
         public override void FixedUpdate()
         {
-            _playerMovement.Walk();
+            _sm.PlayerMovement.Walk();
             
         }
     }
