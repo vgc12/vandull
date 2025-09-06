@@ -9,6 +9,7 @@ namespace Player.Movement
         public float SprintSpeed => sprintSpeed;
         public float MovementMultiplier => movementMultiplier;
         public float JumpForce => jumpForce;
+        public float JumpMultiplier => jumpMultiplier;
         public float AirDrag => airDrag;
         public float GroundDrag => groundDrag;
 
@@ -19,6 +20,7 @@ namespace Player.Movement
 
         [Header("Jumping")] 
         [SerializeField, Range(1, 10)] private float jumpForce = 5f;
+        [SerializeField, Range(1, 100)] private float jumpMultiplier = 10f;
         [SerializeField, Range(1, 20)] private float airDrag = 1f;
         [SerializeField, Range(1, 20)] private float groundDrag = 8f;
     }

@@ -13,7 +13,7 @@ namespace Player.Movement.States
         
         public override void Enter()
         {
-          
+ 
         }
 
         public override void Update()
@@ -21,13 +21,20 @@ namespace Player.Movement.States
             _sm.PlayerMovement.ApplyDrag();
             
             _sm.PlayerLooking.Look();
-            _sm.PlayerLooking.CameraBob(_sm.PlayerLooking.cameraBobConfig.sprintBob);
+            var ce = _sm.PlayerLooking.CameraEffects;
+            ce.CameraBob(ce.cameraBobConfig.sprintConfig);
+         
             _sm.PlayerLooking.Lean();
         }
 
         public override void FixedUpdate()
         {
             _sm.PlayerMovement.Move(_sm.PlayerMovement.config.SprintSpeed);
+        }
+        
+        public override void Exit()
+        {
+            
         }
     }
 }

@@ -1,10 +1,10 @@
-﻿using System;
-using Player.Looking;
+﻿using Player.Looking;
+using Player.Movement;
 using Player.Movement.States;
 using StateMachines;
 using UnityEngine;
 
-namespace Player.Movement
+namespace Player
 {
     [RequireComponent(typeof(GroundChecker), typeof(PlayerMovement), typeof(PlayerLooking))]
     public class PlayerStateMachine : MonoBehaviour
@@ -102,6 +102,7 @@ namespace Player.Movement
             _groundChecker = GetComponent<GroundChecker>();
             PlayerMovement = GetComponent<PlayerMovement>();
             PlayerLooking = GetComponent<PlayerLooking>();
+            
           
             InitializeStateMachine();
         }

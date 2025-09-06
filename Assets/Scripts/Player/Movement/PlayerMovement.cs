@@ -42,31 +42,44 @@ namespace Player.Movement
 
             _inputManager = GetComponent<InputManager>();
 
-            _inputManager.InputActions.Player.Move.performed += OnMove;
-            _inputManager.InputActions.Player.Move.canceled += OnMove;
+            _inputManager.InputActions.Player.Move.performed += OnMovement;
+            _inputManager.InputActions.Player.Move.canceled += OnMovement;
 
-            _inputManager.InputActions.Player.Jump.performed += OnJump;
-            _inputManager.InputActions.Player.Jump.canceled += OnJump;
+            _inputManager.InputActions.Player.Jump.performed += OnJumping;
+            _inputManager.InputActions.Player.Jump.canceled += OnJumping;
 
-            _inputManager.InputActions.Player.Sprint.performed += OnSprint;
-            _inputManager.InputActions.Player.Sprint.canceled += OnSprint;
+            _inputManager.InputActions.Player.Sprint.performed += OnSprinting;
+            _inputManager.InputActions.Player.Sprint.canceled += OnSprinting;
+        }
+
+        private void OnDestroy()
+        {
+            _inputManager.InputActions.Player.Move.performed -= OnMovement;
+            _inputManager.InputActions.Player.Move.canceled -= OnMovement;
+            
+            _inputManager.InputActions.Player.Jump.performed -= OnJumping;
+            _inputManager.InputActions.Player.Jump.canceled -= OnJumping;
+            
+            _inputManager.InputActions.Player.Sprint.performed -= OnSprinting;
+            _inputManager.InputActions.Player.Sprint.canceled -= OnSprinting;
+            
         }
 
         #endregion
 
         #region ControlFunctions
 
-        private void OnSprint(InputAction.CallbackContext obj)
+        private void OnSprinting(InputAction.CallbackContext obj)
         {
             SprintPressed = obj.performed;
         }
 
-        private void OnJump(InputAction.CallbackContext obj)
+        private void OnJumping(InputAction.CallbackContext obj)
         {
             JumpPressed = obj.performed;
         }
 
-        private void OnMove(InputAction.CallbackContext context)
+        private void OnMovement(InputAction.CallbackContext context)
         {
             MoveInput = context.ReadValue<Vector2>();
         }
@@ -102,7 +115,10 @@ namespace Player.Movement
 
         public void Jump()
         {
-            _rigidbody.AddForce((transform.up + _rigidbody.linearVelocity.normalized) * config.JumpForce, ForceMode.Impulse);
+            
+            _rigidbody.AddForce((transform.up + _rigidbody.linearVelocity.normalized) * 
+                                ((_rigidbody.linearVelocity != Vector3.zero ? config.JumpForce / 2 : config.JumpForce)
+                                 * config.JumpMultiplier), ForceMode.Impulse);
         }
 
         #endregion

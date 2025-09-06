@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEngine;
 
 namespace Attributes
@@ -8,4 +8,3 @@ namespace Attributes
     
     }
 }
-#endif
