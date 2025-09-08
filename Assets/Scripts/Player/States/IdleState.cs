@@ -13,7 +13,7 @@ namespace Player.States
 
         public override void Enter()
         {
-            _sm.PlayerLooking.CameraEffects.StopBobbing();
+            _sm.PlayerLooking.CameraBobber.StopBobbing();
         }
 
 
@@ -23,11 +23,11 @@ namespace Player.States
             
             _sm.PlayerLooking.Look();
         
-            var ce = _sm.PlayerLooking.CameraEffects;
+            var ce = _sm.PlayerLooking.objectSwayer;
        
        
             
-            ce.Sway(ce.swayConfig.IdleSway);
+            ce.Sway(ce.swayConfig);
             
             _sm.PlayerLooking.Lean();
         }

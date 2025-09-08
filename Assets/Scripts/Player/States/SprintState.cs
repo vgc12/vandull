@@ -21,7 +21,7 @@ namespace Player.States
             _sm.PlayerMovement.ApplyDrag();
             
             _sm.PlayerLooking.Look();
-            var ce = _sm.PlayerLooking.CameraEffects;
+            var ce = _sm.PlayerLooking.CameraBobber;
             ce.CameraBob(ce.cameraBobConfig.sprintConfig);
          
             _sm.PlayerLooking.Lean();

@@ -1,9 +1,9 @@
 ﻿#if UNITY_EDITOR
 
 using Attributes;
+using General;
 using UnityEditor;
 using UnityEngine;
-using Logger = General.Logger;
 
 namespace Editor
 {
@@ -24,7 +24,7 @@ namespace Editor
         
             // Show error below
             if (property.objectReferenceValue != null) return;
-            Logger.LogError($"{property.name} is required but not assigned in the inspector.");
+            VandullLogger.LogError($"{property.name} is required but not assigned in the inspector.");
             Rect helpBoxRect = new Rect(
                 position.x, 
                 position.y + EditorGUIUtility.singleLineHeight + 2,

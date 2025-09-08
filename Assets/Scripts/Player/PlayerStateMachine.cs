@@ -4,7 +4,6 @@ using Player.Movement;
 using Player.States;
 using StateMachine;
 using UnityEngine;
-using Logger = General.Logger;
 
 namespace Player
 {
@@ -17,6 +16,7 @@ namespace Player
         public PlayerMovement PlayerMovement { get; private set; }
 
         public PlayerLooking PlayerLooking { get; private set; }
+        
 
 
         private GroundChecker _groundChecker;

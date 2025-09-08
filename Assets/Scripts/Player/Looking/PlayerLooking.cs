@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 namespace Player.Looking
 {
-    [RequireComponent(typeof(GroundChecker), typeof(CameraEffects), typeof(Rigidbody))]
+    [RequireComponent(typeof(GroundChecker), typeof(CameraBobber), typeof(Rigidbody))]
     public class PlayerLooking : MonoBehaviour
     {
         #region Variables
@@ -19,6 +19,7 @@ namespace Player.Looking
             None = 0
         }
 
+        public ObjectSwayer objectSwayer;
 
         private PlayerInputActions _input;
 
@@ -31,7 +32,7 @@ namespace Player.Looking
 
         private Rigidbody _rigidbody;
 
-        public CameraEffects CameraEffects { get; private set; }
+        public CameraBobber CameraBobber { get; private set; }
 
         [Header("Configuration")] [SerializeField, Required, ScriptableObjectDropdown]
         private PlayerLookingConfig config;
@@ -60,7 +61,7 @@ namespace Player.Looking
 
         private void Start()
         {
-            CameraEffects = GetComponent<CameraEffects>();
+            CameraBobber = GetComponent<CameraBobber>();
         }
 
 
