@@ -1,24 +1,13 @@
+using System;
+using System.Globalization;
 using Attributes;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[CreateAssetMenu(fileName = "PlayerLookingConfig", menuName = "Configs/Player/Movement/PlayerLookingConfig", order = 1)]
-public class PlayerLookingConfig : ScriptableObject
-{
-    public float Sensitivity => sensitivity;
-    public float LeanAngle => leanAngle;
-    public float LeanSpeed => leanSpeed;
-
-    [SerializeField] private float sensitivity = 50f;
-    [SerializeField] private float leanSpeed = 10f;
-    [SerializeField] private float leanAngle = 15f;
-}
-
 
 namespace Player.Looking
 {
-    [RequireComponent(typeof(GroundChecker), typeof(PlayerInput), typeof(Rigidbody))]
-    [RequireComponent(typeof(CameraEffects))]
+    [RequireComponent(typeof(GroundChecker), typeof(CameraEffects), typeof(Rigidbody))]
     public class PlayerLooking : MonoBehaviour
     {
         #region Variables
@@ -36,7 +25,7 @@ namespace Player.Looking
         private Vector2 _mouseDelta;
 
         private LeanDirection _leanDirection = LeanDirection.None;
-
+        
         private Vector2 _cameraRotation = Vector2.zero;
 
 
@@ -44,9 +33,10 @@ namespace Player.Looking
 
         public CameraEffects CameraEffects { get; private set; }
 
-        [Header("Configuration")] [SerializeField, Required]
+        [Header("Configuration")] [SerializeField, Required, ScriptableObjectDropdown]
         private PlayerLookingConfig config;
 
+   
 
         [Header("Transforms")] [SerializeField, Required]
         private Transform cameraHolder;
@@ -57,6 +47,8 @@ namespace Player.Looking
 
         [SerializeField, Required] private Transform cameraTransform;
 
+        
+        
         #endregion
 
         #region UnityFunctions
@@ -79,6 +71,7 @@ namespace Player.Looking
             _input.Player.Lean.started -= OnLeaning;
             _input.Player.Lean.canceled -= OnLeaning;
         }
+
 
         #endregion
 
@@ -113,11 +106,15 @@ namespace Player.Looking
 
         #region StateMachineFunctions
 
+
         public void Lean()
         {
-            leanPoint.rotation = Quaternion.Slerp(leanPoint.rotation,
+         
+            var rot = Quaternion.Slerp(leanPoint.rotation,
                 Quaternion.Euler(0, _cameraRotation.y, -(float)_leanDirection * config.LeanAngle),
                 config.LeanSpeed * Time.deltaTime);
+            
+            leanPoint.rotation = rot;
             cameraHolder.rotation = Quaternion.Euler(_cameraRotation.x, _cameraRotation.y, 0);
         }
 
@@ -138,4 +135,7 @@ namespace Player.Looking
 
         #endregion
     }
+    
+    
+    
 }

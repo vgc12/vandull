@@ -1,5 +1,4 @@
-﻿using Player.Looking.Player.Looking;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Player.Looking
 {
@@ -9,6 +8,6 @@ namespace Player.Looking
     
         public CameraBobSetting walkConfig;
         public CameraBobSetting sprintConfig;
-
+        public CameraBobSetting crouchWalkConfig;
     }
 }

@@ -1,32 +1,35 @@
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+namespace General
 {
-    public static GameManager Instance { get; private set; }
-    
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        if (Instance && Instance != this)
+        public static GameManager Instance { get; private set; }
+    
+        private void Awake()
         {
-            Destroy(gameObject);
-            return;
-        }
+            if (Instance && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
   
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         
-    }
+        }
     
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
+        // Start is called once before the first execution of Update after the MonoBehaviour is created
+        void Start()
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
 
-    // Update is called once per frame
-    void Update()
-    {
+        // Update is called once per frame
+        void Update()
+        {
         
+        }
     }
 }

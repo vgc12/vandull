@@ -3,6 +3,7 @@
 using Attributes;
 using UnityEditor;
 using UnityEngine;
+using Logger = General.Logger;
 
 namespace Editor
 {

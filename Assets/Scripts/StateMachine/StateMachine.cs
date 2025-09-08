@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace StateMachines
+namespace StateMachine
 {
     public class StateMachine
     {
         private StateNode _currentState;
-        
+
         private Dictionary<Type, StateNode> _nodes = new();
 
         private readonly HashSet<ITransition> _anyTransitions = new();

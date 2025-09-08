@@ -12,10 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8becf3c16e3416d8f5c3c954cce2f91, type: 3}
   m_Name: PlayerMovementConfig
   m_EditorClassIdentifier: Assembly-CSharp::Player.Movement.PlayerMovementConfig
+  crouchWalkSpeed: 20
   walkSpeed: 30
   sprintSpeed: 50
   movementMultiplier: 52.2
-  jumpForce: 8.7
+  jumpForce: 9
   jumpMultiplier: 54.2
   airDrag: 1
   groundDrag: 8
+  crouchHeight: 0.5
+  initialHeight: 1
+  crouchSpeed: 0.15
+  crouchCheckRadius: 0.41
+  excludedLayers:
+    serializedVersion: 2
+    m_Bits: 118
+  crouchCheckOffset: {x: 0, y: 0, z: -0.12}

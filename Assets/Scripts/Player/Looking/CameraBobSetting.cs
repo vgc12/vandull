@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Player.Looking.Player.Looking
+namespace Player.Looking
 {
     [System.Serializable]
     public class CameraBobSetting

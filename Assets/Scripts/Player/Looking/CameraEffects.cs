@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using Attributes;
-using Player.Looking.Player.Looking;
 using UnityEngine;
 
 namespace Player.Looking

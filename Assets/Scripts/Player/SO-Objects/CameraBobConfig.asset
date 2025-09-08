@@ -24,3 +24,9 @@ MonoBehaviour:
     horizontalAmplitude: 0.2
     verticalAmplitude: 0.09
     speedCurve: 1.7
+  crouchWalkConfig:
+    frequency: 3.63
+    maxSpeed: 5
+    horizontalAmplitude: 0.17
+    verticalAmplitude: 0.25
+    speedCurve: 1.7

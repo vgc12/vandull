@@ -14,7 +14,5 @@ namespace Player.Looking
     }
 
 
-    namespace Player.Looking
-    {
-    }
+ 
 }

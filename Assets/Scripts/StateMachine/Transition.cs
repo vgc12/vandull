@@ -1,4 +1,4 @@
-﻿namespace StateMachines
+﻿namespace StateMachine
 {
     public class Transition : ITransition
     {

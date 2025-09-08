@@ -1,6 +1,7 @@
-﻿using StateMachines;
+﻿using General;
+using StateMachine;
 
-namespace Player.Movement.States
+namespace Player.States
 {
     public class JumpState : BaseState
     {
@@ -15,6 +16,8 @@ namespace Player.Movement.States
         {
             
             _sm.PlayerMovement.Jump();
+            
+            Logger.Log("Jump");
         }
         
         

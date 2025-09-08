@@ -1,6 +1,6 @@
-﻿using StateMachines;
+﻿using StateMachine;
 
-namespace Player.Movement.States
+namespace Player.States
 {
     public class IdleState : BaseState
     {
