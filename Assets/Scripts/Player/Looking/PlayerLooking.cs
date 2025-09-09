@@ -62,6 +62,7 @@ namespace Player.Looking
         private void Start()
         {
             CameraBobber = GetComponent<CameraBobber>();
+            objectSwayer = GetComponent<ObjectSwayer>();
         }
 
 

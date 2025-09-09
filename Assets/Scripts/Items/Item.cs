@@ -18,7 +18,9 @@ namespace Items
         protected virtual void Initialize()
         {
             inputManager = GetComponentInParent<InputManager>();
+            inputManager.InputActions.Player.Attack.started += Use;
             inputManager.InputActions.Player.Attack.performed += Use;
+            inputManager.InputActions.Player.Attack.canceled += Use;
             
         }
     

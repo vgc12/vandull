@@ -1018,10 +1018,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   itemConfig: {fileID: 11400000, guid: 4d22229a90d36ea47911032f852d0162, type: 2}
   inputManager: {fileID: 2126911734}
-  firePoint: {fileID: 903236837}
-  defaultConfig: {fileID: 0}
-  aimingConfig: {fileID: 0}
-  objectSwayer: {fileID: 0}
+  muzzlePoint: {fileID: 903236837}
+  adsPosition: {x: -0.24, y: 0.18, z: 0}
+  hipFirePoint: {x: 0, y: 0, z: 0}
+  defaultConfig: {fileID: 11400000, guid: 20e4e2dc2a14eb54591591cfbdae95f4, type: 2}
+  aimingConfig: {fileID: 11400000, guid: 20e4e2dc2a14eb54591591cfbdae95f4, type: 2}
   magazineIndex: 0
 --- !u!114 &1521620808
 MonoBehaviour:

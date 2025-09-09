@@ -9,5 +9,11 @@ namespace Items.Guns
         {
             _gun = gun;
         }
+
+
+        public override void Update()
+        {
+            _gun.Fire();
+        }
     }
 }
