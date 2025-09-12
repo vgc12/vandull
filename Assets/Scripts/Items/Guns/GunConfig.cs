@@ -1,15 +1,45 @@
-﻿using Items.Guns;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Gun", menuName = "Items/Gun")]
-public class GunConfig : ItemConfig
+namespace Items.Guns
 {
-    public float damage = 10f;
-    public float range = 100f;
-    public float fireRate = 0.1f;
-    public int magazineSize = 30;
-    public int magazineCount = 4;
-    public float reloadTime = 2f;
-    public FireType fireType = FireType.SemiAutomatic;
-    public float adsTime = 0.2f;
+    [CreateAssetMenu(fileName = "Gun Config", menuName = "Items/GunConfig")]
+    public class GunConfig : ScriptableObject
+    {
+        [Header("Fire Mode Settings")]
+        public List<FireType> availableFireModes = new List<FireType> { FireType.SemiAutomatic };
+        public FireType defaultFireType = FireType.SemiAutomatic;
+    
+        public AimSettings aimSettings;
+        public FiringSettings firingSettings;
+        public DamageSettings damageSettings;
+        public AmmoSettings ammoSettings;
+       
+        public float adsTime = 0.3f;
+    }
+
+    [System.Serializable]
+    public class AmmoSettings 
+    {
+        public int magazineSize;
+        public int magazineCount;
+        public float reloadTime = 2f;
+    }
+    
+    [System.Serializable]
+    public class DamageSettings
+    {
+        public float damage = 100f;
+        public float range = 100f;
+    }
+    
+    [System.Serializable]
+    public class FiringSettings 
+    {
+        public float fireRate = 0.2f; 
+        public int burstCount = 3;
+        public float burstDelay = 0.1f; 
+    
+    }
+    
 }

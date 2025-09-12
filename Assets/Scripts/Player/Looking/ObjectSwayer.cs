@@ -1,32 +1,32 @@
-﻿using Attributes;
+﻿using System;
+using Attributes;
 using UnityEngine;
 
 namespace Player.Looking
 {
     public class ObjectSwayer : MonoBehaviour
     {
-        [Header("Configuration")]
-        [Required, ScriptableObjectDropdown] 
-        public SwayConfig swayConfig;
 
         [Header("Transform References")]
         [SerializeField, Required] 
         private Transform swayedObjectTransform;
 
    
-        private float _swayTimer;
+        private float _swayTimer = 0f;
         
         [SerializeField] private  float swayLerpSpeed = 5f;
         
 
         public void Sway(SwayConfig sway)
         {
+            
             var swayPosition = CalculateSwayPosition(sway);
             swayedObjectTransform.localPosition = Vector3.Lerp(
                 swayedObjectTransform.localPosition, 
                 swayPosition, 
                 Time.deltaTime * swayLerpSpeed
             );
+ 
         }
 
         private void Update()

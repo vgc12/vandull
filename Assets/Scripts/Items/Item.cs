@@ -1,32 +1,57 @@
-﻿using Attributes;
+﻿using System;
+using Attributes;
 using Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
+
 namespace Items
 {
-    public abstract class Item<T> : MonoBehaviour where T : ItemConfig
+    public abstract class Item : MonoBehaviour
     {
-
-        [SerializeField, Required, ScriptableObjectDropdown]
-        protected T itemConfig;
-    
+        
+        protected bool IsEquipped;
+        
+        [SerializeField] private string itemName;
+        
         protected abstract void Use(InputAction.CallbackContext context);
     
-        [HideInInspector]  public InputManager inputManager;
+         protected InputManager InputManager;
+
+        private void Awake()
+        {
+           
+            IsEquipped = false;
+
+        }
+
+        private void Start()
+        {
+            Initialize();
+        }
 
         protected virtual void Initialize()
         {
-            inputManager = GetComponentInParent<InputManager>();
-            inputManager.InputActions.Player.Attack.started += Use;
-            inputManager.InputActions.Player.Attack.performed += Use;
-            inputManager.InputActions.Player.Attack.canceled += Use;
-            
+            InputManager = GetComponentInParent<InputManager>();
+            InputManager.InputActions.Player.Attack.started += Use;
+            InputManager.InputActions.Player.Attack.performed += Use;
+            InputManager.InputActions.Player.Attack.canceled += Use;
         }
-    
-        private void Start()
+        
+        public virtual void Equip()
         {
-            Initialize(); 
+            gameObject.SetActive(true);
+            IsEquipped = true;
         }
+
+
+        public virtual void UnEquip()
+        {
+            gameObject.SetActive(false);
+            IsEquipped = false;
+        }
+        
+        
     }
 }

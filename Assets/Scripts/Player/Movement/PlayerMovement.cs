@@ -122,7 +122,7 @@ namespace Player.Movement
         {
             var forwardMovement = orientation.forward * (MoveInput.y * speed * config.MovementMultiplier);
             var rightMovement = orientation.right * (MoveInput.x * speed * config.MovementMultiplier);
-
+         
             ApplyMovement(forwardMovement, rightMovement);
         }
 
@@ -135,6 +135,7 @@ namespace Player.Movement
 
         public void ApplyDrag()
         {
+            
             _rigidbody.linearDamping = _groundChecker.IsGrounded ? config.GroundDrag : config.AirDrag;
         }
 

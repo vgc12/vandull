@@ -19,7 +19,7 @@ namespace Player.Looking
             None = 0
         }
 
-        public ObjectSwayer objectSwayer;
+        [Required]  public ObjectSwayer objectSwayer;
 
         private PlayerInputActions _input;
 
@@ -37,6 +37,7 @@ namespace Player.Looking
         [Header("Configuration")] [SerializeField, Required, ScriptableObjectDropdown]
         private PlayerLookingConfig config;
 
+        [ Required, ScriptableObjectDropdown] public SwayConfig swayConfig;
    
 
         [Header("Transforms")] [SerializeField, Required]
@@ -46,10 +47,6 @@ namespace Player.Looking
 
         [SerializeField, Required] private Transform leanPoint;
 
-        [SerializeField, Required] private Transform cameraTransform;
-
-        
-        
         #endregion
 
         #region UnityFunctions
@@ -62,7 +59,6 @@ namespace Player.Looking
         private void Start()
         {
             CameraBobber = GetComponent<CameraBobber>();
-            objectSwayer = GetComponent<ObjectSwayer>();
         }
 
 

@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 505df34a3bc45724cbb4d9d51c10f3d0, type: 3}
-  m_Name: SwayConfig
+  m_Name: HipGunSwayConfig
   m_EditorClassIdentifier: Assembly-CSharp::Player.Looking.SwayConfig
-  horizontalSwayAmount: 0.75
-  horizontalSwaySpeed: 0.32
-  verticalSwayAmount: 0.23
-  verticalSwaySpeed: 0.47
-  swayMultiplier: 0.3
+  horizontalSwayAmount: 0.02
+  horizontalSwaySpeed: 0.09
+  verticalSwayAmount: 0.26
+  verticalSwaySpeed: 0.01
+  swayMultiplier: 0.2

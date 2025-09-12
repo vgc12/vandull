@@ -71,7 +71,7 @@ namespace Player
             _stateMachine.AddAnyTransition(states.SprintState,
                 new FuncPredicate(() => IsGroundedAndNotCrouching && IsMoving && PlayerMovement.SprintPressed));
             _stateMachine.AddAnyTransition(states.WalkState,
-                new FuncPredicate(() => IsGroundedAndNotCrouching && !IsMoving && !PlayerMovement.SprintPressed));
+                new FuncPredicate(() => IsGroundedAndNotCrouching && IsMoving && !PlayerMovement.SprintPressed));
             _stateMachine.AddAnyTransition(states.IdleState,
                 new FuncPredicate(() => IsGroundedAndNotCrouching && !IsMoving));
             _stateMachine.AddAnyTransition(states.CrouchState,

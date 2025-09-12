@@ -1,4 +1,5 @@
-﻿using StateMachine;
+﻿using General;
+using StateMachine;
 
 namespace Player.States
 {
@@ -19,15 +20,16 @@ namespace Player.States
 
         public override void Update()
         {
+            
             _sm.PlayerMovement.ApplyDrag();
             
             _sm.PlayerLooking.Look();
         
-            var ce = _sm.PlayerLooking.objectSwayer;
+            var os = _sm.PlayerLooking.objectSwayer;
        
-       
+
             
-            ce.Sway(ce.swayConfig);
+            os.Sway(_sm.PlayerLooking.swayConfig);
             
             _sm.PlayerLooking.Lean();
         }

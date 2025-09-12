@@ -1,194 +1,209 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using Attributes;
-using General;
-using Player.Looking;
+using Player;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 namespace Items.Guns
 {
-    [RequireComponent(typeof(ObjectSwayer))]
-    public class Gun : Item<GunConfig>
+  
+    public class Gun : Item
     {
-        [SerializeField, Required] private Transform muzzlePoint;
+        [Header("Gun Components")]
+        [SerializeField] private Vector3 muzzlePoint;
         [SerializeField] private Vector3 adsPosition;
         [SerializeField] private Vector3 hipFirePoint;
-        [SerializeField, Required] private SwayConfig defaultConfig;
-        [SerializeField, Required] private SwayConfig aimingConfig;
+        [SerializeField, Required, ScriptableObjectDropdown] private GunConfig gunConfig;
+        
+        [Header("Events")]
+        public UnityEvent<Vector3, float> onFired;
+        public UnityEvent onReloadStarted;
+        public UnityEvent onReloadCompleted;
+        public UnityEvent onAmmoChanged;
 
-        private readonly RaycastHit[] _hitColliders = new RaycastHit[10];
-        public ObjectSwayer ObjectSwayer { get; private set; }
-        private StateMachine.StateMachine _stateMachine;
+        
+        private FireSystem _fireSystem;
+        private IAmmoSystem _ammoSystem;
+        private IAimingSystem _aimingSystem;
+  
+
         private bool _firePressed;
-
+        private bool _aimToggled;
         private bool _reloadPressed;
-        private bool _reloading;
 
-        private Coroutine _aimingCoroutine;
+        #region Unity Lifecycle
 
-        public List<Magazine> Magazines { get; private set; } = new List<Magazine>();
-        public Magazine CurrentMagazine { get; private set; }
-
-        public int magazineIndex;
-
-        private class GunStates
+        protected override void Use(InputAction.CallbackContext context)
         {
-            public GunIdleState IdleState { get; private init; }
-
-            public GunFiringState FiringState { get; private init; }
-            public GunReloadingState ReloadingState { get; set; }
-
-            public GunStates(Gun gun)
-            {
-                IdleState = new GunIdleState(gun);
-
-                ReloadingState = new GunReloadingState(gun);
-                FiringState = new GunFiringState(gun);
-            }
+            if(!IsEquipped) return;
+            _fireSystem.Fire(context);
         }
 
-        private void OnDrawGizmos()
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawRay(muzzlePoint.position, muzzlePoint.forward * itemConfig.range);
-            Gizmos.color = Color.green;
-            Gizmos.DrawSphere(adsPosition + transform.position, 0.1f);
-            Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(hipFirePoint + transform.position, 0.1f);
-        }
 
         protected override void Initialize()
         {
             base.Initialize();
-
-            for (var i = 0; i < itemConfig.magazineCount; i++)
-            {
-                Magazines.Add(new Magazine(itemConfig.magazineSize));
-            }
-
-            CurrentMagazine = Magazines[0];
-            ObjectSwayer = GetComponent<ObjectSwayer>();
-            var gunStates = new GunStates(this);
-            _stateMachine = new StateMachine.StateMachine();
-            _stateMachine.AddAnyTransition(gunStates.IdleState, () => !_firePressed && !_reloading);
-            _stateMachine.AddAnyTransition(gunStates.FiringState,
-                () => _firePressed && !_reloading && !CurrentMagazine.IsEmpty);
-            _stateMachine.AddAnyTransition(gunStates.ReloadingState, () => !_reloading);
-            _stateMachine.SetState(gunStates.IdleState);
+            InitializeSystems();
         }
-
 
         private void Update()
         {
-            _stateMachine.Update();
+     
+            _aimingSystem.Update();
+            if (_reloadPressed && !IsReloading)
+            {
+                StartReload();
+            }
         }
 
-        private void FixedUpdate()
+ 
+
+        private void OnDrawGizmos()
         {
-            _stateMachine.FixedUpdate();
+            DrawDebugGizmos();
+        }
+
+        #endregion
+
+        #region Initialization
+
+
+        private void InitializeSystems()
+        {
+            _ammoSystem = new AmmoSystem(gunConfig);
+            _fireSystem = new FireSystem(transform, gunConfig, muzzlePoint, _ammoSystem);
+            _aimingSystem = new AimingSystem(transform, gunConfig.aimSettings.adsTime);
+            
+            _fireSystem.OnFired += HandleFired;
+            _ammoSystem.OnAmmoChanged += () => onAmmoChanged?.Invoke();
+            _ammoSystem.OnReloadStarted += () => onReloadStarted?.Invoke();
+            _ammoSystem.OnReloadCompleted += () => onReloadCompleted?.Invoke();
+            
+            InputManager = GetComponentInParent<InputManager>();
+            InputManager.InputActions.Player.Aim.started += OnAim;
+            InputManager.InputActions.Player.Aim.performed += OnAim;
+            InputManager.InputActions.Player.Aim.canceled += OnAim;
+         
+            StopAiming();
+        }
+
+        #endregion
+       
+
+        #region Input Handling
+
+  
+
+        public void OnAim(InputAction.CallbackContext context)
+        {
+            if(!IsEquipped) return;
+            if (context.started)
+            {
+                _aimToggled = !_aimToggled;
+            }
+
+            if (_aimToggled && !IsReloading)
+            {
+                StartAiming();
+            }
+            else if (!_aimToggled)
+            {
+                StopAiming();
+            }
+        }
+
+        public void OnReload(InputAction.CallbackContext context)
+        {
+            if(!IsEquipped) return;
+            if (context.started)
+                _reloadPressed = true;
+        }
+
+        #endregion
+
+        #region Public Interface
+        
+        public bool CanFire() => _fireSystem.CanFire() && !_ammoSystem.IsCurrentMagazineEmpty;
+        public bool IsAiming => _aimingSystem.IsAiming;
+        public bool IsReloading => _ammoSystem.IsReloading;
+        
+        public void StartReload()
+        {
+            _ammoSystem.StartReload();
+            _reloadPressed = false;
+        }
+
+        public void StartAiming() => _aimingSystem.StartAiming(adsPosition, hipFirePoint);
+        public void StopAiming() => _aimingSystem.StopAiming();
+
+        #endregion
+
+        #region Event Handlers
+
+        private void HandleFired(Vector3 position, float damage)
+        {
+            onFired?.Invoke(position, damage);
+        }
+
+        #endregion
+
+        #region Debug
+
+        private void DrawDebugGizmos()
+        {
+            
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(muzzlePoint + transform.position, (transform.forward) * gunConfig.damageSettings.range);
+            
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(transform.position + adsPosition, 0.1f);
+            
+            Gizmos.color = Color.blue;
+            Gizmos.DrawSphere(transform.position + hipFirePoint, 0.1f);
+        }
+
+        #endregion
+
+        #region Properties for States
+
+        public bool FirePressed => _firePressed;
+        public bool AimToggled => _aimToggled;
+        public bool ReloadPressed => _reloadPressed;
+
+        #endregion
+        
+        [Header("Fire Mode Controls")]
+        [SerializeField] private bool allowFireModeSwitching = true;
+    
+        // Add this to your input handling section
+        public void OnFireModeSwitch(InputAction.CallbackContext context)
+        {
+            if (context.started && allowFireModeSwitching)
+            {
+                _fireSystem?.CycleFireMode();
+            }
         }
         
-        protected override void Use(InputAction.CallbackContext context)
+        public FireType GetCurrentFireMode()
         {
-            if (itemConfig.fireType == FireType.SemiAutomatic)
-            {
-                _firePressed = context.started;
-                return;
-            }
-
-            _firePressed = context.performed;
+            return (_fireSystem as FireSystem)?.CurrentFireType ?? FireType.SemiAutomatic;
         }
 
-
-        public void Reload()
+        public void SetFireMode(FireType fireType)
         {
-            magazineIndex = (magazineIndex + 1) % Magazines.Count;
-            CurrentMagazine = Magazines[magazineIndex];
+            (_fireSystem as FireSystem)?.SetFireMode(fireType);
         }
 
-
-        public void UnAim()
+        public void CycleFireMode()
         {
-            if (_aimingCoroutine != null) StopCoroutine(_aimingCoroutine);
-            _aimingCoroutine = StartCoroutine(LerpToPoint(hipFirePoint));
+            _fireSystem.CycleFireMode();
         }
 
-        public void Aim()
+        public IReadOnlyList<FireType> GetAvailableFireModes()
         {
-            if (_aimingCoroutine != null) StopCoroutine(_aimingCoroutine);
-            _aimingCoroutine = StartCoroutine(LerpToPoint(adsPosition));
-        }
-
-        private IEnumerator LerpToPoint(Vector3 targetPosition)
-        {
-            var elapsed = 0f;
-            var duration = itemConfig.adsTime;
-            var initialPosition = transform.localPosition;
-            while (elapsed < duration)
-            {
-                transform.localPosition = Vector3.Lerp(initialPosition, targetPosition, elapsed / duration);
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            transform.localPosition = adsPosition;
-        }
-
-        public void Fire()
-        {
-            CurrentMagazine.SubtractOne();
-            if (Physics.RaycastNonAlloc(muzzlePoint.position, muzzlePoint.forward, _hitColliders, itemConfig.range) <=
-                0) return;
-            foreach (var hitCollider in _hitColliders)
-            {
-                if (hitCollider.collider == null) continue;
-                VandullLogger.Log($"Hit {hitCollider.collider.name} at distance {hitCollider.distance}");
-                /*
-                if (hitCollider.TryGetComponent<IDamageable>(out var damageable))
-                {
-                    damageable.TakeDamage(itemConfig.damage);
-                    Debug.Log($"Hit {hitCollider.name} for {itemConfig.damage} damage.");
-                }
-                */
-            }
-        }
-
-
-        private IEnumerator FireCooldown(float cooldown)
-        {
-            float timer = itemConfig.fireRate;
-            while (timer > 0)
-            {
-                yield return new WaitForSeconds(cooldown);
-            }
+            return gunConfig.availableFireModes;
         }
     }
-
-    public class Magazine
-    {
-        public int CurrentAmmo { get; private set; }
-
-        private int Capacity { get; }
-
-        public Magazine(int capacity)
-        {
-            Capacity = capacity;
-            CurrentAmmo = capacity;
-        }
-
-        public bool IsEmpty => CurrentAmmo <= 0;
-        public bool IsFull => CurrentAmmo >= Capacity;
-
-        public void SubtractAmmo(int amount)
-        {
-            CurrentAmmo = Mathf.Max(0, CurrentAmmo - amount);
-        }
-
-        public void SubtractOne()
-        {
-            SubtractAmmo(1);
-        }
-    }
+    
 }
