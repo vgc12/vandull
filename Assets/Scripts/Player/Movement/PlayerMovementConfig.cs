@@ -24,6 +24,8 @@ namespace Player.Movement
         public int ExcludedLayers => excludedLayers;
 
         public Vector3 CrouchCheckOffset => crouchCheckOffset;
+        public float CrouchCameraPosition => crouchCameraPosition;
+        public float InitialCrouchCameraPosition => initialCrouchCameraPosition;
 
 
         [Header("Movement")] [SerializeField, Range(10, 100)]
@@ -40,10 +42,11 @@ namespace Player.Movement
         [SerializeField, Range(.001f, 20)] private float airDrag = 1f;
         [SerializeField, Range(.001f, 20)] private float groundDrag = 8f;
 
-        [Header("Crouching")] [SerializeField, Range(0.1f, 1f)]
+        [Header("Crouching")] [SerializeField, Range(0.1f, 5f)]
         private float crouchHeight = 0.5f;
-
+        [SerializeField, Range(0.1f, 5f)] private float crouchCameraPosition = 0.5f;
         [SerializeField, Range(0.1f, 1f)] private float initialHeight = 1.0f;
+        [SerializeField, Range(0.1f, 10f)] private float initialCrouchCameraPosition = 0.5f;
         [SerializeField, Range(0.1f, 10f)] private float crouchSpeed = .75f;
         [SerializeField, Range(0.1f, 10f)] private float crouchCheckRadius = 1f;
 

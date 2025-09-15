@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using Attributes;
+using General;
+using Items.Guns.Recoil;
+using Items.Guns.Trail;
 using Player;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,13 +11,14 @@ using UnityEngine.InputSystem;
 namespace Items.Guns
 {
   
+    [CreateAssetMenu( fileName = "New Gun", menuName = "Items/Gun")]
     public class Gun : Item
     {
         [Header("Gun Components")]
-        [SerializeField] private Vector3 muzzlePoint;
-        [SerializeField] private Vector3 adsPosition;
-        [SerializeField] private Vector3 hipFirePoint;
-        [SerializeField, Required, ScriptableObjectDropdown] private GunConfig gunConfig;
+      
+        private Transform _recoilTransform;
+        [SerializeField] private GunConfig gunConfig;
+        [SerializeField] private TrailConfig trailConfig;
         
         [Header("Events")]
         public UnityEvent<Vector3, float> onFired;
@@ -22,44 +26,49 @@ namespace Items.Guns
         public UnityEvent onReloadCompleted;
         public UnityEvent onAmmoChanged;
 
-        
+        [Header("Systems")]
         private FireSystem _fireSystem;
         private IAmmoSystem _ammoSystem;
         private IAimingSystem _aimingSystem;
-  
+        private TrailSystem _trailSystem;
+        private RecoilSystem _recoilSystem;
+
+        
 
         private bool _firePressed;
         private bool _aimToggled;
-        private bool _reloadPressed;
+
+
+  
+      
 
         #region Unity Lifecycle
 
         protected override void Use(InputAction.CallbackContext context)
         {
-            if(!IsEquipped) return;
+            if(!IsEquipped ) return;
+            
             _fireSystem.Fire(context);
+    
         }
 
 
-        protected override void Initialize()
+        public override void Spawn(MonoBehaviour monoBehaviour)
         {
-            base.Initialize();
+            base.Spawn(monoBehaviour);
             InitializeSystems();
         }
 
-        private void Update()
+         protected override void OnUpdate()
         {
-     
+            _recoilSystem.Update();
             _aimingSystem.Update();
-            if (_reloadPressed && !IsReloading)
-            {
-                StartReload();
-            }
+            _fireSystem.Update();
+    
         }
 
- 
 
-        private void OnDrawGizmos()
+        public void OnDrawGizmos()
         {
             DrawDebugGizmos();
         }
@@ -71,21 +80,35 @@ namespace Items.Guns
 
         private void InitializeSystems()
         {
-            _ammoSystem = new AmmoSystem(gunConfig);
-            _fireSystem = new FireSystem(transform, gunConfig, muzzlePoint, _ammoSystem);
-            _aimingSystem = new AimingSystem(transform, gunConfig.aimSettings.adsTime);
+            _recoilTransform = GameObject.FindWithTag("RecoilTransform").transform;
             
+            _trailSystem = new TrailSystem(trailConfig);
+            _ammoSystem = new AmmoSystem(gunConfig, MonoBehaviour);
+            _aimingSystem = new AimingSystem( gunConfig, ItemInstance.transform);
+            _recoilSystem = new RecoilSystem(gunConfig, _aimingSystem, _recoilTransform,  ItemInstance.transform, MonoBehaviour);
+            _fireSystem = new FireSystem(ItemInstance.transform, gunConfig,MonoBehaviour,_recoilSystem, _ammoSystem, _trailSystem);
+          
+          
             _fireSystem.OnFired += HandleFired;
             _ammoSystem.OnAmmoChanged += () => onAmmoChanged?.Invoke();
             _ammoSystem.OnReloadStarted += () => onReloadStarted?.Invoke();
             _ammoSystem.OnReloadCompleted += () => onReloadCompleted?.Invoke();
+   
             
-            InputManager = GetComponentInParent<InputManager>();
+            InputManager = ItemInstance.GetComponentInParent<InputManager>();
             InputManager.InputActions.Player.Aim.started += OnAim;
             InputManager.InputActions.Player.Aim.performed += OnAim;
             InputManager.InputActions.Player.Aim.canceled += OnAim;
+            InputManager.InputActions.Player.Reload.started += OnReload;
+
+            InputManager.InputActions.Player.SwitchFireMode.started += OnFireModeSwitch;
          
+            StartAiming();
             StopAiming();
+            
+            ItemInstance.transform.localPosition = gunConfig.aimSettings.hipFirePoint;
+            
+           
         }
 
         #endregion
@@ -117,24 +140,24 @@ namespace Items.Guns
         {
             if(!IsEquipped) return;
             if (context.started)
-                _reloadPressed = true;
+                StartReload();
         }
 
         #endregion
 
         #region Public Interface
         
-        public bool CanFire() => _fireSystem.CanFire() && !_ammoSystem.IsCurrentMagazineEmpty;
+        public bool CanFire=> _fireSystem.CanFire && !_ammoSystem.IsCurrentMagazineEmpty;
         public bool IsAiming => _aimingSystem.IsAiming;
         public bool IsReloading => _ammoSystem.IsReloading;
         
         public void StartReload()
         {
             _ammoSystem.StartReload();
-            _reloadPressed = false;
+         
         }
 
-        public void StartAiming() => _aimingSystem.StartAiming(adsPosition, hipFirePoint);
+        public void StartAiming() => _aimingSystem.StartAiming();
         public void StopAiming() => _aimingSystem.StopAiming();
 
         #endregion
@@ -154,32 +177,24 @@ namespace Items.Guns
         {
             
             Gizmos.color = Color.red;
-            Gizmos.DrawRay(muzzlePoint + transform.position, (transform.forward) * gunConfig.damageSettings.range);
-            
+            var muzzleWorldPosition = ItemInstance.transform.TransformPoint( gunConfig.aimSettings.muzzlePoint);
+            Gizmos.DrawRay(muzzleWorldPosition, ItemInstance.transform.forward * gunConfig.damageSettings.range);
+           // Gizmos.DrawSphere( muzzleWorldPosition, 0.1f);
             Gizmos.color = Color.green;
-            Gizmos.DrawSphere(transform.position + adsPosition, 0.1f);
+            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint(gunConfig.aimSettings.adsPosition), 0.1f);
             
             Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(transform.position + hipFirePoint, 0.1f);
+            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint( gunConfig.aimSettings.hipFirePoint), 0.1f);
         }
 
         #endregion
 
-        #region Properties for States
-
-        public bool FirePressed => _firePressed;
-        public bool AimToggled => _aimToggled;
-        public bool ReloadPressed => _reloadPressed;
-
-        #endregion
         
-        [Header("Fire Mode Controls")]
-        [SerializeField] private bool allowFireModeSwitching = true;
-    
-        // Add this to your input handling section
+
+
         public void OnFireModeSwitch(InputAction.CallbackContext context)
         {
-            if (context.started && allowFireModeSwitching)
+            if (context.started )
             {
                 _fireSystem?.CycleFireMode();
             }
@@ -187,12 +202,12 @@ namespace Items.Guns
         
         public FireType GetCurrentFireMode()
         {
-            return (_fireSystem as FireSystem)?.CurrentFireType ?? FireType.SemiAutomatic;
+            return _fireSystem?.CurrentFireType ?? FireType.SemiAutomatic;
         }
 
         public void SetFireMode(FireType fireType)
         {
-            (_fireSystem as FireSystem)?.SetFireMode(fireType);
+            _fireSystem?.SetFireMode(fireType);
         }
 
         public void CycleFireMode()
@@ -202,7 +217,7 @@ namespace Items.Guns
 
         public IReadOnlyList<FireType> GetAvailableFireModes()
         {
-            return gunConfig.availableFireModes;
+            return gunConfig.fireModeSettings.availableFireModes;
         }
     }
     

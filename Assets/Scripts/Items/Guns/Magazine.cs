@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using General;
+using UnityEngine;
 
 namespace Items.Guns
 {
@@ -25,6 +26,7 @@ namespace Items.Guns
         public void SubtractOne()
         {
             SubtractAmmo(1);
+            VandullLogger.Log(CurrentAmmo);
         }
     }
 }

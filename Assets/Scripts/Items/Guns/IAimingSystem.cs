@@ -1,12 +1,16 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Items.Guns
 {
     public interface IAimingSystem
     {
+        event Action OnAimStarted;
+        event Action OnAimStopped;
+        
         bool IsAiming { get; }
         
-        void StartAiming(Vector3 adsPosition, Vector3 hipPosition);
+        void StartAiming();
         
         void StopAiming();
         

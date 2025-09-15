@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4f9de6ba1b4b5041bb7cdfc37b2e7bd, type: 3}
+  m_Name: MP5
+  m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.Gun
+  itemName: MP5
+  prefab: {fileID: 2855816089889277477, guid: 1fd930a48e8659c4ca2bb28f913b3182, type: 3}
+  gunConfig:
+    fireModeSettings:
+      availableFireModes: 020000000100000000000000
+      defaultFireType: 0
+    aimSettings:
+      adsTime: 0.12
+      muzzlePoint: {x: 0, y: 0.045, z: 0.35}
+      adsPosition: {x: 0, y: -0.107, z: 0.12}
+      hipFirePoint: {x: 0.12, y: -0.17, z: 0.18}
+    firingSettings:
+      fireRate: 0.1
+      burstCount: 3
+      burstDelay: 0.2
+    damageSettings:
+      damage: 100
+      range: 100
+    ammoSettings:
+      magazineSize: 30
+      magazineCount: 6
+      reloadTime: 1.5
+    recoilSettings:
+      verticalRecoil: 5
+      horizontalRecoil: 7.65
+      recoilSpeed: 4.7
+      returnSpeed: 18.1
+      recoilPattern:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: -0.2425399
+          outSlope: -0.2425399
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0.0810077
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      positionRecoil: {x: 0, y: 0.008, z: 0}
+      rotationRecoil: {x: -4, y: 5.6, z: 0}
+      physicalRecoilSpeed: 35.67
+      physicalReturnSpeed: 10
+      useProgressiveRecoil: 1
+      recoilMultiplierPerShot: 1.1
+      maxRecoilMultiplier: 3
+      recoilDecayRate: 2
+      recoilEffectMultiplier: 1
+  trailConfig: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
+  onFired:
+    m_PersistentCalls:
+      m_Calls: []
+  onReloadStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onReloadCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  onAmmoChanged:
+    m_PersistentCalls:
+      m_Calls: []

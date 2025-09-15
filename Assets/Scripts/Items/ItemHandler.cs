@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Attributes;
 using General;
+using Items.Guns;
 using Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,18 +14,18 @@ namespace Items
     {
 
         private Item _equippedItem;
-       [SerializeField] private List<Item> inventory = new();
+       [SerializeField, Required] private List<Item> inventory = new();
         private InputManager _inputManager;
 
         private void Start()
         {
-            inventory = GetComponentsInChildren<Item>().ToList();
             LogInventory();
+            SetUpItems();
             _equippedItem = inventory.FirstOrDefault();
             _equippedItem?.Equip();
             _inputManager = GetComponentInParent<InputManager>();
             _inputManager.InputActions.Player.SwitchItem.performed += OnItemSwitched;
-            UnequipAllButSelected();
+     
         }
 
         private void LogInventory()
@@ -35,14 +37,20 @@ namespace Items
             }
         }
         
-        public void UnequipAllButSelected()
+        public void SetUpItems()
         {
             foreach (var i in inventory)
             {
+                InitializeItem(i);
                 if(i == _equippedItem)
                    continue;
                 i.UnEquip();
             }
+        }
+
+        public void InitializeItem(Item item)
+        {
+            item.Spawn(this);
         }
   
 
@@ -61,6 +69,16 @@ namespace Items
                 _equippedItem.UnEquip();
             _equippedItem = item;
             _equippedItem.Equip();
+        }
+
+        private void Update()
+        {
+            _equippedItem.Update();
+        }
+
+        private void OnDrawGizmos()
+        {
+            (_equippedItem as Gun)?.OnDrawGizmos();
         }
     }
 }

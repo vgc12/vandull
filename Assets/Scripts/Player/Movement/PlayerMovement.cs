@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using Attributes;
+using General;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,11 +16,11 @@ namespace Player.Movement
         [Header("Transforms")] [SerializeField, Required]
         private Transform orientation;
 
-        [SerializeField, Required] private Transform crouchTransform;
+        [SerializeField, Required] private Transform playerModel;
+        [SerializeField, Required] private Transform crouchPositionTransform;
         [SerializeField, Required] private Transform headCheckTransform;
 
         [Required, ScriptableObjectDropdown] public PlayerMovementConfig config;
-
 
 
         private Rigidbody _rigidbody;
@@ -31,6 +32,9 @@ namespace Player.Movement
 
         private Coroutine _crouchCoroutine;
 
+
+        public bool ObjectAbove { get; private set; }
+
         public bool SprintPressed { get; private set; }
 
         public bool JumpPressed { get; private set; }
@@ -39,9 +43,9 @@ namespace Player.Movement
 
         public bool CrouchPressed { get; private set; }
 
-        public Transform CrouchTransform => crouchTransform;
+        public Transform PlayerModel => playerModel;
 
-        private readonly Collider[] _crouchCheckCollider = new Collider[1];
+        private readonly RaycastHit[] _crouchCheckHits = new RaycastHit[1];
 
         #region UnityFunctions
 
@@ -64,6 +68,11 @@ namespace Player.Movement
 
             _inputManager.InputActions.Player.Crouch.performed += OnCrouchInput;
             _inputManager.InputActions.Player.Crouch.canceled += OnCrouchInput;
+            
+            playerModel.localScale = new Vector3(1, config.InitialHeight, 1);
+            crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
+                config.InitialCrouchCameraPosition,
+                crouchPositionTransform.localPosition.z);
         }
 
 
@@ -86,6 +95,9 @@ namespace Player.Movement
         {
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(config.CrouchCheckOffset + headCheckTransform.position, config.CrouchCheckRadius);
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(headCheckTransform.position,
+                headCheckTransform.position + Vector3.up * (config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y));
         }
 
         #endregion
@@ -105,7 +117,6 @@ namespace Player.Movement
         private void OnJumpInput(InputAction.CallbackContext obj)
         {
             JumpPressed = obj.performed;
-            
         }
 
         private void OnMoveInput(InputAction.CallbackContext context)
@@ -122,7 +133,7 @@ namespace Player.Movement
         {
             var forwardMovement = orientation.forward * (MoveInput.y * speed * config.MovementMultiplier);
             var rightMovement = orientation.right * (MoveInput.x * speed * config.MovementMultiplier);
-         
+
             ApplyMovement(forwardMovement, rightMovement);
         }
 
@@ -135,15 +146,15 @@ namespace Player.Movement
 
         public void ApplyDrag()
         {
-            
             _rigidbody.linearDamping = _groundChecker.IsGrounded ? config.GroundDrag : config.AirDrag;
         }
 
 
         public void Jump()
         {
-            _rigidbody.AddForce(Vector3.up  * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
-            _rigidbody.AddForce(_rigidbody.linearVelocity * (config.JumpForce/4f * config.JumpMultiplier), ForceMode.Impulse);
+            _rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
+            _rigidbody.AddForce(_rigidbody.linearVelocity * (config.JumpForce / 4f * config.JumpMultiplier),
+                ForceMode.Impulse);
         }
 
         #endregion
@@ -153,36 +164,52 @@ namespace Player.Movement
         {
             if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
 
-            _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.CrouchHeight));
-            
+            _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.CrouchHeight, config.CrouchCameraPosition));
         }
 
         public void UnCrouch()
         {
             if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
-            _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.InitialHeight));
+            _crouchCoroutine =
+                StartCoroutine(SetPlayerHeight(config.InitialHeight, config.InitialCrouchCameraPosition));
         }
 
-        private IEnumerator SetPlayerHeight(float height)
+
+        private IEnumerator SetPlayerHeight(float height, float position)
         {
             float t = 0;
-            var currentHeight = CrouchTransform.localScale.y;
+            var currentHeight = PlayerModel.localScale.y;
+            var crouchPosition = crouchPositionTransform.localPosition.y;
 
             while (t < 1)
             {
-                var size = Physics.OverlapSphereNonAlloc(config.CrouchCheckOffset + headCheckTransform.position, config.CrouchCheckRadius, _crouchCheckCollider, ~config.ExcludedLayers);
+                var size = Physics.SphereCastNonAlloc(config.CrouchCheckOffset + headCheckTransform.position,
+                    config.CrouchCheckRadius, Vector3.up, _crouchCheckHits,
+                    config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y,
+                    ~config.ExcludedLayers);
+                /*
+                var size = Physics.OverlapSphereNonAlloc(config.CrouchCheckOffset + headCheckTransform.position,
+                    config.CrouchCheckRadius, _crouchCheckCollider, ~config.ExcludedLayers);
+*/
 
-                
                 if (size > 0)
                 {
+                    VandullLogger.Log(_crouchCheckHits[0].collider.name);
+                    ObjectAbove = true;
                     yield return null;
                     continue;
                 }
 
+                ObjectAbove = false;
+
                 t += Time.deltaTime / config.CrouchSpeed;
-                
+
                 var newHeight = Mathf.SmoothStep(currentHeight, height, t);
-               CrouchTransform.localScale = new Vector3(1, newHeight, 1);
+                var newPosition = Mathf.SmoothStep(crouchPosition, position, t);
+                PlayerModel.localScale = new Vector3(1, newHeight, 1);
+                crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
+                    newPosition,
+                    crouchPositionTransform.localPosition.z);
                 yield return null;
             }
 

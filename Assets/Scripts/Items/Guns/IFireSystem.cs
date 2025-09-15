@@ -9,7 +9,7 @@ namespace Items.Guns
         event Action<Vector3, float> OnFired;
         event Action OnFireModeChanged;
     
-        bool CanFire();
+        bool CanFire { get; }
         void Fire(InputAction.CallbackContext context);
         void StopFire();
         void SetFireMode(FireType fireType);

@@ -10,7 +10,7 @@ namespace Items.Guns
         
         bool IsCurrentMagazineEmpty { get; }
         bool IsReloading { get; }
-        bool CanReload();
+        bool CanReload { get; }
         void StartReload();
         void ConsumeAmmo();
         int CurrentAmmo { get; }

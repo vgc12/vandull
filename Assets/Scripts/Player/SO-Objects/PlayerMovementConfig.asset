@@ -20,8 +20,10 @@ MonoBehaviour:
   jumpMultiplier: 54.2
   airDrag: 1
   groundDrag: 8
-  crouchHeight: 0.5
+  crouchHeight: 0.704
+  crouchCameraPosition: 1
   initialHeight: 1
+  initialCrouchCameraPosition: 1.62
   crouchSpeed: 0.15
   crouchCheckRadius: 0.41
   excludedLayers:

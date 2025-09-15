@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4f9de6ba1b4b5041bb7cdfc37b2e7bd, type: 3}
+  m_Name: Five Seven
+  m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.Gun
+  itemName: Five Seven
+  prefab: {fileID: 6949219968297497114, guid: 55b1fd5f577255c4a8338b61385780ec, type: 3}
+  gunConfig:
+    fireModeSettings:
+      availableFireModes: 000000000100000002000000
+      defaultFireType: 0
+    aimSettings:
+      adsTime: 0.06
+      muzzlePoint: {x: 0, y: 0, z: 0}
+      adsPosition: {x: 0, y: 0, z: 0}
+      hipFirePoint: {x: 0, y: 0, z: 0}
+    firingSettings:
+      fireRate: 0.2
+      burstCount: 3
+      burstDelay: 0.1
+    damageSettings:
+      damage: 100
+      range: 100
+    ammoSettings:
+      magazineSize: 8
+      magazineCount: 4
+      reloadTime: 2
+    recoilSettings:
+      verticalRecoil: 239.9
+      horizontalRecoil: 1
+      recoilSpeed: 15
+      returnSpeed: 8
+      recoilPattern:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      positionRecoil: {x: 0, y: -0.96, z: -5}
+      rotationRecoil: {x: 286, y: 0, z: 0}
+      physicalRecoilSpeed: 20
+      physicalReturnSpeed: 10
+      useProgressiveRecoil: 0
+      recoilMultiplierPerShot: 1.2
+      maxRecoilMultiplier: 3
+      recoilDecayRate: 2
+      recoilEffectMultiplier: 0
+  trailConfig: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
+  onFired:
+    m_PersistentCalls:
+      m_Calls: []
+  onReloadStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onReloadCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  onAmmoChanged:
+    m_PersistentCalls:
+      m_Calls: []
