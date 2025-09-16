@@ -19,6 +19,7 @@ namespace Items.Guns
         private Transform _recoilTransform;
         [SerializeField] private GunConfig gunConfig;
         [SerializeField] private TrailConfig trailConfig;
+        [SerializeField, Required] private GameObject magazinePrefab;
         
         [Header("Events")]
         public UnityEvent<Vector3, float> onFired;
@@ -27,12 +28,11 @@ namespace Items.Guns
         public UnityEvent onAmmoChanged;
 
         [Header("Systems")]
-        private FireSystem _fireSystem;
+        private IFireSystem _fireSystem;
         private IAmmoSystem _ammoSystem;
         private IAimingSystem _aimingSystem;
         private TrailSystem _trailSystem;
-        private RecoilSystem _recoilSystem;
-
+        private IRecoilSystem _recoilSystem;
         
 
         private bool _firePressed;
@@ -83,7 +83,7 @@ namespace Items.Guns
             _recoilTransform = GameObject.FindWithTag("RecoilTransform").transform;
             
             _trailSystem = new TrailSystem(trailConfig);
-            _ammoSystem = new AmmoSystem(gunConfig, MonoBehaviour);
+            _ammoSystem = new AmmoSystem(gunConfig, MonoBehaviour, ItemInstance.transform, magazinePrefab);
             _aimingSystem = new AimingSystem( gunConfig, ItemInstance.transform);
             _recoilSystem = new RecoilSystem(gunConfig, _aimingSystem, _recoilTransform,  ItemInstance.transform, MonoBehaviour);
             _fireSystem = new FireSystem(ItemInstance.transform, gunConfig,MonoBehaviour,_recoilSystem, _ammoSystem, _trailSystem);
@@ -179,12 +179,15 @@ namespace Items.Guns
             Gizmos.color = Color.red;
             var muzzleWorldPosition = ItemInstance.transform.TransformPoint( gunConfig.aimSettings.muzzlePoint);
             Gizmos.DrawRay(muzzleWorldPosition, ItemInstance.transform.forward * gunConfig.damageSettings.range);
-           // Gizmos.DrawSphere( muzzleWorldPosition, 0.1f);
+
             Gizmos.color = Color.green;
-            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint(gunConfig.aimSettings.adsPosition), 0.1f);
+            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint(gunConfig.aimSettings.adsPosition), 0.01f);
             
             Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint( gunConfig.aimSettings.hipFirePoint), 0.1f);
+            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint( gunConfig.aimSettings.hipFirePoint), 0.01f);
+            
+            Gizmos.color = Color.azure; 
+            Gizmos.DrawSphere(ItemInstance.transform.TransformPoint( gunConfig.ammoSettings.magazinePosition), 0.01f);
         }
 
         #endregion

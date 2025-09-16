@@ -541,7 +541,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Items.ItemHandler
   inventory:
-  - {fileID: 11400000, guid: 52b5bf1d08edbd849bf08a06527a2b67, type: 2}
   - {fileID: 11400000, guid: 34530e638e8ad534e91ce6bc5796dc88, type: 2}
 --- !u!1 &498536603
 GameObject:

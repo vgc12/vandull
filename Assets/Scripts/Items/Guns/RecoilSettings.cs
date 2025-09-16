@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using General;
+using UnityEngine;
 
-namespace Items.Guns.Recoil
+namespace Items.Guns
 {
-    [System.Serializable]
-    public class RecoilSettings
+  [CreateAssetMenu (fileName = "Recoil Settings", menuName = "Guns/Recoil Settings", order = 4)]
+    public class RecoilSettings : ScriptableObject , ICloneable
     {
         [Header("Visual Recoil (Camera)")]
         public float verticalRecoil = 2f;
@@ -24,5 +26,11 @@ namespace Items.Guns.Recoil
         public float maxRecoilMultiplier = 3f;
         public float recoilDecayRate = 2f;
         public float recoilEffectMultiplier;
+        public object Clone()
+        {
+            RecoilSettings config = CreateInstance<RecoilSettings>();
+            Utilities.CopyValues(this, config);
+            return config;
+        }
     }
 }

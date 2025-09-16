@@ -14,5 +14,8 @@ namespace Items.Guns
         void StopFire();
         void SetFireMode(FireType fireType);
         FireType CurrentFireType { get; }
+        
+        void Update();
+        void CycleFireMode();
     }
 }
