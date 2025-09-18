@@ -10,41 +10,128 @@ namespace Editor
     [CustomPropertyDrawer(typeof(RequiredAttribute))]
     public class RequiredPropertyDrawer : PropertyDrawer
     {
+        private bool IsScriptableObjectProperty(SerializedProperty property)
+        {
+            return property.propertyType == SerializedPropertyType.ObjectReference &&
+                   property.objectReferenceValue is ScriptableObject;
+        }
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             RequiredAttribute requiredAttribute = (RequiredAttribute)attribute;
-        
-            // Force the property field to use only single line height
-            Rect propertyRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
-        
-            // Use BeginProperty/EndProperty to ensure proper behavior
-            EditorGUI.BeginProperty(propertyRect, label, property);
-            EditorGUI.PropertyField(propertyRect, property, label);
-            EditorGUI.EndProperty();
-        
-            // Show error below
-            if (property.objectReferenceValue != null) return;
-            VandullLogger.LogError($"{property.name} is required but not assigned in the inspector.");
-            Rect helpBoxRect = new Rect(
-                position.x, 
-                position.y + EditorGUIUtility.singleLineHeight + 2,
-                position.width, 
-                EditorGUIUtility.singleLineHeight);
+            
+            EditorGUI.BeginProperty(position, label, property);
+
+            float currentY = position.y;
+            
+            // Handle ScriptableObject expansion if applicable
+            if (IsScriptableObjectProperty(property))
+            {
+                // Draw foldout and property field
+                property.isExpanded = EditorGUI.Foldout(
+                    new Rect(position.x, currentY, 15, EditorGUIUtility.singleLineHeight),
+                    property.isExpanded, GUIContent.none);
+
+                var objectRect = new Rect(position.x + 15, currentY, position.width - 15,
+                    EditorGUIUtility.singleLineHeight);
+                EditorGUI.PropertyField(objectRect, property, label, false);
                 
-            EditorGUI.HelpBox(helpBoxRect, requiredAttribute.ErrorMessage, MessageType.Error);
+                currentY += EditorGUIUtility.singleLineHeight;
+
+                // Draw expanded ScriptableObject properties
+                if (property.isExpanded && property.objectReferenceValue != null)
+                {
+                    var data = property.objectReferenceValue as ScriptableObject;
+                    if (data)
+                    {
+                        EditorGUI.indentLevel++;
+                        SerializedObject serializedObject = new SerializedObject(data);
+                        serializedObject.Update();
+
+                        SerializedProperty prop = serializedObject.GetIterator();
+                        if (prop.NextVisible(true))
+                        {
+                            do
+                            {
+                                if (prop.name == "m_Script") continue;
+
+                                var height = EditorGUI.GetPropertyHeight(prop, null, true);
+                                var propRect = new Rect(position.x, currentY, position.width, height);
+
+                                EditorGUI.BeginChangeCheck();
+                                EditorGUI.PropertyField(propRect, prop, true);
+                                currentY += height + EditorGUIUtility.standardVerticalSpacing;
+                            } while (prop.NextVisible(false));
+                        }
+
+                        if (serializedObject.hasModifiedProperties)
+                        {
+                            serializedObject.ApplyModifiedProperties();
+                            EditorUtility.SetDirty(data);
+                        }
+
+                        EditorGUI.indentLevel--;
+                    }
+                }
+            }
+            else
+            {
+                // Standard property field for non-ScriptableObject properties
+                Rect propertyRect = new Rect(position.x, currentY, position.width, EditorGUIUtility.singleLineHeight);
+                EditorGUI.PropertyField(propertyRect, property, label);
+                currentY += EditorGUIUtility.singleLineHeight;
+            }
+
+            EditorGUI.EndProperty();
+
+            // Show error below if property is null
+            if (property.objectReferenceValue == null)
+            {
+                VandullLogger.LogError($"{property.name} is required but not assigned in the inspector.");
+                Rect helpBoxRect = new Rect(
+                    position.x, 
+                    currentY + 2,
+                    position.width, 
+                    EditorGUIUtility.singleLineHeight);
+                    
+                EditorGUI.HelpBox(helpBoxRect, requiredAttribute.ErrorMessage, MessageType.Error);
+            }
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             float height = EditorGUIUtility.singleLineHeight; // Property field height
-        
+
+            // Add height for ScriptableObject expansion
+            if (IsScriptableObjectProperty(property) && property.isExpanded && property.objectReferenceValue != null)
+            {
+                var data = property.objectReferenceValue as ScriptableObject;
+                if (data != null)
+                {
+                    SerializedObject serializedObject = new SerializedObject(data);
+                    SerializedProperty prop = serializedObject.GetIterator();
+
+                    if (prop.NextVisible(true))
+                    {
+                        do
+                        {
+                            if (prop.name == "m_Script") continue;
+                            var propHeight = EditorGUI.GetPropertyHeight(prop, null, true);
+                            height += propHeight + EditorGUIUtility.standardVerticalSpacing;
+                        } while (prop.NextVisible(false));
+                    }
+                }
+            }
+
+            // Add height for error message if property is null
             if (property.objectReferenceValue == null)
             {
                 height += EditorGUIUtility.singleLineHeight + 2; // Error message height
             }
-        
+
             return height;
         }
     }
 }
+
 #endif

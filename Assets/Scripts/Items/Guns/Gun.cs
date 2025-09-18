@@ -18,7 +18,7 @@ namespace Items.Guns
       
         private Transform _recoilTransform;
         [SerializeField] private GunConfig gunConfig;
-        [SerializeField] private TrailConfig trailConfig;
+        [SerializeField, ScriptableObjectDropdown] private TrailConfig trailConfig;
         [SerializeField, Required] private GameObject magazinePrefab;
         
         [Header("Events")]
@@ -27,19 +27,11 @@ namespace Items.Guns
         public UnityEvent onReloadCompleted;
         public UnityEvent onAmmoChanged;
 
-        [Header("Systems")]
-        private IFireSystem _fireSystem;
-        private IAmmoSystem _ammoSystem;
-        private IAimingSystem _aimingSystem;
-        private TrailSystem _trailSystem;
-        private IRecoilSystem _recoilSystem;
+        private Transform _muzzleTransform;
         
 
         private bool _firePressed;
         private bool _aimToggled;
-
-
-  
       
 
         #region Unity Lifecycle
@@ -48,8 +40,8 @@ namespace Items.Guns
         {
             if(!IsEquipped ) return;
             
-            _fireSystem.Fire(context);
-    
+            FireSystem.Fire(context);
+            
         }
 
 
@@ -61,10 +53,10 @@ namespace Items.Guns
 
          protected override void OnUpdate()
         {
-            _recoilSystem.Update();
-            _aimingSystem.Update();
-            _fireSystem.Update();
-    
+            RecoilSystem.Update();
+            AimingSystem.Update();
+            FireSystem.Update();
+ 
         }
 
 
@@ -82,17 +74,23 @@ namespace Items.Guns
         {
             _recoilTransform = GameObject.FindWithTag("RecoilTransform").transform;
             
-            _trailSystem = new TrailSystem(trailConfig);
-            _ammoSystem = new AmmoSystem(gunConfig, MonoBehaviour, ItemInstance.transform, magazinePrefab);
-            _aimingSystem = new AimingSystem( gunConfig, ItemInstance.transform);
-            _recoilSystem = new RecoilSystem(gunConfig, _aimingSystem, _recoilTransform,  ItemInstance.transform, MonoBehaviour);
-            _fireSystem = new FireSystem(ItemInstance.transform, gunConfig,MonoBehaviour,_recoilSystem, _ammoSystem, _trailSystem);
+            _muzzleTransform = new GameObject("Muzzle").transform;
+            _muzzleTransform.SetParent(ItemInstance.transform);
+            _muzzleTransform.localPosition = gunConfig.aimSettings.muzzlePoint;
+            _muzzleTransform.localRotation = Quaternion.identity;
+            
+            
+            TrailSystem = new TrailSystem(trailConfig);
+            AmmoSystem = new AmmoSystem(gunConfig, MonoBehaviour, ItemInstance.transform, magazinePrefab);
+            AimingSystem = new AimingSystem( gunConfig, ItemInstance.transform);
+            RecoilSystem = new RecoilSystem(gunConfig, AimingSystem, _recoilTransform,  ItemInstance.transform, MonoBehaviour);
+            FireSystem = new FireSystem(ItemInstance.transform, gunConfig, _muzzleTransform, MonoBehaviour,RecoilSystem, AmmoSystem, TrailSystem);
           
           
-            _fireSystem.OnFired += HandleFired;
-            _ammoSystem.OnAmmoChanged += () => onAmmoChanged?.Invoke();
-            _ammoSystem.OnReloadStarted += () => onReloadStarted?.Invoke();
-            _ammoSystem.OnReloadCompleted += () => onReloadCompleted?.Invoke();
+            FireSystem.OnFired += HandleFired;
+            AmmoSystem.OnAmmoChanged += () => onAmmoChanged?.Invoke();
+            AmmoSystem.OnReloadStarted += () => onReloadStarted?.Invoke();
+            AmmoSystem.OnReloadCompleted += () => onReloadCompleted?.Invoke();
    
             
             InputManager = ItemInstance.GetComponentInParent<InputManager>();
@@ -110,6 +108,7 @@ namespace Items.Guns
             
            
         }
+        
 
         #endregion
        
@@ -147,18 +146,29 @@ namespace Items.Guns
 
         #region Public Interface
         
-        public bool CanFire=> _fireSystem.CanFire && !_ammoSystem.IsCurrentMagazineEmpty;
-        public bool IsAiming => _aimingSystem.IsAiming;
-        public bool IsReloading => _ammoSystem.IsReloading;
-        
+        public bool CanFire=> FireSystem.CanFire && !AmmoSystem.IsCurrentMagazineEmpty;
+        public bool IsAiming => AimingSystem.IsAiming;
+        public bool IsReloading => AmmoSystem.IsReloading;
+        public RecoilSystem RecoilSystem { get; private set; }
+
+        public AmmoSystem AmmoSystem { get; private set; }
+
+        [field: Header("Systems")]
+        public FireSystem FireSystem { get; private set; }
+
+        public AimingSystem AimingSystem { get; private set; }
+
+        public TrailSystem TrailSystem { get; private set; }
+
+
         public void StartReload()
         {
-            _ammoSystem.StartReload();
+            AmmoSystem.StartReload();
          
         }
 
-        public void StartAiming() => _aimingSystem.StartAiming();
-        public void StopAiming() => _aimingSystem.StopAiming();
+        public void StartAiming() => AimingSystem.StartAiming();
+        public void StopAiming() => AimingSystem.StopAiming();
 
         #endregion
 
@@ -177,9 +187,8 @@ namespace Items.Guns
         {
             
             Gizmos.color = Color.red;
-            var muzzleWorldPosition = ItemInstance.transform.TransformPoint( gunConfig.aimSettings.muzzlePoint);
-            Gizmos.DrawRay(muzzleWorldPosition, ItemInstance.transform.forward * gunConfig.damageSettings.range);
-
+            Gizmos.DrawRay(_muzzleTransform.position, _muzzleTransform.transform.forward * gunConfig.damageSettings.range);
+            
             Gizmos.color = Color.green;
             Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint(gunConfig.aimSettings.adsPosition), 0.01f);
             
@@ -188,6 +197,7 @@ namespace Items.Guns
             
             Gizmos.color = Color.azure; 
             Gizmos.DrawSphere(ItemInstance.transform.TransformPoint( gunConfig.ammoSettings.magazinePosition), 0.01f);
+            
         }
 
         #endregion
@@ -199,23 +209,23 @@ namespace Items.Guns
         {
             if (context.started )
             {
-                _fireSystem?.CycleFireMode();
+                FireSystem?.CycleFireMode();
             }
         }
         
         public FireType GetCurrentFireMode()
         {
-            return _fireSystem?.CurrentFireType ?? FireType.SemiAutomatic;
+            return FireSystem?.CurrentFireType ?? FireType.SemiAutomatic;
         }
 
         public void SetFireMode(FireType fireType)
         {
-            _fireSystem?.SetFireMode(fireType);
+            FireSystem?.SetFireMode(fireType);
         }
 
         public void CycleFireMode()
         {
-            _fireSystem.CycleFireMode();
+            FireSystem.CycleFireMode();
         }
 
         public IReadOnlyList<FireType> GetAvailableFireModes()

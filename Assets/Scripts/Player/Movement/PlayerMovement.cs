@@ -20,7 +20,7 @@ namespace Player.Movement
         [SerializeField, Required] private Transform crouchPositionTransform;
         [SerializeField, Required] private Transform headCheckTransform;
 
-        [Required, ScriptableObjectDropdown] public PlayerMovementConfig config;
+        [ScriptableObjectDropdown] public PlayerMovementConfig config;
 
 
         private Rigidbody _rigidbody;

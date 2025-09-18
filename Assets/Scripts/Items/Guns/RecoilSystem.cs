@@ -6,7 +6,7 @@ namespace Items.Guns.Recoil
     public class RecoilSystem : IRecoilSystem
     {
         private readonly GunConfig _config;
-        private readonly Transform _cameraTransform;
+        private readonly Transform _recoilTransform;
         private readonly Transform _gunTransform;
 
         private readonly MonoBehaviour _behaviour;
@@ -31,12 +31,14 @@ namespace Items.Guns.Recoil
 
         // Coroutines
         private Coroutine _recoilCoroutine;
+        
+        public Vector3 CurrentRecoil => _currentRecoil * _config.recoilSettings.recoilEffectMultiplier;
 
-        public RecoilSystem(GunConfig config, IAimingSystem aimingSystem, Transform cameraTransform,
+        public RecoilSystem(GunConfig config, IAimingSystem aimingSystem, Transform recoilTransform,
             Transform gunTransform, MonoBehaviour behaviour)
         {
             _config = config;
-            _cameraTransform = cameraTransform;
+            _recoilTransform = recoilTransform;
             _gunTransform = gunTransform;
             _behaviour = behaviour;
             _aimingSystem = aimingSystem;
@@ -44,10 +46,7 @@ namespace Items.Guns.Recoil
             // Store original positions
             _originalGunPosition = _gunTransform.localPosition;
             _originalGunRotation = _gunTransform.localEulerAngles;
-
-       
-
-
+            
         }
         
         
@@ -143,9 +142,9 @@ namespace Items.Guns.Recoil
                 Time.deltaTime * _config.recoilSettings.recoilSpeed);
 
             // Apply recoil to camera rotation
-            if (_cameraTransform)
+            if (_recoilTransform)
             {
-                _cameraTransform.localRotation = Quaternion.Euler(  _currentRecoil * _config.recoilSettings.recoilEffectMultiplier);
+                _recoilTransform.localRotation = Quaternion.Euler(  _currentRecoil * _config.recoilSettings.recoilEffectMultiplier);
 
             }
 

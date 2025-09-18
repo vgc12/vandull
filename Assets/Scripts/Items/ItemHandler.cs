@@ -12,10 +12,23 @@ namespace Items
 {
     public class ItemHandler : MonoBehaviour
     {
-
+        public static ItemHandler Instance { get; private set; }
         private Item _equippedItem;
+        public Item EquippedItem => _equippedItem;
        [SerializeField, Required] private List<Item> inventory = new();
         private InputManager _inputManager;
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(this);
+            }
+            else
+            {
+                Instance = this;
+            }
+        }
 
         private void Start()
         {

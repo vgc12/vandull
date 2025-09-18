@@ -1,4 +1,5 @@
-﻿using General;
+﻿using System;
+using General;
 using UnityEngine;
 
 namespace Items.Guns
@@ -55,13 +56,21 @@ namespace Items.Guns
             SubtractAmmo(1);
         }
 
+        private void Update()
+        {
+            if (transform.parent != null)
+            {
+                transform.localPosition = _ammoSettings.magazinePosition;
+            }
+        }
+
         public void Equip()
         {
             if (CheckErrors()) return;
             MeshRenderer.enabled = true;
-            
+            transform.SetParent(ParentTransform);            
             transform.localPosition = _ammoSettings.magazinePosition;
-            transform.localRotation = Quaternion.Euler(_ammoSettings.magazinePosition);
+            transform.localRotation = Quaternion.Euler(_ammoSettings.magazineRotation);
             _rigidbody.isKinematic = true;
             _collider.enabled = false;
             IsDropped = false;

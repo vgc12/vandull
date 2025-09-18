@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using General;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
@@ -16,7 +17,8 @@ namespace Items.Guns
         public event Action OnFireModeChanged; 
 
         private readonly GunConfig _config;
-        private readonly Vector3 _muzzlePoint;
+        private readonly Transform _muzzleTransform;
+
         private readonly Transform _transform;
         private readonly IAmmoSystem _ammoSystem;
         private readonly MonoBehaviour _behaviour;
@@ -45,15 +47,17 @@ namespace Items.Guns
         
         private IRecoilSystem _recoilSystem;
         private bool _fireButtonHeld;
+        
+        public Vector3 StartPoint { get; private set; }
 
-        public FireSystem(Transform transform, GunConfig config,  MonoBehaviour behaviour, IRecoilSystem recoilSystem,
+        public FireSystem(Transform transform, GunConfig config,  Transform muzzleTransform,MonoBehaviour behaviour, IRecoilSystem recoilSystem,
             IAmmoSystem ammoSystem, ITrailSystem trailSystem)
         {
             _trailSystem = trailSystem;
             _recoilSystem = recoilSystem;
             _transform = transform;
             _config = config;
-            _muzzlePoint = config.aimSettings.muzzlePoint;
+            _muzzleTransform = muzzleTransform;
             _ammoSystem = ammoSystem;
             _behaviour = behaviour;
 
@@ -188,7 +192,7 @@ namespace Items.Guns
 
         public void Update()
         {
-    
+            _muzzleTransform.transform.localPosition = _config.aimSettings.muzzlePoint;
             if (_currentFireType == FireType.Automatic && CanFire && _fireButtonHeld) 
                 PerformShot();
         }
@@ -219,22 +223,26 @@ namespace Items.Guns
             PerformRaycast();
             _recoilSystem.ApplyRecoil();
             
-            OnFired?.Invoke(_muzzlePoint + _transform.position, _config.damageSettings.damage);
+            OnFired?.Invoke(_muzzleTransform.position, _config.damageSettings.damage);
         }
 
         private void PerformRaycast()
         {
-            var startPoint = _transform.TransformPoint(_muzzlePoint);
+            var startPoint = _muzzleTransform.position;
+            var endPoint = startPoint + (_muzzleTransform.forward * _config.damageSettings.range);
+            
+            Debug.DrawLine(startPoint, endPoint, Color.cyan, 50f);
+            
             var hitCount = Physics.RaycastNonAlloc(
-                _transform.TransformPoint(_muzzlePoint),
-                _transform.forward,
+                startPoint,
+               _muzzleTransform.forward ,
                 _hitResults,
                 _config.damageSettings.range);
 
             if (hitCount <= 0)
             {
                 FireTrail(startPoint,
-                     _transform.forward * _config.damageSettings.range,
+                    endPoint,
                     new RaycastHit());
             
 
@@ -245,6 +253,8 @@ namespace Items.Guns
             ProcessHits(hitCount, startPoint);
         }
 
+      
+
         private void FireTrail(Vector3 startPoint, Vector3 endPoint, RaycastHit hit)
         {
             _behaviour.StartCoroutine(_trailSystem.SpawnTrail(startPoint, endPoint, hit));
@@ -252,14 +262,14 @@ namespace Items.Guns
         
         private void ProcessHits(int hitCount, Vector3 startPoint)
         {
-            for (int i = 0; i < hitCount; i++)
+            for (var i = 0; i < hitCount; i++)
             {
                 var hit = _hitResults[i];
                 FireTrail(startPoint, hit.point, hit);
                
                 if (hit.collider == null) continue;
 
-                Debug.DrawLine(_transform.TransformPoint(_muzzlePoint), hit.point, Color.yellow, 20f);
+                Debug.DrawLine(_muzzleTransform.transform.position, hit.point, Color.yellow, 20f);
 
                 VandullLogger.Log($"Hit {hit.collider.name} at distance {hit.distance}");
             }

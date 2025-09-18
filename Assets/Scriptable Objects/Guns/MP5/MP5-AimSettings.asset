@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: MP5-AimSettings
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.AimSettings
   adsTime: 0.3
-  muzzlePoint: {x: 0, y: 0, z: 0}
-  adsPosition: {x: 0, y: 0, z: 0}
-  hipFirePoint: {x: 0, y: 0, z: 0}
+  muzzlePoint: {x: 0, y: 0.045, z: 0.34}
+  adsPosition: {x: 0, y: -0.106, z: 0.12}
+  hipFirePoint: {x: 0.18, y: -0.17, z: 0.12}

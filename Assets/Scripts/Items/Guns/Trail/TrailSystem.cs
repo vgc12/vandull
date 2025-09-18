@@ -35,7 +35,9 @@ namespace Items.Guns.Trail
         public IEnumerator SpawnTrail(Vector3 startPoint, Vector3 endPoint, RaycastHit hit)
         {
              var instance = _trailPool.Get();
+            
             instance.gameObject.SetActive(true);
+            instance.Clear();
             instance.transform.position = startPoint;
             yield return null; 
 
@@ -43,13 +45,16 @@ namespace Items.Guns.Trail
 
             var distance = Vector3.Distance(startPoint, endPoint);
             var remainingDistance = distance;
+  
             while (remainingDistance > 0)
             {
+          
                 instance.transform.position = Vector3.Lerp(
                     startPoint,
                     endPoint,
-                    Mathf.Clamp01(1 - (remainingDistance / distance))
+                    Mathf.Clamp01(1 - remainingDistance / distance)
                 );
+     
                 remainingDistance -= _trailConfig.simulationSpeed * Time.deltaTime;
 
                 yield return null;
@@ -67,35 +72,7 @@ namespace Items.Guns.Trail
             instance.emitting = false;
             instance.gameObject.SetActive(false);
             _trailPool.Release(instance);
-//Debug.DrawLine(startPoint, endPoint, Color.blue, 1000f);
-/*
-            if (BulletPenConfig != null && BulletPenConfig.MaxObjectsToPenetrate > Iteration)
-            {
-                yield return null;
-                Vector3 direction = (EndPoint - StartPoint).normalized;
-                Vector3 backCastOrigin = Hit.point + direction * BulletPenConfig.MaxPenetrationDepth;
 
-                if (Physics.Raycast(
-                        backCastOrigin,
-                        -direction,
-                        out RaycastHit hit,
-                        BulletPenConfig.MaxPenetrationDepth,
-                        ShootConfig.HitMask
-                    ))
-                {
-                    Vector3 penetrationOrigin = hit.point;
-                    direction += new Vector3(
-                        Random.Range(-BulletPenConfig.AccuracyLoss.x, BulletPenConfig.AccuracyLoss.x),
-                        Random.Range(-BulletPenConfig.AccuracyLoss.y, BulletPenConfig.AccuracyLoss.y),
-                        Random.Range(-BulletPenConfig.AccuracyLoss.z, BulletPenConfig.AccuracyLoss.z)
-                    );
-
-                    DoHitscanShoot(direction, penetrationOrigin, penetrationOrigin, Iteration + 1);
-                }
-            }
-        
-        
-*/
         }
     }
     

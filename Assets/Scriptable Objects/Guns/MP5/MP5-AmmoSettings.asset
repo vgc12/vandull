@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcfd68b326674e4380feeaf80118dc35, type: 3}
   m_Name: MP5-AmmoSettings
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.AmmoSettings
-  magazineSize: 1
-  magazineCount: 4
+  magazineSize: 35
+  magazineCount: 10
   reloadTime: 2
-  magazinePosition: {x: 0, y: 0, z: 0}
-  magazineRotation: {x: 0, y: 0, z: 0}
+  magazinePosition: {x: 0, y: -0.07, z: 0.132}
+  magazineRotation: {x: 0, y: 90, z: 0}

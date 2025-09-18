@@ -6,11 +6,11 @@ namespace Items.Guns
     [Serializable]
     public class GunConfig
     {
-        [ScriptableObjectDropdown] public FireModeSettings fireModeSettings;
-        [ScriptableObjectDropdown] public AimSettings aimSettings;
-        [ScriptableObjectDropdown] public FiringSettings firingSettings;
-        [ScriptableObjectDropdown] public DamageSettings damageSettings;
-        [ScriptableObjectDropdown] public AmmoSettings ammoSettings;
-        [ScriptableObjectDropdown] public RecoilSettings recoilSettings;
+        [Required] public FireModeSettings fireModeSettings;
+        [Required] public AimSettings aimSettings;
+        [Required] public FiringSettings firingSettings;
+        [Required] public DamageSettings damageSettings;
+        [Required] public AmmoSettings ammoSettings;
+        [Required] public RecoilSettings recoilSettings;
     }
 }

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Editor
 {
-    [CustomPropertyDrawer(typeof(ScriptableObject), true)]
+    [CustomPropertyDrawer(typeof(ScriptableObjectDropdownAttribute), true)]
     public class ScriptableObjectDrawer : PropertyDrawer
     {
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

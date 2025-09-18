@@ -34,10 +34,11 @@ namespace Player.Looking
 
         public CameraBobber CameraBobber { get; private set; }
 
-        [Header("Configuration")] [SerializeField, Required, ScriptableObjectDropdown]
+        [Header("Configuration")] 
+        [Required, SerializeField]
         private PlayerLookingConfig config;
 
-        [ Required, ScriptableObjectDropdown] public SwayConfig swayConfig;
+        [Required] public SwayConfig swayConfig;
    
 
         [Header("Transforms")] [SerializeField, Required]
@@ -117,6 +118,7 @@ namespace Player.Looking
         }
 
 
+        
         public void Look()
         {
             var mouseX = _mouseDelta.x * Time.deltaTime * config.Sensitivity;

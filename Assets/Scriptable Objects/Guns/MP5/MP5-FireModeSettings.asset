@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6821bfe800fa4ab480177be32fa2db36, type: 3}
   m_Name: MP5-FireModeSettings
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.FireModeSettings
-  availableFireModes: 00000000
+  availableFireModes: 000000000100000002000000
   defaultFireType: 0

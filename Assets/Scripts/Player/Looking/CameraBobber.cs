@@ -9,7 +9,7 @@ namespace Player.Looking
     public class CameraBobber : MonoBehaviour
     {
         [Header("Configuration")]
-        [Required, ScriptableObjectDropdown] 
+        [Required] 
         public CameraBobConfig cameraBobConfig;
 
         [Header("Transform References")]

@@ -25,7 +25,8 @@ namespace Items.Guns
         public float recoilMultiplierPerShot = 1.2f;
         public float maxRecoilMultiplier = 3f;
         public float recoilDecayRate = 2f;
-        public float recoilEffectMultiplier;
+        [Range(1.0f, 5.0f)]
+        public float recoilEffectMultiplier = 1f;
         public object Clone()
         {
             RecoilSettings config = CreateInstance<RecoilSettings>();
