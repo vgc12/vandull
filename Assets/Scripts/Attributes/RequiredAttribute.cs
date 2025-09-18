@@ -8,7 +8,7 @@ namespace Attributes
         public RequiredAttribute()
         {
           
-            ErrorMessage =  "This field must be assigned in the inspector!";
+            ErrorMessage =  "This field must be assigned!";
         }
         
     }

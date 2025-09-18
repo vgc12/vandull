@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 505df34a3bc45724cbb4d9d51c10f3d0, type: 3}
   m_Name: SwayConfig
   m_EditorClassIdentifier: Assembly-CSharp::Player.Looking.SwayConfig
-  idleSway:
-    horizontalSwayAmount: 0.15
-    horizontalSwaySpeed: 0.45
-    verticalSwayAmount: 0.05
-    verticalSwaySpeed: 1.39
-    swayMultiplier: 1
+  horizontalSwayAmount: 0.75
+  horizontalSwaySpeed: 0.32
+  verticalSwayAmount: 0.23
+  verticalSwaySpeed: 0.47
+  swayMultiplier: 0.3

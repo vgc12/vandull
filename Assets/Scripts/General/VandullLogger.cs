@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace General
 {
-    public class Logger
+    public class VandullLogger
     {
-        public static void Log(string message,
+        public static void Log(object message,
             [CallerMemberName] string member = "",
             [CallerFilePath] string file = "",
             [CallerLineNumber] int line = 0)
@@ -14,7 +14,7 @@ namespace General
             Debug.Log($"[{Path.GetFileName(file)}:{line} - {member}] {message}");
         }
     
-        public static void LogWarning(string message,
+        public static void LogWarning(object message,
             [CallerMemberName] string member = "",
             [CallerFilePath] string file = "",
             [CallerLineNumber] int line = 0)
@@ -22,7 +22,7 @@ namespace General
             Debug.LogWarning($"[{Path.GetFileName(file)}:{line} - {member}] {message}");
         }
     
-        public static void LogError(string message,
+        public static void LogError(object message,
             [CallerMemberName] string member = "",
             [CallerFilePath] string file = "",
             [CallerLineNumber] int line = 0)

@@ -1,4 +1,5 @@
-﻿using StateMachine;
+﻿using General;
+using StateMachine;
 
 namespace Player.States
 {
@@ -18,7 +19,7 @@ namespace Player.States
         {
             _sm.PlayerMovement.ApplyDrag();
             _sm.PlayerLooking.Look();
-            var cameraEffects = _sm.PlayerLooking.CameraEffects;
+            var cameraEffects = _sm.PlayerLooking.CameraBobber;
             cameraEffects.CameraBob(cameraEffects.cameraBobConfig.walkConfig);
             _sm.PlayerLooking.Lean();
         }

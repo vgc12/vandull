@@ -17,7 +17,7 @@ namespace Player.States
             
             _sm.PlayerMovement.Jump();
             
-            Logger.Log("Jump");
+            VandullLogger.Log("Jump");
         }
         
         

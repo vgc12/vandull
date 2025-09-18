@@ -1,4 +1,5 @@
-﻿using StateMachine;
+﻿using General;
+using StateMachine;
 
 namespace Player.States
 {
@@ -13,21 +14,22 @@ namespace Player.States
 
         public override void Enter()
         {
-            _sm.PlayerLooking.CameraEffects.StopBobbing();
+            _sm.PlayerLooking.CameraBobber.StopBobbing();
         }
 
 
         public override void Update()
         {
+            
             _sm.PlayerMovement.ApplyDrag();
             
             _sm.PlayerLooking.Look();
         
-            var ce = _sm.PlayerLooking.CameraEffects;
+            var os = _sm.PlayerLooking.objectSwayer;
        
-       
+
             
-            ce.Sway(ce.swayConfig.IdleSway);
+            os.Sway(_sm.PlayerLooking.swayConfig);
             
             _sm.PlayerLooking.Lean();
         }

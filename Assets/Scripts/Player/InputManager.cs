@@ -11,6 +11,7 @@ namespace Player
         {
             InputActions = new PlayerInputActions();
             InputActions.Player.Enable();
+            
      
         }
 

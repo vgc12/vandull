@@ -6,26 +6,18 @@ using UnityEngine;
 namespace Player.Looking
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class CameraEffects : MonoBehaviour
+    public class CameraBobber : MonoBehaviour
     {
         [Header("Configuration")]
-        [Required, ScriptableObjectDropdown] 
+        [Required] 
         public CameraBobConfig cameraBobConfig;
-        
-        [Required, ScriptableObjectDropdown] 
-        public SwayConfig swayConfig;
 
         [Header("Transform References")]
         [SerializeField, Required] 
         private Transform cameraBobTransform;
-        
-        [SerializeField, Required] 
-        private Transform swayTransform;
-
 
         private Vector3 _initialPosition;
         private float _bobTimer;
-        private float _swayTimer;
         private Rigidbody _rigidBody;
         private Coroutine _bobCoroutine;
 
@@ -33,7 +25,7 @@ namespace Player.Looking
         [SerializeField] private  float movementThreshold = 0.1f;
         [SerializeField] private float positionLerpSpeed = 1000f;
         [SerializeField] private  float stopBobLerpSpeed = 10f;
-        [SerializeField] private  float swayLerpSpeed = 5f;
+       
         [SerializeField] private float positionSnapThreshold = 0.01f;
 
         private void Awake()
@@ -63,29 +55,13 @@ namespace Player.Looking
             _bobCoroutine = StartCoroutine(LerpToPosition(_initialPosition));
             _bobTimer = 0f;
         }
-
-        public void Sway(Sway sway)
-        {
-            var swayPosition = CalculateSwayPosition(sway);
-            swayTransform.localPosition = Vector3.Lerp(
-                swayTransform.localPosition, 
-                swayPosition, 
-                Time.deltaTime * swayLerpSpeed
-            );
-        }
-
-        private void Update()
-        {
-            _swayTimer += Time.deltaTime;
-        }
+        
 
         private void StopCurrentBobCoroutine()
         {
-            if (_bobCoroutine != null)
-            {
-                StopCoroutine(_bobCoroutine);
-                _bobCoroutine = null;
-            }
+            if (_bobCoroutine == null) return;
+            StopCoroutine(_bobCoroutine);
+            _bobCoroutine = null;
         }
 
         private void UpdateBobTimer(CameraBobSetting cameraBobSetting, float horizontalSpeed)
@@ -114,21 +90,7 @@ namespace Player.Looking
                 Time.deltaTime * positionLerpSpeed
             );
         }
-
-        private Vector3 CalculateSwayPosition(Sway sway)
-        {
-            var horizontalSway = Mathf.Cos(_swayTimer * sway.horizontalSwaySpeed) * 
-                                sway.horizontalSwayAmount * sway.swayMultiplier;
-            
-            var verticalSway = Mathf.Sin(_swayTimer * sway.verticalSwaySpeed) * 
-                              sway.verticalSwayAmount * sway.swayMultiplier;
-
-            return new Vector3(
-                horizontalSway,
-                verticalSway,
-                swayTransform.localPosition.z
-            );
-        }
+        
 
         private IEnumerator LerpToPosition(Vector3 targetPosition)
         {
