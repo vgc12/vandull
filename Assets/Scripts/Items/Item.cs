@@ -9,9 +9,9 @@ using UnityEngine.InputSystem;
 
 namespace Items
 {
-    public abstract class Item : ScriptableObject, IEquippable
+    public abstract class Item : MonoBehaviour, IEquippable
     {
-        protected bool IsEquipped;
+        public bool IsEquipped;
 
         [SerializeField] private string itemName;
 
@@ -19,15 +19,17 @@ namespace Items
 
         protected InputManager InputManager;
         protected abstract void OnUpdate();
-        protected MonoBehaviour MonoBehaviour;
-        [SerializeField] protected GameObject prefab;
-        protected GameObject ItemInstance { get; private set; }
+        public MonoBehaviour MonoBehaviour { get; private set; }
+
         
         
         public virtual bool OwnedByEnemy { get; set; }
-        
 
-        
+
+        private void Start()
+        {
+            
+        }
 
 
         public void Update()
@@ -39,14 +41,11 @@ namespace Items
         }
 
 
-        public virtual void Spawn(MonoBehaviour monoBehaviour, bool ownedByEnemy = false)
-    
+        public virtual void Awake()
         {
-            MonoBehaviour = monoBehaviour;
-            ItemInstance = Instantiate(prefab, monoBehaviour.transform);
-            OwnedByEnemy = ownedByEnemy;
+      
             if(OwnedByEnemy) return;
-            InputManager = monoBehaviour.GetComponentInParent<InputManager>();
+            InputManager = GetComponentInParent<InputManager>();
             InputManager.InputActions.Player.Attack.started += Use;
             InputManager.InputActions.Player.Attack.performed += Use;
             InputManager.InputActions.Player.Attack.canceled += Use;
@@ -59,22 +58,22 @@ namespace Items
             InputManager.InputActions.Player.Attack.performed -= Use;
             InputManager.InputActions.Player.Attack.canceled -= Use;
             
-            if (ItemInstance != null)
+            if (gameObject!= null)
             {
-                Destroy(ItemInstance);
+                Destroy(gameObject);
             }
         }
 
         public virtual void Equip()
         {
-            ItemInstance.SetActive(true);
+            gameObject.SetActive(true);
             IsEquipped = true;
         }
 
 
         public virtual void UnEquip()
         {
-            ItemInstance.SetActive(false);
+           gameObject.SetActive(false);
             IsEquipped = false;
         }
         

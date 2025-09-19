@@ -10,6 +10,7 @@ namespace Items.Guns
         public float fireRate = 0.2f; 
         public int burstCount = 3;
         public float burstDelay = 0.1f;
+        public Vector3 muzzlePoint;
 
 
         public object Clone()

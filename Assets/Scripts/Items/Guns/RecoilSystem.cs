@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using EventBus;
 using UnityEngine;
 
 namespace Items.Guns.Recoil
@@ -8,7 +9,7 @@ namespace Items.Guns.Recoil
         private readonly GunConfig _config;
         private readonly Transform _recoilTransform;
         private readonly Transform _gunTransform;
-
+        private readonly Gun _gun;
         private readonly MonoBehaviour _behaviour;
         private readonly IAimingSystem _aimingSystem;
 
@@ -34,14 +35,17 @@ namespace Items.Guns.Recoil
         
         public Vector3 CurrentRecoil => _currentRecoil * _config.recoilSettings.recoilEffectMultiplier;
 
-        public RecoilSystem(GunConfig config, IAimingSystem aimingSystem, Transform recoilTransform,
-            Transform gunTransform, MonoBehaviour behaviour)
+        private EventBinding<GunHandlerInitializedEvent> _aimDownSightsEventBinding;
+        
+        public RecoilSystem(Gun gun)
         {
-            _config = config;
-            _recoilTransform = recoilTransform;
-            _gunTransform = gunTransform;
-            _behaviour = behaviour;
-            _aimingSystem = aimingSystem;
+            _gun = gun;
+            _config = gun.gunConfig;
+            _recoilTransform = gun.recoilTransform;
+            
+            _gunTransform = gun.transform;
+            _behaviour = gun.MonoBehaviour;
+            _aimingSystem = gun.AimingSystem;
 
             // Store original positions
             _originalGunPosition = _gunTransform.localPosition;
@@ -50,7 +54,7 @@ namespace Items.Guns.Recoil
         }
         
         
-        
+
         public void ApplyRecoil()
         {
             if (_config.recoilSettings.useProgressiveRecoil)
@@ -155,9 +159,9 @@ namespace Items.Guns.Recoil
         private void ApplyGunRecoil()
         {
             // Get the desired base position from aiming system
-            Vector3 targetBasePosition = _aimingSystem.IsAiming ? 
-                _config.aimSettings.adsPosition : 
-                _config.aimSettings.hipFirePoint;
+            Vector3 targetBasePosition = _aimingSystem.IsAiming
+                ? _gun.adsTransform.localPosition
+                : _gun.hipFireTransform.localPosition;
     
             // Apply recoil offset
             Vector3 targetPosition = targetBasePosition + _targetGunRecoil;
@@ -178,5 +182,20 @@ namespace Items.Guns.Recoil
                 Time.deltaTime * _config.recoilSettings.physicalReturnSpeed);
         }
 
+    }
+
+    public class GunHandlerInitializedEvent : IEvent
+    {
+     
+        public Transform HipFireTransform { get; }
+        public Transform AdsTransform { get; }
+        public Transform RecoilTransform { get; }
+
+        public GunHandlerInitializedEvent( Transform hipFireTransform, Transform adsTransform, Transform recoilTransform)
+        {
+            this.HipFireTransform = hipFireTransform;
+            this.AdsTransform = adsTransform;
+            this.RecoilTransform = recoilTransform;
+        }
     }
 }

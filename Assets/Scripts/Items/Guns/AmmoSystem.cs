@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using EventBus;
 using General;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -12,15 +13,12 @@ namespace Items.Guns
 {
     public class AmmoSystem : IAmmoSystem
     {
-        public event Action OnAmmoChanged;
-        public event Action OnReloadStarted;
-        public event Action OnReloadCompleted;
-
+        
         private readonly GunConfig _config;
         private readonly List<Magazine> _magazines = new();
         private int _currentMagazineIndex;
         private bool _isReloading;
-        private MonoBehaviour _behaviour;
+        private readonly MonoBehaviour _behaviour;
         public bool IsCurrentMagazineEmpty => CurrentMagazine.IsEmpty;
         public bool IsReloading => _isReloading;
         public int CurrentAmmo => CurrentMagazine.CurrentAmmo;
@@ -28,18 +26,18 @@ namespace Items.Guns
 
         private Magazine CurrentMagazine => _magazines[_currentMagazineIndex];
         
-        private ObjectPool<Magazine> _magazinePool;
+        private readonly ObjectPool<Magazine> _magazinePool;
 
-        private GameObject _magazinePrefab;
+        private readonly GameObject _magazinePrefab;
         
-        private Transform _gunTransform;
+        private readonly Transform _gunTransform;
         
-        public AmmoSystem(GunConfig config, MonoBehaviour behaviour, Transform gunTransform, GameObject magazinePrefab)
+        public AmmoSystem(Gun gun)
         {
-            _config = config;
-            _gunTransform = gunTransform;
-            _behaviour = behaviour;
-            _magazinePrefab = magazinePrefab;
+            _config = gun.gunConfig;
+            _gunTransform = gun.transform;
+            _behaviour = gun.MonoBehaviour;
+            _magazinePrefab = gun.magazinePrefab;
             _magazinePool = new ObjectPool<Magazine>(CreateMagazine);
             InitializeMagazines();
           
@@ -82,8 +80,6 @@ namespace Items.Guns
             if (!CanReload) return;
 
             _isReloading = true;
-            OnReloadStarted?.Invoke();
-            
             
            _behaviour.StartCoroutine(ReloadRoutine());
         }
@@ -107,14 +103,26 @@ namespace Items.Guns
             VandullLogger.Log(this);
            EquipCurrentMagazine();
             
-            OnAmmoChanged?.Invoke();
-            OnReloadCompleted?.Invoke();
+           EventBus<ReloadEvent>.Raise(new ReloadEvent(CurrentMagazine));
+    
         }
-        
+
+        public class ReloadEvent : IEvent
+        {
+            public Magazine CurrentMagazine { get; }
+            
+            public ReloadEvent(Magazine currentMagazine)
+            {
+                CurrentMagazine = currentMagazine;
+            }
+            
+        }
+
+      
+
         public void ConsumeAmmo()
         {
             CurrentMagazine.SubtractOne();
-            OnAmmoChanged?.Invoke();
         }
 
         public override string ToString()

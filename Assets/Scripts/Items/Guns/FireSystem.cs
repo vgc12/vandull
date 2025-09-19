@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using EventBus;
 using General;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
@@ -14,7 +15,7 @@ namespace Items.Guns
 {
     public class FireSystem : IFireSystem
     {
-        public event Action<Vector3, float> OnFired;
+      
         public event Action OnFireModeChanged; 
 
         private readonly GunConfig _config;
@@ -51,29 +52,25 @@ namespace Items.Guns
         
         public Vector3 StartPoint { get; private set; }
 
-        public FireSystem(Transform transform, GunConfig config,  Transform muzzleTransform,MonoBehaviour behaviour, IRecoilSystem recoilSystem,
-            IAmmoSystem ammoSystem, ITrailSystem trailSystem)
+        public FireSystem(Gun gun)
         {
-            _trailSystem = trailSystem;
-            _recoilSystem = recoilSystem;
-            _transform = transform;
-            _config = config;
-            _muzzleTransform = muzzleTransform;
-            _ammoSystem = ammoSystem;
-            _behaviour = behaviour;
+            _trailSystem = gun.TrailSystem;
+            _recoilSystem = gun.RecoilSystem;
+            _transform = gun.transform;
+            _config = gun.gunConfig;
+            _muzzleTransform = gun.muzzleTransform;
+            _ammoSystem = gun.AmmoSystem;
+            _behaviour = gun.MonoBehaviour;
 
-            _availableFireModes = new List<FireType>(config.fireModeSettings.availableFireModes);
+            _availableFireModes = new List<FireType>(_config.fireModeSettings.availableFireModes);
             _currentFireType = _availableFireModes.Count > 0 ? _availableFireModes[0] : FireType.SemiAutomatic;
             _currentFireModeIndex = 0;
 
 
-            _burstCount = config.firingSettings.burstCount;
-            _burstDelay = config.firingSettings.burstDelay;
+            _burstCount = _config.firingSettings.burstCount;
+            _burstDelay = _config.firingSettings.burstDelay;
             
-            OnFired += (position, damage) =>
-            {
-                _lastFireTime = Time.time;
-            };
+         
         }
 
         public bool CanFire => Time.time > _lastFireTime + _config.firingSettings.fireRate &&  !_ammoSystem.IsReloading && !_ammoSystem.IsCurrentMagazineEmpty;
@@ -193,7 +190,7 @@ namespace Items.Guns
 
         public void Update()
         {
-            _muzzleTransform.transform.localPosition = _config.aimSettings.muzzlePoint;
+            _muzzleTransform.transform.localPosition = _config.firingSettings.muzzlePoint;
             if (_currentFireType == FireType.Automatic && CanFire && _fireButtonHeld) 
                 PerformShot();
         }
@@ -224,7 +221,7 @@ namespace Items.Guns
             PerformRaycast();
             _recoilSystem.ApplyRecoil();
             
-            OnFired?.Invoke(_muzzleTransform.position, _config.damageSettings.damage);
+        
         }
 
         private void PerformRaycast()
@@ -275,13 +272,25 @@ namespace Items.Guns
                     if (hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable))
                     {
                         damageable.TakeDamage(_config.damageSettings.damage * bodyPart.damageMultiplier);
-                        continue;
+                        EventBus<GunFiredEvent>.Raise(new GunFiredEvent(_transform.position, _config.damageSettings.damage));
                     }
                 }
              
             }
         }
        
+    }
+
+    internal class GunFiredEvent : IEvent
+    {
+        public Vector3 Position { get; }
+        public float Damage { get; }
+
+        public GunFiredEvent(Vector3 position, float damage)
+        {
+            Position = position;
+            Damage = damage;
+        }
     }
 }
 

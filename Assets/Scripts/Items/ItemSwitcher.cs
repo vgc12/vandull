@@ -1,4 +1,5 @@
 ﻿using System;
+using EventBus;
 using Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,6 +12,8 @@ namespace Items
         public static ItemSwitcher Instance { get; private set; }
         private ItemHandler _itemHandler;
         private InputManager _inputManager;
+        
+        private EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -20,6 +23,7 @@ namespace Items
             else
             {
                 Instance = this;
+               
             }
         }
 
@@ -33,6 +37,7 @@ namespace Items
         private void OnItemSwitched(InputAction.CallbackContext obj)
         {
             _itemHandler.SwitchItem((int)obj.ReadValue<float>());
+            EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_itemHandler.EquippedItem));
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using EventBus;
+﻿using Attributes;
+using EventBus;
+using Items.Guns.Recoil;
 using Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,13 +13,21 @@ namespace Items.Guns
         private Gun _currentGun;
         private bool _aimToggled;
         private EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
+        
+        [Required, SerializeField] private Transform hipFireTransform;
+        [Required, SerializeField] private Transform adsTransform;
+        [Required, SerializeField] private Transform recoilTransform;
         public void Start()
         {
             _inputManager = InputManager.Instance;
             _inputManager.InputActions.Player.Aim.started += OnAim;
             _itemSwitchedEventBinding = new EventBinding<ItemSwitchedEvent>(OnItemSwitched);
+         
             EventBus<ItemSwitchedEvent>.Register(_itemSwitchedEventBinding);
 
+            _currentGun.adsTransform = adsTransform;
+            _currentGun.hipFireTransform = hipFireTransform;
+            _currentGun.recoilTransform = recoilTransform;
         }
 
         private void OnItemSwitched(ItemSwitchedEvent obj)

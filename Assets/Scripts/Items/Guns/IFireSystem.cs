@@ -6,8 +6,6 @@ namespace Items.Guns
 {
     public interface IFireSystem
     {
-        event Action<Vector3, float> OnFired;
-        event Action OnFireModeChanged;
     
         bool CanFire { get; }
         void Fire(InputAction.CallbackContext context);

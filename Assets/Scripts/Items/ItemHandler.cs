@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Attributes;
+using EventBus;
 using General;
 using Items.Guns;
 using UnityEngine;
@@ -32,6 +33,7 @@ namespace Items
             
             _equippedItem = inventory.FirstOrDefault();
             _equippedItem?.Equip();
+            EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_equippedItem));
         }
         
         private void LogInventory()
@@ -56,7 +58,7 @@ namespace Items
 
         public void InitializeItem(Item item)
         {
-            item.Spawn(this);
+         
         }
   
         public void SwitchItem(int direction)

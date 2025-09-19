@@ -2,7 +2,7 @@
 
 namespace Items
 {
-    internal class ItemSwitchedEvent : IEvent
+    public class ItemSwitchedEvent : IEvent
     {
         public Item NewItem { get; set; }
         public ItemSwitchedEvent(Item newItem)

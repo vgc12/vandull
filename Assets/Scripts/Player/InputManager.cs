@@ -6,12 +6,21 @@ namespace Player
     {
         public PlayerInputActions InputActions { get; private set; }
 
+        public static InputManager Instance { get; private set; }
  
+        
         private void Awake()
         {
-            InputActions = new PlayerInputActions();
-            InputActions.Player.Enable();
-            
+            if (Instance != null && Instance != this)
+            {
+                Destroy(this);
+            }
+            else
+            {
+                Instance = this;
+                InputActions = new PlayerInputActions();
+                InputActions.Player.Enable();
+            }
      
         }
 

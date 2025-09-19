@@ -87,7 +87,7 @@ namespace Editor
             // Show error below if property is null
             if (property.objectReferenceValue == null)
             {
-                VandullLogger.LogError($"{property.name} is required but not assigned in the inspector.");
+        
                 Rect helpBoxRect = new Rect(
                     position.x, 
                     currentY + 2,

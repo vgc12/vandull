@@ -12,11 +12,11 @@ namespace NPC
     {
         
         [Required] public Gun gun;
+        [Required] public Transform gunHoldPoint;
 
         protected override void Awake()
         {
             base.Awake();
-            gun.Spawn(this, true);
             gun.Equip();
         }
 
@@ -25,9 +25,12 @@ namespace NPC
           
             var walkState = new EnemyWalkState(this);
             var idleState = new EnemyIdleState(this);
-            StateMachine.AddTransition(walkState, idleState,() => !CanWalk);
+            StateMachine.AddTransition(walkState, idleState,() => NavMeshAgent.remainingDistance <= NavMeshAgent.stoppingDistance && !NavMeshAgent.pathPending);
             StateMachine.AddTransition(idleState, walkState, () => CanWalk);
             StateMachine.SetState(idleState);
+            
+            //gun.hipFireTransform = gunHoldPoint;
+            //gun.adsTransform = gunHoldPoint;
             
         }
 

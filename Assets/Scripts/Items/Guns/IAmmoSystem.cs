@@ -4,9 +4,8 @@ namespace Items.Guns
 {
     public interface IAmmoSystem
     {
-        event Action OnAmmoChanged;
-        event Action OnReloadStarted;
-        event Action OnReloadCompleted;
+   
+
         
         bool IsCurrentMagazineEmpty { get; }
         bool IsReloading { get; }

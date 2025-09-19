@@ -3,10 +3,11 @@ using System.Collections;
 using General;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace NPC
 {
-    [RequireComponent(typeof(NavMeshAgent), typeof(Animator))]
+    [RequireComponent(typeof(NavMeshAgent))]
     public abstract class Npc : MonoBehaviour, IDamageable, IKillable
     {
         [SerializeField] private float health = 100;
@@ -25,8 +26,7 @@ namespace NPC
         [SerializeField] protected float maxIdleTime = 5f;
         
         protected abstract void InitializeStateMachine();
-        
-        private static readonly int RunBlendTree = Animator.StringToHash("RunBlendTree");
+   
         private static readonly int HorizontalMovement = Animator.StringToHash("HorizontalMovement");
         private static readonly int VerticalMovement = Animator.StringToHash("VerticalMovement");
         
@@ -35,7 +35,7 @@ namespace NPC
         {
             StateMachine = new StateMachine.StateMachine();
             NavMeshAgent = GetComponent<NavMeshAgent>();
-            Animator = GetComponent<Animator>();
+            Animator = GetComponentInChildren<Animator>();
             InitializeStateMachine();
         }
 
@@ -58,6 +58,42 @@ namespace NPC
         {
             NavMeshAgent.SetDestination(point);
         }
+        
+        
+
+
+            public bool MoveToRandomPositionAtDistance(float targetDistance, int maxAttempts)
+            {
+                Vector3 startPosition = transform.position;
+        
+                for (int i = 0; i < maxAttempts; i++)
+                {
+                    // Generate random direction
+                    Vector3 randomDirection = Random.insideUnitSphere;
+                    randomDirection.y = 0; // Keep on same Y level
+                    
+            
+                    // Calculate target position
+                    Vector3 targetPosition = startPosition + randomDirection * targetDistance;
+            
+                    // Check if position is on NavMesh
+                    NavMeshHit hit;
+                    if (NavMesh.SamplePosition(targetPosition, out hit, 2f, NavMesh.AllAreas))
+                    {
+                        // Verify the actual distance is close to desired
+                        float actualDistance = Vector3.Distance(startPosition, hit.position);
+                
+                        if (Mathf.Abs(actualDistance - targetDistance) < 0.5f) // tolerance
+                        {
+                            NavMeshAgent.SetDestination(hit.position);
+                            return true;
+                        }
+                    }
+                }
+        
+                return false; 
+            }
+        
         
         public void WalkToRandomPoint(float range)
         {
@@ -104,24 +140,25 @@ namespace NPC
         {
             if(NavMeshAgent.remainingDistance <= NavMeshAgent.stoppingDistance)
             {
-                NavMeshAgent.isStopped = true;
-                 CanWalk = false;
+                
             }
         }
         
         public void HandleAnimation()
         {
             Vector3 velocity = NavMeshAgent.velocity;
-            Vector3 localVelocity = transform.InverseTransformDirection(velocity);
+            Vector3 localVelocity = transform.InverseTransformDirection(velocity).normalized;
             float speed = velocity.magnitude;
 
+            if(localVelocity.x > 0.1f || localVelocity.x < -0.1f)
+                 VandullLogger.Log(localVelocity);
+        
             
         
             if (speed > 0.01f)
             {
-                Animator.SetFloat(HorizontalMovement, 1/localVelocity.x);
-                Animator.SetFloat(VerticalMovement, 1/localVelocity.z);
-                Animator.SetBool(RunBlendTree, true);
+                Animator.SetFloat(HorizontalMovement, localVelocity.x/2);
+                Animator.SetFloat(VerticalMovement, localVelocity.z/2);
             }
             else
             {

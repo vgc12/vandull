@@ -6,6 +6,8 @@ namespace Items.Guns
     public class AimingSystem : IAimingSystem
     {
         private readonly Transform _transform;
+        private readonly Transform _aimTransform;
+        private readonly Transform _hipFireTransform;
         private readonly GunConfig _config;
 
 
@@ -13,16 +15,16 @@ namespace Items.Guns
         public event Action OnAimStopped;
         public bool IsAiming { get; private set; }
 
-        public AimingSystem( GunConfig config, Transform transform)
+        public AimingSystem( Gun gun)
         {
-            _transform = transform;
-            _config = config;
-            
-          
-  
+            _transform = gun.transform;
+            _config = gun.gunConfig;
+            _aimTransform = gun.adsTransform;
+            _hipFireTransform = gun.hipFireTransform;
+
         }
 
-        public void StartAiming()
+        public void StartAiming( )
         {
             IsAiming = true;
             OnAimStarted?.Invoke();
@@ -36,8 +38,8 @@ namespace Items.Guns
 
         public void Update()
         {
-            _transform.localPosition = Vector3.Lerp(_transform.localPosition,
-                IsAiming ? _config.aimSettings.adsPosition : _config.aimSettings.hipFirePoint, Time.deltaTime * (1f / _config.aimSettings.adsTime));
+            _transform.position = Vector3.Lerp(_transform.position,
+                IsAiming ? _aimTransform.position : _hipFireTransform.position, Time.deltaTime * (1f / _config.aimSettings.adsTime));
         }
     }
 }

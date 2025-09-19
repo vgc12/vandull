@@ -1,41 +1,35 @@
+using System;
 using System.Collections.Generic;
 using Attributes;
+using EventBus;
 using General;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
-using Player;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 namespace Items.Guns
 {
-  
-    [CreateAssetMenu( fileName = "New Gun", menuName = "Items/Gun")]
     public sealed class Gun : Item
     {
         [Header("Gun Components")]
       
-        private Transform _recoilTransform;
-        [SerializeField] private GunConfig gunConfig;
-        
-        [SerializeField, ScriptableObjectDropdown] private TrailConfig trailConfig;
-        
-        [SerializeField, Required] private GameObject magazinePrefab;
-        
-        [Header("Events")]
-        public UnityEvent<Vector3, float> onFired;
-        public UnityEvent onReloadStarted;
-        public UnityEvent onReloadCompleted;
-        public UnityEvent onAmmoChanged;
-
-        private Transform _muzzleTransform;
-        
-
-        private bool _firePressed;
-        private bool _aimToggled;
       
-
+        public GunConfig gunConfig;
+        
+        [SerializeField, ScriptableObjectDropdown] public TrailConfig trailConfig;
+        
+        [SerializeField, Required] public GameObject magazinePrefab;
+        
+        
+        public Transform hipFireTransform;
+        public Transform adsTransform;
+        public Transform recoilTransform;
+        public Transform muzzleTransform;
+        
+        private EventBinding<GunHandlerInitializedEvent> _gunHandlerInitializedEventBinding;
+        
         #region Unity Lifecycle
 
         protected override void Use(InputAction.CallbackContext context)
@@ -47,9 +41,9 @@ namespace Items.Guns
         }
 
 
-        public override void Spawn(MonoBehaviour monoBehaviour, bool ownedByEnemy = false)
+        public override void Awake()
         {
-            base.Spawn(monoBehaviour, ownedByEnemy);
+            base.Awake();    
             InitializeSystems();
         }
 
@@ -74,80 +68,32 @@ namespace Items.Guns
 
         private void InitializeSystems()
         {
-            _recoilTransform = GameObject.FindWithTag("RecoilTransform").transform;
             
-            _muzzleTransform = new GameObject("Muzzle").transform;
-            _muzzleTransform.SetParent(ItemInstance.transform);
-            _muzzleTransform.localPosition = gunConfig.aimSettings.muzzlePoint;
-            _muzzleTransform.localRotation = Quaternion.identity;
+            muzzleTransform = new GameObject("Muzzle").transform;
+            muzzleTransform.SetParent(transform);
+            muzzleTransform.localPosition = gunConfig.firingSettings.muzzlePoint;
+            muzzleTransform.localRotation = Quaternion.identity;
             
             
             TrailSystem = new TrailSystem(trailConfig);
-            AmmoSystem = new AmmoSystem(gunConfig, MonoBehaviour, ItemInstance.transform, magazinePrefab);
-            AimingSystem = new AimingSystem( gunConfig, ItemInstance.transform);
-            RecoilSystem = new RecoilSystem(gunConfig, AimingSystem, _recoilTransform,  ItemInstance.transform, MonoBehaviour);
-            FireSystem = new FireSystem(ItemInstance.transform, gunConfig, _muzzleTransform, MonoBehaviour,RecoilSystem, AmmoSystem, TrailSystem);
-          
-          
-            FireSystem.OnFired += HandleFired;
-            AmmoSystem.OnAmmoChanged += () => onAmmoChanged?.Invoke();
-            AmmoSystem.OnReloadStarted += () => onReloadStarted?.Invoke();
-            AmmoSystem.OnReloadCompleted += () => onReloadCompleted?.Invoke();
+            AmmoSystem = new AmmoSystem(this);
+            AimingSystem = new AimingSystem( this);
+            RecoilSystem = new RecoilSystem(this);
+            FireSystem = new FireSystem(this);
 
-            if (!OwnedByEnemy)
-            {
-                InputManager = ItemInstance.GetComponentInParent<InputManager>();
-                InputManager.InputActions.Player.Aim.started += OnAim;
-                InputManager.InputActions.Player.Aim.performed += OnAim;
-                InputManager.InputActions.Player.Aim.canceled += OnAim;
-                InputManager.InputActions.Player.Reload.started += OnReload;
 
-                InputManager.InputActions.Player.SwitchFireMode.started += OnFireModeSwitch;
-            }
+            
 
             StartAiming();
             StopAiming();
+
             
-            ItemInstance.transform.localPosition = gunConfig.aimSettings.hipFirePoint;
-            
-           
+
         }
+
+
+        #endregion
         
-
-        #endregion
-       
-
-        #region Input Handling
-
-  
-
-        public void OnAim(InputAction.CallbackContext context)
-        {
-            if(!IsEquipped) return;
-            if (context.started)
-            {
-                _aimToggled = !_aimToggled;
-            }
-
-            if (_aimToggled && !IsReloading)
-            {
-                StartAiming();
-            }
-            else if (!_aimToggled)
-            {
-                StopAiming();
-            }
-        }
-
-        public void OnReload(InputAction.CallbackContext context)
-        {
-            if(!IsEquipped) return;
-            if (context.started)
-                StartReload();
-        }
-
-        #endregion
-
         #region Public Interface
         
         public bool CanFire=> FireSystem.CanFire && !AmmoSystem.IsCurrentMagazineEmpty;
@@ -171,19 +117,20 @@ namespace Items.Guns
          
         }
 
-        public void StartAiming() => AimingSystem.StartAiming();
-        public void StopAiming() => AimingSystem.StopAiming();
-
-        #endregion
-
-        #region Event Handlers
-
-        private void HandleFired(Vector3 position, float damage)
+        public void StartAiming()
         {
-            onFired?.Invoke(position, damage);
+            if(IsReloading || !IsEquipped) return;
+            AimingSystem.StartAiming();
+        }
+
+        public void StopAiming()
+        {
+            if(!IsEquipped) return;
+            AimingSystem.StopAiming();
         }
 
         #endregion
+
 
         #region Debug
 
@@ -191,16 +138,19 @@ namespace Items.Guns
         {
             
             Gizmos.color = Color.red;
-            Gizmos.DrawRay(_muzzleTransform.position, _muzzleTransform.transform.forward * gunConfig.damageSettings.range);
-            
-            Gizmos.color = Color.green;
-            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint(gunConfig.aimSettings.adsPosition), 0.01f);
-            
-            Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint( gunConfig.aimSettings.hipFirePoint), 0.01f);
+            Gizmos.DrawRay(muzzleTransform.position, muzzleTransform.transform.forward * gunConfig.damageSettings.range);
             
             Gizmos.color = Color.azure; 
-            Gizmos.DrawSphere(ItemInstance.transform.TransformPoint( gunConfig.ammoSettings.magazinePosition), 0.01f);
+            Gizmos.DrawSphere(transform.TransformPoint( gunConfig.ammoSettings.magazinePosition), 0.01f);
+            
+            if( hipFireTransform == null || adsTransform == null) return;
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(adsTransform.position, 0.01f);
+            
+            Gizmos.color = Color.blue;
+            Gizmos.DrawSphere(hipFireTransform.position, 0.01f);
+            
+
             
         }
 

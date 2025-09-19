@@ -14,7 +14,9 @@ namespace NPC
         
         public override void Enter()
         {
-            Npc.WalkToRandomPoint(10f);
+            float range = 10f;
+            int attempts = 30;
+            Npc.MoveToRandomPositionAtDistance(range, attempts);
             VandullLogger.Log("Walk");
         }
 
