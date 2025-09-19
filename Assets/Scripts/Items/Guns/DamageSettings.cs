@@ -7,7 +7,7 @@ namespace Items.Guns
    [CreateAssetMenu (fileName = "Damage Settings", menuName = "Guns/Damage Settings", order = 2)]
     public class DamageSettings : ScriptableObject, ICloneable
     {
-        public float damage = 100f;
+        public int damage = 100;
         public float range = 100f;
         public object Clone()
         {

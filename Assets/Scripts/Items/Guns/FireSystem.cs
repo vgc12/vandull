@@ -5,6 +5,7 @@ using System.Net;
 using General;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
+using NPC;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
@@ -101,7 +102,7 @@ namespace Items.Guns
                  StopAutomaticFire();
             }
             
-            VandullLogger.Log(context.started  + " " + context.performed + " " + context.canceled);
+//            VandullLogger.Log(context.started  + " " + context.performed + " " + context.canceled);
         }
 
         public void StopFire()
@@ -269,11 +270,23 @@ namespace Items.Guns
                
                 if (hit.collider == null) continue;
 
-                Debug.DrawLine(_muzzleTransform.transform.position, hit.point, Color.yellow, 20f);
-
-                VandullLogger.Log($"Hit {hit.collider.name} at distance {hit.distance}");
+                if(hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
+                {
+                    if (hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable))
+                    {
+                        damageable.TakeDamage(_config.damageSettings.damage * bodyPart.damageMultiplier);
+                        continue;
+                    }
+                }
+             
             }
         }
        
     }
+}
+
+[RequireComponent(typeof(Collider))]
+public class BodyPart : MonoBehaviour
+{
+    public float damageMultiplier = 1f;
 }

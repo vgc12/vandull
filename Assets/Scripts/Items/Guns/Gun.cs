@@ -12,13 +12,15 @@ namespace Items.Guns
 {
   
     [CreateAssetMenu( fileName = "New Gun", menuName = "Items/Gun")]
-    public class Gun : Item
+    public sealed class Gun : Item
     {
         [Header("Gun Components")]
       
         private Transform _recoilTransform;
         [SerializeField] private GunConfig gunConfig;
+        
         [SerializeField, ScriptableObjectDropdown] private TrailConfig trailConfig;
+        
         [SerializeField, Required] private GameObject magazinePrefab;
         
         [Header("Events")]
@@ -45,9 +47,9 @@ namespace Items.Guns
         }
 
 
-        public override void Spawn(MonoBehaviour monoBehaviour)
+        public override void Spawn(MonoBehaviour monoBehaviour, bool ownedByEnemy = false)
         {
-            base.Spawn(monoBehaviour);
+            base.Spawn(monoBehaviour, ownedByEnemy);
             InitializeSystems();
         }
 
@@ -91,16 +93,18 @@ namespace Items.Guns
             AmmoSystem.OnAmmoChanged += () => onAmmoChanged?.Invoke();
             AmmoSystem.OnReloadStarted += () => onReloadStarted?.Invoke();
             AmmoSystem.OnReloadCompleted += () => onReloadCompleted?.Invoke();
-   
-            
-            InputManager = ItemInstance.GetComponentInParent<InputManager>();
-            InputManager.InputActions.Player.Aim.started += OnAim;
-            InputManager.InputActions.Player.Aim.performed += OnAim;
-            InputManager.InputActions.Player.Aim.canceled += OnAim;
-            InputManager.InputActions.Player.Reload.started += OnReload;
 
-            InputManager.InputActions.Player.SwitchFireMode.started += OnFireModeSwitch;
-         
+            if (!OwnedByEnemy)
+            {
+                InputManager = ItemInstance.GetComponentInParent<InputManager>();
+                InputManager.InputActions.Player.Aim.started += OnAim;
+                InputManager.InputActions.Player.Aim.performed += OnAim;
+                InputManager.InputActions.Player.Aim.canceled += OnAim;
+                InputManager.InputActions.Player.Reload.started += OnReload;
+
+                InputManager.InputActions.Player.SwitchFireMode.started += OnFireModeSwitch;
+            }
+
             StartAiming();
             StopAiming();
             

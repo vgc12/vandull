@@ -67,6 +67,11 @@ namespace StateMachine
         {
             GetOrAddNode(from).AddTransition(GetOrAddNode(to).State, condition);
         }
+        
+        public void AddTransition(IState from, IState to, Func<bool> predicate)
+        {
+            AddTransition(from, to, new FuncPredicate(predicate));
+        }
 
         public void AddAnyTransition(IState to, Func<bool> predicate)
         {

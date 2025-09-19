@@ -4,43 +4,36 @@ using System.Linq;
 using Attributes;
 using General;
 using Items.Guns;
-using Player;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Items
 {
+    [Serializable]
     public class ItemHandler : MonoBehaviour
     {
-        public static ItemHandler Instance { get; private set; }
-        private Item _equippedItem;
+   
+        private Item _equippedItem; 
         public Item EquippedItem => _equippedItem;
-       [SerializeField, Required] private List<Item> inventory = new();
-        private InputManager _inputManager;
+        public List<Item> inventory = new List<Item>();
+   
 
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(this);
-            }
-            else
-            {
-                Instance = this;
-            }
-        }
+       
 
-        private void Start()
+   
+
+        // Call this from Awake() or Start() in your MonoBehaviour
+        public void Start()
         {
+            inventory ??= new List<Item>();
+            
+       
             LogInventory();
             SetUpItems();
+            
             _equippedItem = inventory.FirstOrDefault();
             _equippedItem?.Equip();
-            _inputManager = GetComponentInParent<InputManager>();
-            _inputManager.InputActions.Player.SwitchItem.performed += OnItemSwitched;
-     
         }
-
+        
         private void LogInventory()
         {
             Debug.Log("Current Inventory:");
@@ -66,16 +59,15 @@ namespace Items
             item.Spawn(this);
         }
   
-
-        private void OnItemSwitched(InputAction.CallbackContext obj)
+        public void SwitchItem(int direction)
         {
-            var direction = obj.ReadValue<float>();
             if (inventory.Count == 0) return;
             int currentIndex = inventory.IndexOf(_equippedItem);
-            int nextIndex = Math.Abs((currentIndex + (int)direction) % inventory.Count);
+            int nextIndex = Math.Abs((currentIndex + direction) % inventory.Count);
             EquipItem(inventory[nextIndex]);
         }
         
+
         private void EquipItem(Item item)
         {
             if (_equippedItem != null)

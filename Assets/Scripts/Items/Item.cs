@@ -23,6 +23,9 @@ namespace Items
         [SerializeField] protected GameObject prefab;
         protected GameObject ItemInstance { get; private set; }
         
+        
+        public virtual bool OwnedByEnemy { get; set; }
+        
 
         
 
@@ -36,12 +39,13 @@ namespace Items
         }
 
 
-        public virtual void Spawn(MonoBehaviour monoBehaviour)
+        public virtual void Spawn(MonoBehaviour monoBehaviour, bool ownedByEnemy = false)
+    
         {
             MonoBehaviour = monoBehaviour;
             ItemInstance = Instantiate(prefab, monoBehaviour.transform);
-        
-
+            OwnedByEnemy = ownedByEnemy;
+            if(OwnedByEnemy) return;
             InputManager = monoBehaviour.GetComponentInParent<InputManager>();
             InputManager.InputActions.Player.Attack.started += Use;
             InputManager.InputActions.Player.Attack.performed += Use;
