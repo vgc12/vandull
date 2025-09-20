@@ -1,4 +1,5 @@
 ﻿using System;
+using General;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
@@ -52,7 +53,7 @@ namespace Player
         }
 
         private bool IsGroundedAndNotCrouching =>
-            _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed && IsAtNormalHeight;
+            _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed ;
 
         private bool IsGroundedAndCrouching =>
             _groundChecker.IsGrounded && (PlayerMovement.CrouchPressed || !IsAtNormalHeight);
@@ -98,6 +99,8 @@ namespace Player
         private void Update()
         {
             _stateMachine.Update();
+            
+            VandullLogger.Log(  _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed && IsAtNormalHeight);
         }
 
         private void FixedUpdate()

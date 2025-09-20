@@ -16,7 +16,7 @@ namespace NPC
         {
             Npc.StopMoving();
             Npc.IdleWaitBeforeMoving();
-            VandullLogger.Log("Idle");
+      
         }
 
         public override void Update()

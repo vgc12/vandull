@@ -11,6 +11,12 @@ using Object = UnityEngine.Object;
 
 namespace Items.Guns
 {
+    
+
+    
+    
+    
+    
     public class AmmoSystem : IAmmoSystem
     {
         
@@ -36,7 +42,7 @@ namespace Items.Guns
         {
             _config = gun.gunConfig;
             _gunTransform = gun.transform;
-            _behaviour = gun.MonoBehaviour;
+            _behaviour = gun;
             _magazinePrefab = gun.magazinePrefab;
             _magazinePool = new ObjectPool<Magazine>(CreateMagazine);
             InitializeMagazines();

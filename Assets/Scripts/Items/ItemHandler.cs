@@ -15,31 +15,56 @@ namespace Items
    
         private Item _equippedItem; 
         public Item EquippedItem => _equippedItem;
-        public List<Item> inventory = new List<Item>();
-   
-
-       
+        [SerializeField, Required] public List<GameObject> prefabs = new List<GameObject>();
+        private List<Item> _inventory = new List<Item>();
+        public List<Item> Inventory
+        {
+            get => _inventory;
+            private set => _inventory = value;
+        }
+        
+        
+        [Required, SerializeField] private Transform hipFireTransform;
+        [Required, SerializeField] private Transform adsTransform;
+        [Required, SerializeField] private Transform recoilTransform;
 
    
 
         // Call this from Awake() or Start() in your MonoBehaviour
-        public void Start()
+        public void Awake()
         {
-            inventory ??= new List<Item>();
+            prefabs ??= new List<GameObject>();
             
-       
-            LogInventory();
+            _inventory ??= new List<Item>();
+
             SetUpItems();
+            LogPrefabs();
+         //   LogInventory();
             
-            _equippedItem = inventory.FirstOrDefault();
-            _equippedItem?.Equip();
+            _equippedItem = _inventory.FirstOrDefault();
+       
             EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_equippedItem));
+        }
+
+        private void Start()
+        {
+            _inventory.ForEach(i => i.Initialize(new GunInitializationData(hipFireTransform, adsTransform, recoilTransform)));
+          _equippedItem?.Equip();
+        }
+
+        private void LogPrefabs()
+        {
+            Debug.Log("Current Prefabs:");
+            foreach (var prefab in prefabs)
+            {
+                VandullLogger.Log(prefab.name);
+            }
         }
         
         private void LogInventory()
         {
             Debug.Log("Current Inventory:");
-            foreach (var item in inventory)
+            foreach (var item in _inventory)
             {
                VandullLogger.Log(item.name + (item == _equippedItem ? " (Equipped)" : ""));
             }
@@ -47,12 +72,25 @@ namespace Items
         
         public void SetUpItems()
         {
-            foreach (var i in inventory)
+            foreach (var i in prefabs)
             {
-                InitializeItem(i);
-                if(i == _equippedItem)
-                   continue;
-                i.UnEquip();
+                
+                var obj= Instantiate(i);
+                var item = obj.GetComponent<Item>();
+                _inventory.Add(item);
+                
+                if(item is Gun gun)
+                {
+                    gun.hipFireTransform = hipFireTransform;
+                    gun.adsTransform = adsTransform;
+                    gun.recoilTransform = recoilTransform;
+                }
+                
+                item.transform.SetParent(transform);
+                
+                item.UnEquip();
+               
+              
             }
         }
 
@@ -63,10 +101,10 @@ namespace Items
   
         public void SwitchItem(int direction)
         {
-            if (inventory.Count == 0) return;
-            int currentIndex = inventory.IndexOf(_equippedItem);
-            int nextIndex = Math.Abs((currentIndex + direction) % inventory.Count);
-            EquipItem(inventory[nextIndex]);
+            if (_inventory.Count == 0) return;
+            int currentIndex = _inventory.IndexOf(_equippedItem);
+            int nextIndex = Math.Abs((currentIndex + direction) % prefabs.Count);
+            EquipItem(_inventory[nextIndex]);
         }
         
 
@@ -78,14 +116,8 @@ namespace Items
             _equippedItem.Equip();
         }
 
-        private void Update()
-        {
-            _equippedItem.Update();
-        }
+   
 
-        private void OnDrawGizmos()
-        {
-            (_equippedItem as Gun)?.OnDrawGizmos();
-        }
+       
     }
 }

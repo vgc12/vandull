@@ -25,7 +25,7 @@ MonoBehaviour:
   initialHeight: 1
   initialCrouchCameraPosition: 1.62
   crouchSpeed: 0.15
-  crouchCheckRadius: 0.41
+  crouchCheckRadius: 0.31
   excludedLayers:
     serializedVersion: 2
     m_Bits: 118

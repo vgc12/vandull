@@ -1,4 +1,5 @@
-﻿using StateMachine;
+﻿using General;
+using StateMachine;
 
 namespace Player.States
 {
@@ -11,10 +12,21 @@ namespace Player.States
         public override void Enter()
         {
             _sm.PlayerMovement.Crouch();
+            VandullLogger.Log("Crouching");
         }
 
         public override void Update()
         {
+            _sm.PlayerMovement.ApplyDrag();
+            
+            _sm.PlayerLooking.Look();
+        
+            var os = _sm.PlayerLooking.objectSwayer;
+       
+
+            
+            os.Sway(_sm.PlayerLooking.swayConfig);
+            
             _sm.PlayerLooking.Lean();
         }
 

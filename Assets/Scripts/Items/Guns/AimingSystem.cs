@@ -6,10 +6,12 @@ namespace Items.Guns
     public class AimingSystem : IAimingSystem
     {
         private readonly Transform _transform;
-        private readonly Transform _aimTransform;
-        private readonly Transform _hipFireTransform;
         private readonly GunConfig _config;
 
+
+        public Transform HipFirePoint { get; }
+
+        public Transform AimFirePoint { get; }
 
         public event Action OnAimStarted;
         public event Action OnAimStopped;
@@ -19,8 +21,8 @@ namespace Items.Guns
         {
             _transform = gun.transform;
             _config = gun.gunConfig;
-            _aimTransform = gun.adsTransform;
-            _hipFireTransform = gun.hipFireTransform;
+            AimFirePoint = gun.adsTransform;
+            HipFirePoint = gun.hipFireTransform;
 
         }
 
@@ -39,7 +41,7 @@ namespace Items.Guns
         public void Update()
         {
             _transform.position = Vector3.Lerp(_transform.position,
-                IsAiming ? _aimTransform.position : _hipFireTransform.position, Time.deltaTime * (1f / _config.aimSettings.adsTime));
+                IsAiming ? AimFirePoint.position : HipFirePoint.position, Time.deltaTime * (1f / _config.aimSettings.adsTime));
         }
     }
 }

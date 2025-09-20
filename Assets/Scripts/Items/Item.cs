@@ -1,8 +1,7 @@
-﻿using System;
-using Attributes;
+﻿
+using Items.Guns;
 using Player;
-using Unity.VisualScripting;
-using UnityEditor.Animations;
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,26 +10,28 @@ namespace Items
 {
     public abstract class Item : MonoBehaviour, IEquippable
     {
-        public bool IsEquipped;
+        public bool IsEquipped { get; protected set; }
 
         [SerializeField] private string itemName;
 
-        protected abstract void Use(InputAction.CallbackContext context);
+        public abstract void Use(InputAction.CallbackContext ctx);
 
         protected InputManager InputManager;
         protected abstract void OnUpdate();
-        public MonoBehaviour MonoBehaviour { get; private set; }
-
         
         
-        public virtual bool OwnedByEnemy { get; set; }
+        public virtual bool OwnedByPlayer { get; set; }
 
+        public virtual void Initialize(IItemInitializationData initializationData)
 
-        private void Start()
         {
-            
+            if (!initializationData.OwnedByPlayer)
+            {
+                OwnedByPlayer = false;
+                return;
+            }
+       
         }
-
 
         public void Update()
         {
@@ -40,23 +41,9 @@ namespace Items
             }
         }
 
-
-        public virtual void Awake()
-        {
-      
-            if(OwnedByEnemy) return;
-            InputManager = GetComponentInParent<InputManager>();
-            InputManager.InputActions.Player.Attack.started += Use;
-            InputManager.InputActions.Player.Attack.performed += Use;
-            InputManager.InputActions.Player.Attack.canceled += Use;
-        }
-
-
         public virtual void Despawn()
         {
-            InputManager.InputActions.Player.Attack.started -= Use;
-            InputManager.InputActions.Player.Attack.performed -= Use;
-            InputManager.InputActions.Player.Attack.canceled -= Use;
+          
             
             if (gameObject!= null)
             {
@@ -73,10 +60,12 @@ namespace Items
 
         public virtual void UnEquip()
         {
+            
            gameObject.SetActive(false);
             IsEquipped = false;
         }
-        
-        
+
+
+ 
     }
 }

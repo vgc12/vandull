@@ -1,4 +1,5 @@
-﻿using StateMachine;
+﻿using General;
+using StateMachine;
 
 namespace Player.States
 {
@@ -11,6 +12,7 @@ namespace Player.States
         public override void Enter()
         {
             _sm.PlayerMovement.Crouch();
+            VandullLogger.Log("Crouch Walking");
         }
         
         public override void Update()
@@ -20,6 +22,7 @@ namespace Player.States
             var cameraEffects = _sm.PlayerLooking.CameraBobber;
             cameraEffects.CameraBob(cameraEffects.cameraBobConfig.crouchWalkConfig);
             _sm.PlayerLooking.Lean();
+           
         }
 
         public override void FixedUpdate()

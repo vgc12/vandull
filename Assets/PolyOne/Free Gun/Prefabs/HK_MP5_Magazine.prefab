@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2586042383514319209}
   - component: {fileID: 6776704196918337493}
   - component: {fileID: 4721149694527593523}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: HK_MP5_Magazine
   m_TagString: Untagged
   m_Icon: {fileID: 0}

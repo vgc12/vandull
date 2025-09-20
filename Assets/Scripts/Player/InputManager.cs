@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Player
@@ -24,5 +25,9 @@ namespace Player
      
         }
 
+        private void OnDisable()
+        {
+            InputActions.Player.Disable();
+        }
     }
 }

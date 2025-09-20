@@ -8,43 +8,42 @@ using UnityEngine;
 
 namespace NPC
 {
+    
     public class Enemy : Npc
     {
         
-        [Required] public Gun gun;
+        [SerializeField] private GameObject gunPrefab;
+        private Gun gun;
         [Required] public Transform gunHoldPoint;
+        public Vector3 gunRotationOffset;
 
-        protected override void Awake()
-        {
-            base.Awake();
-            gun.Equip();
-        }
+
 
         protected override void InitializeStateMachine()
         {
           
             var walkState = new EnemyWalkState(this);
             var idleState = new EnemyIdleState(this);
-            StateMachine.AddTransition(walkState, idleState,() => NavMeshAgent.remainingDistance <= NavMeshAgent.stoppingDistance && !NavMeshAgent.pathPending);
+            StateMachine.AddTransition(walkState, idleState,() => !NavMeshAgent.isActiveAndEnabled ||( NavMeshAgent.remainingDistance <= NavMeshAgent.stoppingDistance && !NavMeshAgent.pathPending));
             StateMachine.AddTransition(idleState, walkState, () => CanWalk);
             StateMachine.SetState(idleState);
-            
-            //gun.hipFireTransform = gunHoldPoint;
-            //gun.adsTransform = gunHoldPoint;
-            
+
+        
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            var gunObject = Instantiate(gunPrefab, gunHoldPoint, false);
+            gun = gunObject.GetComponent<Gun>();
+            gun.Initialize(new GunInitializationData(gunHoldPoint, gunHoldPoint, gunHoldPoint, false));
+            gun.Equip();
         }
 
         protected override void Update()
         {
             base.Update();
-            gun.Update();
-      
-        }
-
-        
-        public override void Die()
-        {
-            
+            gun.transform.rotation = gunHoldPoint.rotation;
         }
     }
 }

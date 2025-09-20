@@ -7,6 +7,9 @@ using Random = UnityEngine.Random;
 
 namespace NPC
 {
+    using UnityEngine;
+using System.Collections;
+
     [RequireComponent(typeof(NavMeshAgent))]
     public abstract class Npc : MonoBehaviour, IDamageable, IKillable
     {
@@ -17,6 +20,8 @@ namespace NPC
         protected StateMachine.StateMachine StateMachine;
 
         protected NavMeshAgent NavMeshAgent;
+        
+        protected RagdollController RagdollController;
 
         protected Animator Animator;
 
@@ -30,12 +35,15 @@ namespace NPC
         private static readonly int HorizontalMovement = Animator.StringToHash("HorizontalMovement");
         private static readonly int VerticalMovement = Animator.StringToHash("VerticalMovement");
         
+        private Collider[] _colliders;
+        
         
         protected virtual void Awake()
         {
             StateMachine = new StateMachine.StateMachine();
             NavMeshAgent = GetComponent<NavMeshAgent>();
             Animator = GetComponentInChildren<Animator>();
+            RagdollController = GetComponent<RagdollController>();
             InitializeStateMachine();
         }
 
@@ -51,7 +59,9 @@ namespace NPC
 
         public virtual void Die()
         {
-            Destroy(gameObject);
+            RagdollController.EnableRagdoll(true);
+            NavMeshAgent.enabled = false;
+         
         }
         
         public void WalkToPoint(Vector3 point)
@@ -64,6 +74,7 @@ namespace NPC
 
             public bool MoveToRandomPositionAtDistance(float targetDistance, int maxAttempts)
             {
+                if(!NavMeshAgent.isActiveAndEnabled) return false;
                 Vector3 startPosition = transform.position;
         
                 for (int i = 0; i < maxAttempts; i++)
@@ -83,7 +94,7 @@ namespace NPC
                         // Verify the actual distance is close to desired
                         float actualDistance = Vector3.Distance(startPosition, hit.position);
                 
-                        if (Mathf.Abs(actualDistance - targetDistance) < 0.5f) // tolerance
+                        if (Mathf.Abs(actualDistance - targetDistance) < 0.5f) 
                         {
                             NavMeshAgent.SetDestination(hit.position);
                             return true;
@@ -97,6 +108,7 @@ namespace NPC
         
         public void WalkToRandomPoint(float range)
         {
+            if(!NavMeshAgent.isActiveAndEnabled) return;
             Vector3 randomDirection = UnityEngine.Random.insideUnitSphere * range;
             randomDirection += transform.position;
             NavMeshHit navHit;
@@ -106,6 +118,7 @@ namespace NPC
 
         public virtual void StopMoving()
         {
+            if(!NavMeshAgent.isActiveAndEnabled) return;
             NavMeshAgent.SetDestination(transform.position);
             
         }
@@ -136,13 +149,7 @@ namespace NPC
             StateMachine.FixedUpdate();
         }
 
-        public void CheckRemainingDistance()
-        {
-            if(NavMeshAgent.remainingDistance <= NavMeshAgent.stoppingDistance)
-            {
-                
-            }
-        }
+
         
         public void HandleAnimation()
         {
@@ -150,8 +157,7 @@ namespace NPC
             Vector3 localVelocity = transform.InverseTransformDirection(velocity).normalized;
             float speed = velocity.magnitude;
 
-            if(localVelocity.x > 0.1f || localVelocity.x < -0.1f)
-                 VandullLogger.Log(localVelocity);
+       
         
             
         

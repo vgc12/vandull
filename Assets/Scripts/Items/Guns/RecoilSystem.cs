@@ -37,6 +37,13 @@ namespace Items.Guns.Recoil
 
         private EventBinding<GunHandlerInitializedEvent> _aimDownSightsEventBinding;
         
+        public RecoilSystem( Transform recoilTransform, GunConfig config, IAimingSystem aimingSystem)
+        {
+            _recoilTransform = recoilTransform;
+            _config = config;
+            
+        }
+        
         public RecoilSystem(Gun gun)
         {
             _gun = gun;
@@ -44,7 +51,7 @@ namespace Items.Guns.Recoil
             _recoilTransform = gun.recoilTransform;
             
             _gunTransform = gun.transform;
-            _behaviour = gun.MonoBehaviour;
+            _behaviour = gun;
             _aimingSystem = gun.AimingSystem;
 
             // Store original positions
@@ -160,8 +167,8 @@ namespace Items.Guns.Recoil
         {
             // Get the desired base position from aiming system
             Vector3 targetBasePosition = _aimingSystem.IsAiming
-                ? _gun.adsTransform.localPosition
-                : _gun.hipFireTransform.localPosition;
+                ? _aimingSystem.AimFirePoint.localPosition
+                : _aimingSystem.HipFirePoint.localPosition;
     
             // Apply recoil offset
             Vector3 targetPosition = targetBasePosition + _targetGunRecoil;

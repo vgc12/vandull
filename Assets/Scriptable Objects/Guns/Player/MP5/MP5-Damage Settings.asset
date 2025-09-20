@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 717a505ddf034049b262ae353b958c0d, type: 3}
   m_Name: MP5-Damage Settings
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.DamageSettings
-  damage: 100
+  damage: 35
   range: 100

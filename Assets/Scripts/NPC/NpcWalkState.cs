@@ -17,12 +17,12 @@ namespace NPC
             float range = 10f;
             int attempts = 30;
             Npc.MoveToRandomPositionAtDistance(range, attempts);
-            VandullLogger.Log("Walk");
+           
         }
 
         public override void Update()
         {
-            Npc.CheckRemainingDistance();
+        
             
            Npc.HandleAnimation();
         }

@@ -32,12 +32,19 @@ namespace Items
             _inputManager = GetComponentInParent<InputManager>();
             _inputManager.InputActions.Player.SwitchItem.performed += OnItemSwitched;
             _itemHandler = GetComponent<ItemHandler>();
+            EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_itemHandler.EquippedItem));
         }
 
         private void OnItemSwitched(InputAction.CallbackContext obj)
         {
             _itemHandler.SwitchItem((int)obj.ReadValue<float>());
             EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_itemHandler.EquippedItem));
+        }
+
+        private void OnDisable()
+        {
+            
+            _inputManager.InputActions.Player.SwitchItem.performed -= OnItemSwitched;
         }
     }
 }

@@ -52,6 +52,7 @@ namespace Items.Guns
         
         public Vector3 StartPoint { get; private set; }
 
+        
         public FireSystem(Gun gun)
         {
             _trailSystem = gun.TrailSystem;
@@ -60,7 +61,7 @@ namespace Items.Guns
             _config = gun.gunConfig;
             _muzzleTransform = gun.muzzleTransform;
             _ammoSystem = gun.AmmoSystem;
-            _behaviour = gun.MonoBehaviour;
+            _behaviour = gun;
 
             _availableFireModes = new List<FireType>(_config.fireModeSettings.availableFireModes);
             _currentFireType = _availableFireModes.Count > 0 ? _availableFireModes[0] : FireType.SemiAutomatic;
@@ -155,18 +156,16 @@ namespace Items.Guns
             if (_burstFireCoroutine != null) return;
             if (!CanFire) return;
 
-            _burstFireCoroutine = _behaviour.StartCoroutine(BurstFireRoutine());
+            _burstFireCoroutine = _behaviour.StartCoroutine(FireBurst());
         }
 
         private void StopAllFiring()
         {
             StopAutomaticFire();
 
-            if (_burstFireCoroutine != null)
-            {
-               _behaviour.StopCoroutine(_burstFireCoroutine);
-                _burstFireCoroutine = null;
-            }
+            if (_burstFireCoroutine == null) return;
+            _behaviour.StopCoroutine(_burstFireCoroutine);
+            _burstFireCoroutine = null;
         }
 
     
@@ -176,7 +175,8 @@ namespace Items.Guns
             while (CanFire)
             {
              
-                    PerformShot();
+                PerformShot();
+                
                 yield return new WaitForSeconds(_config.firingSettings.fireRate);
 
               
@@ -195,15 +195,14 @@ namespace Items.Guns
                 PerformShot();
         }
         
-        private IEnumerator BurstFireRoutine()
+        private IEnumerator FireBurst()
         {
-           
-
+            
             for (int i = 0; i < _burstCount && !_ammoSystem.IsCurrentMagazineEmpty; i++)
             {
                 PerformShot();
 
-                if (i < _burstCount - 1) // Don't wait after the last shot
+                if (i < _burstCount - 1)
                 {
                     yield return new WaitForSeconds(_burstDelay);
                 }
@@ -229,14 +228,13 @@ namespace Items.Guns
             var startPoint = _muzzleTransform.position;
             var endPoint = startPoint + (_muzzleTransform.forward * _config.damageSettings.range);
             
-            Debug.DrawLine(startPoint, endPoint, Color.cyan, 50f);
             
             var hitCount = Physics.RaycastNonAlloc(
                 startPoint,
                _muzzleTransform.forward ,
                 _hitResults,
-                _config.damageSettings.range);
-
+                _config.damageSettings.range,~LayerMask.GetMask("Ignore Raycast","Player"));
+  
             if (hitCount <= 0)
             {
                 FireTrail(startPoint,
@@ -266,7 +264,9 @@ namespace Items.Guns
                 FireTrail(startPoint, hit.point, hit);
                
                 if (hit.collider == null) continue;
-
+                
+                VandullLogger.Log("Hit: " + hit.collider.name);
+                
                 if(hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
                 {
                     if (hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable))

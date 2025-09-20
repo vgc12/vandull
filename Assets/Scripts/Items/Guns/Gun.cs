@@ -11,6 +11,25 @@ using UnityEngine.InputSystem;
 
 namespace Items.Guns
 {
+    public class GunInitializationData : IItemInitializationData
+    {
+        public readonly Transform HipFireTransform;
+        public readonly Transform AdsTransform;
+        public readonly Transform RecoilTransform;
+        
+        
+        public bool OwnedByPlayer { get; }
+        public GunInitializationData(Transform hipFireTransform, Transform adsTransform, Transform recoilTransform, bool ownedByPlayer = true)
+        {
+            HipFireTransform = hipFireTransform;
+            AdsTransform = adsTransform;
+            RecoilTransform = recoilTransform;
+            OwnedByPlayer = ownedByPlayer;
+        }
+
+        
+    }
+    
     public sealed class Gun : Item
     {
         [Header("Gun Components")]
@@ -23,36 +42,46 @@ namespace Items.Guns
         [SerializeField, Required] public GameObject magazinePrefab;
         
         
-        public Transform hipFireTransform;
-        public Transform adsTransform;
-        public Transform recoilTransform;
-        public Transform muzzleTransform;
+        [HideInInspector] public Transform hipFireTransform;
+        [HideInInspector]  public Transform adsTransform;
+        [HideInInspector] public Transform recoilTransform;
+        [HideInInspector]  public Transform muzzleTransform;
         
         private EventBinding<GunHandlerInitializedEvent> _gunHandlerInitializedEventBinding;
         
         #region Unity Lifecycle
 
-        protected override void Use(InputAction.CallbackContext context)
+        public override void Use(InputAction.CallbackContext ctx)
         {
             if(!IsEquipped ) return;
             
-            FireSystem.Fire(context);
+            FireSystem.Fire(ctx);
             
         }
 
 
-        public override void Awake()
+        public override void Initialize( IItemInitializationData initializationData )
         {
-            base.Awake();    
-            InitializeSystems();
+         
+            base.Initialize( initializationData );
+            if (initializationData is not GunInitializationData gunInitializationData)
+            {
+                VandullLogger.LogError("Invalid initialization data for Gun. Expected GunInitializationData.");
+                return;
+            }
+            
+            
+            InitializeSystems(gunInitializationData);
         }
 
-         protected override void OnUpdate()
+    
+
+        protected override void OnUpdate()
         {
             RecoilSystem.Update();
             AimingSystem.Update();
             FireSystem.Update();
- 
+            muzzleTransform.localPosition = gunConfig.firingSettings.muzzlePoint;
         }
 
 
@@ -66,7 +95,7 @@ namespace Items.Guns
         #region Initialization
 
 
-        private void InitializeSystems()
+        private void InitializeSystems(GunInitializationData initializationData)
         {
             
             muzzleTransform = new GameObject("Muzzle").transform;
@@ -74,6 +103,11 @@ namespace Items.Guns
             muzzleTransform.localPosition = gunConfig.firingSettings.muzzlePoint;
             muzzleTransform.localRotation = Quaternion.identity;
             
+            hipFireTransform = initializationData.HipFireTransform;
+            adsTransform = initializationData.AdsTransform;
+            recoilTransform = initializationData.RecoilTransform;
+            
+            transform.position = hipFireTransform.position;
             
             TrailSystem = new TrailSystem(trailConfig);
             AmmoSystem = new AmmoSystem(this);
@@ -87,8 +121,7 @@ namespace Items.Guns
             StartAiming();
             StopAiming();
 
-            
-
+      
         }
 
 
@@ -109,6 +142,7 @@ namespace Items.Guns
         public AimingSystem AimingSystem { get; private set; }
 
         public TrailSystem TrailSystem { get; private set; }
+
 
 
         public void StartReload()
