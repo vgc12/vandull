@@ -1,9 +1,9 @@
 ﻿namespace Items.Guns.Recoil
 {
-    public interface IRecoilSystem
+    public interface IRecoilSystem : IGunSystem
     {
         void ApplyRecoil();
-        void Update();
+
         void Reset();
     }
 }

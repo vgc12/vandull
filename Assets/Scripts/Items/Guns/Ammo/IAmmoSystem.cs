@@ -2,7 +2,7 @@
 
 namespace Items.Guns
 {
-    public interface IAmmoSystem
+    public interface IAmmoSystem : IGunSystem
     {
    
 
@@ -14,5 +14,8 @@ namespace Items.Guns
         void ConsumeAmmo();
         int CurrentAmmo { get; }
         int TotalAmmo { get; }
+
+        public event Action<ReloadEvent> OnReloadComplete;
+        public event Action OnOutOfAmmo;
     }
 }

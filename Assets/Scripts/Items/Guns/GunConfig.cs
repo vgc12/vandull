@@ -1,5 +1,7 @@
 ﻿using System;
 using Attributes;
+using Items.Guns.Trail;
+using UnityEngine;
 
 namespace Items.Guns
 {
@@ -12,5 +14,7 @@ namespace Items.Guns
         [Required] public DamageSettings damageSettings;
         [Required] public AmmoSettings ammoSettings;
         [Required] public RecoilSettings recoilSettings;
+        [Required] public TrailConfig trailConfig;
+     
     }
 }

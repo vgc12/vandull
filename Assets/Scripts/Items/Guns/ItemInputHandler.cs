@@ -2,6 +2,7 @@
 using Attributes;
 using EventBus;
 using General;
+using Items.Guns.Items.Guns;
 using Items.Guns.Recoil;
 using Player;
 using UnityEngine;

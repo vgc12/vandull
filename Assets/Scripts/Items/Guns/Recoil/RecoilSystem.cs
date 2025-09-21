@@ -9,9 +9,9 @@ namespace Items.Guns.Recoil
         private readonly GunConfig _config;
         private readonly Transform _recoilTransform;
         private readonly Transform _gunTransform;
-        private readonly Gun _gun;
         private readonly MonoBehaviour _behaviour;
-        private readonly IAimingSystem _aimingSystem;
+
+        private EventBinding<AimChangedEvent> _aimChangedEventBinding;
 
         // Camera recoil
         private Vector3 _currentRecoil;
@@ -35,32 +35,30 @@ namespace Items.Guns.Recoil
         
         public Vector3 CurrentRecoil => _currentRecoil * _config.recoilSettings.recoilEffectMultiplier;
 
-        private EventBinding<GunHandlerInitializedEvent> _aimDownSightsEventBinding;
+        private Vector3 _basePosition;
+    
         
-        public RecoilSystem( Transform recoilTransform, GunConfig config, IAimingSystem aimingSystem)
+     
+        public RecoilSystem(GunConfig config, Transform gunTransform, Transform recoilTransform, MonoBehaviour behaviour)
         {
-            _recoilTransform = recoilTransform;
             _config = config;
-            
-        }
-        
-        public RecoilSystem(Gun gun)
-        {
-            _gun = gun;
-            _config = gun.gunConfig;
-            _recoilTransform = gun.recoilTransform;
-            
-            _gunTransform = gun.transform;
-            _behaviour = gun;
-            _aimingSystem = gun.AimingSystem;
+            _recoilTransform = recoilTransform;
+            _gunTransform = gunTransform;
+            _behaviour = behaviour;
 
-            // Store original positions
+            _aimChangedEventBinding = new EventBinding<AimChangedEvent>(OnAimChanged);
+            EventBus<AimChangedEvent>.Register(_aimChangedEventBinding);
+            
             _originalGunPosition = _gunTransform.localPosition;
             _originalGunRotation = _gunTransform.localEulerAngles;
             
         }
-        
-        
+
+        private void OnAimChanged(AimChangedEvent obj)
+        {
+            _basePosition = obj.GunPosition.localPosition;;
+        }
+
 
         public void ApplyRecoil()
         {
@@ -148,41 +146,42 @@ namespace Items.Guns.Recoil
 
         private void ApplyCameraRecoil()
         {
-            // Smoothly interpolate current recoil towards target
+           
             _currentRecoil = Vector3.Slerp(_currentRecoil, _targetRecoil,
                 Time.deltaTime * _config.recoilSettings.recoilSpeed);
 
-            // Apply recoil to camera rotation
+           
             if (_recoilTransform)
             {
                 _recoilTransform.localRotation = Quaternion.Euler(  _currentRecoil * _config.recoilSettings.recoilEffectMultiplier);
 
             }
 
-            // Return to original position
+    
             _targetRecoil = Vector3.Lerp(_targetRecoil, Vector3.zero,
                 Time.deltaTime * _config.recoilSettings.returnSpeed);
         }
+        
+        
+        
         private void ApplyGunRecoil()
         {
-            // Get the desired base position from aiming system
-            Vector3 targetBasePosition = _aimingSystem.IsAiming
-                ? _aimingSystem.AimFirePoint.localPosition
-                : _aimingSystem.HipFirePoint.localPosition;
+
+            Vector3 targetBasePosition = _basePosition;
     
-            // Apply recoil offset
+
             Vector3 targetPosition = targetBasePosition + _targetGunRecoil;
     
-            // Lerp to target position (includes both aiming and recoil)
+   
             _gunTransform.localPosition = Vector3.Lerp(_gunTransform.localPosition, targetPosition,
                 Time.deltaTime * _config.recoilSettings.physicalRecoilSpeed);
     
-            // Handle rotation recoil
+    
             _currentGunRotationRecoil = Vector3.Lerp(_currentGunRotationRecoil, _targetGunRotationRecoil,
                 Time.deltaTime * _config.recoilSettings.physicalRecoilSpeed);
             _gunTransform.localRotation = Quaternion.Euler(_originalGunRotation + _currentGunRotationRecoil);
 
-            // Return recoil back to zero
+    
             _targetGunRecoil = Vector3.Lerp(_targetGunRecoil, Vector3.zero,
                 Time.deltaTime * _config.recoilSettings.physicalReturnSpeed);
             _targetGunRotationRecoil = Vector3.Lerp(_targetGunRotationRecoil, Vector3.zero,
@@ -191,18 +190,5 @@ namespace Items.Guns.Recoil
 
     }
 
-    public class GunHandlerInitializedEvent : IEvent
-    {
-     
-        public Transform HipFireTransform { get; }
-        public Transform AdsTransform { get; }
-        public Transform RecoilTransform { get; }
-
-        public GunHandlerInitializedEvent( Transform hipFireTransform, Transform adsTransform, Transform recoilTransform)
-        {
-            this.HipFireTransform = hipFireTransform;
-            this.AdsTransform = adsTransform;
-            this.RecoilTransform = recoilTransform;
-        }
-    }
+ 
 }

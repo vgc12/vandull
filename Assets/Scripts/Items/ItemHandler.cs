@@ -5,6 +5,9 @@ using Attributes;
 using EventBus;
 using General;
 using Items.Guns;
+using Items.Guns.Items.Guns;
+using Items.Guns.Items.Guns.Builder;
+using Items.Guns.Items.Guns.Dependencies;
 using UnityEngine;
 
 namespace Items
@@ -39,7 +42,7 @@ namespace Items
 
             SetUpItems();
             LogPrefabs();
-         //   LogInventory();
+    
             
             _equippedItem = _inventory.FirstOrDefault();
        
@@ -48,8 +51,24 @@ namespace Items
 
         private void Start()
         {
-            _inventory.ForEach(i => i.Initialize(new GunInitializationData(hipFireTransform, adsTransform, recoilTransform)));
-          _equippedItem?.Equip();
+            foreach (var i in _inventory)
+            {
+                if (i is not Gun gun) continue;
+                
+                var dependencyContainer = new GunDependencyContainer(
+                    gun.transform,
+                    gun.gunConfig,
+                    this,
+                    hipFireTransform,
+                    adsTransform,
+                    recoilTransform
+                );
+                var builder = new GunSystemsBuilder(dependencyContainer);
+                var gunSystems = builder.ForPlayer().Build();
+                
+                gun.Initialize(gunSystems);
+            }
+            _equippedItem?.Equip();
         }
 
         private void LogPrefabs()
@@ -78,13 +97,6 @@ namespace Items
                 var obj= Instantiate(i);
                 var item = obj.GetComponent<Item>();
                 _inventory.Add(item);
-                
-                if(item is Gun gun)
-                {
-                    gun.hipFireTransform = hipFireTransform;
-                    gun.adsTransform = adsTransform;
-                    gun.recoilTransform = recoilTransform;
-                }
                 
                 item.transform.SetParent(transform);
                 

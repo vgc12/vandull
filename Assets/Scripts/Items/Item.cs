@@ -19,20 +19,6 @@ namespace Items
         protected InputManager InputManager;
         protected abstract void OnUpdate();
         
-        
-        public virtual bool OwnedByPlayer { get; set; }
-
-        public virtual void Initialize(IItemInitializationData initializationData)
-
-        {
-            if (!initializationData.OwnedByPlayer)
-            {
-                OwnedByPlayer = false;
-                return;
-            }
-       
-        }
-
         public void Update()
         {
             if (IsEquipped)

@@ -1,10 +1,9 @@
 ﻿using System;
-using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Items.Guns
 {
-    public interface IFireSystem
+    public interface IFireSystem : IGunSystem
     {
     
         bool CanFire { get; }
@@ -13,7 +12,7 @@ namespace Items.Guns
         void SetFireMode(FireType fireType);
         FireType CurrentFireType { get; }
         
-        void Update();
         void CycleFireMode();
+        void OnOutOfAmmo();
     }
 }

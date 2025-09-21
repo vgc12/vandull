@@ -74,12 +74,10 @@ namespace Items.Guns.Trail
             _trailPool.Release(instance);
 
         }
-    }
-    
-    
-    public interface ITrailSystem
-    {
-        
-        IEnumerator SpawnTrail(Vector3 start, Vector3 end, RaycastHit hit);
+
+        public void Update()
+        {
+            
+        }
     }
 }

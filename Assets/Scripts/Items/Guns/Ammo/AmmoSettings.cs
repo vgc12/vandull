@@ -15,5 +15,7 @@ namespace Items.Guns
         
         public Vector3 magazinePosition;
         public Vector3 magazineRotation;
+        
+        public GameObject magazinePrefab;
     }
 }

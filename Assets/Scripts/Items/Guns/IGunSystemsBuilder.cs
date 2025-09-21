@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using Items.Guns.Items.Guns.Builder;
+using Items.Guns.Recoil;
+using Items.Guns.Trail;
+
+namespace Items.Guns
+{
+    public interface IGunSystemsBuilder
+    {
+        IGunSystemsBuilder WithFireSystem(Func<List<Action<ShotFiredEvent>>, IFireSystem> fireSystemFactory = null);
+        IGunSystemsBuilder WithAimingSystem(Func<IAimingSystem> aimingSystemFactory = null);
+        IGunSystemsBuilder WithAmmoSystem(Func<IAmmoSystem> ammoSystemFactory = null);
+        IGunSystemsBuilder WithRecoilSystem(Func<IRecoilSystem> recoilSystemFactory = null);
+        IGunSystemsBuilder WithTrailSystem(Func<ITrailSystem> trailSystemFactory = null);
+        IGunSystemsBuilder AddShotFiredHandler(Action<ShotFiredEvent> handler);
+        IGunSystemsBuilder AddAmmoOutHandler(Action onOutOfAmmo);
+        GunSystems Build();
+    }
+}

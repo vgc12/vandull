@@ -22,7 +22,6 @@ namespace Items.Guns
         private readonly Transform _muzzleTransform;
 
         private readonly Transform _transform;
-        private readonly IAmmoSystem _ammoSystem;
         private readonly MonoBehaviour _behaviour;
         private readonly RaycastHit[] _hitResults = new RaycastHit[10];
 
@@ -31,7 +30,7 @@ namespace Items.Guns
         private Coroutine _autoFireCoroutine;
         private Coroutine _burstFireCoroutine;
 
-        // Fire mode properties
+  
         private FireType _currentFireType;
         private readonly List<FireType> _availableFireModes;
         private int _currentFireModeIndex;
@@ -43,41 +42,67 @@ namespace Items.Guns
         public FireType CurrentFireType => _currentFireType;
         public IReadOnlyList<FireType> AvailableFireModes => _availableFireModes;
 
-        private ITrailSystem _trailSystem;
+
         
         private float _lastFireTime;
         
-        private IRecoilSystem _recoilSystem;
+       
         private bool _fireButtonHeld;
         
         public Vector3 StartPoint { get; private set; }
-
         
-        public FireSystem(Gun gun)
+        public event Action<ShotFiredEvent> OnShotFired;
+        
+        
+        
+        private bool _isOutOfAmmo;
+        
+        public FireSystem(
+            GunConfig config,
+            Transform gunTransform,
+            MonoBehaviour behaviour,
+            List<Action<ShotFiredEvent>> onShotFired = null
+           )
         {
-            _trailSystem = gun.TrailSystem;
-            _recoilSystem = gun.RecoilSystem;
-            _transform = gun.transform;
-            _config = gun.gunConfig;
-            _muzzleTransform = gun.muzzleTransform;
-            _ammoSystem = gun.AmmoSystem;
-            _behaviour = gun;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+            
+            var go = new GameObject("MuzzlePoint");
+            _muzzleTransform = go.transform;
+            _muzzleTransform.SetParent(gunTransform, false);
+            _muzzleTransform.localPosition = _config.firingSettings.muzzlePoint;
+            
+            _transform = gunTransform ?? throw new ArgumentNullException(nameof(gunTransform));
+   
+            _behaviour = behaviour ?? throw new ArgumentNullException(nameof(behaviour));
+          
 
             _availableFireModes = new List<FireType>(_config.fireModeSettings.availableFireModes);
             _currentFireType = _availableFireModes.Count > 0 ? _availableFireModes[0] : FireType.SemiAutomatic;
             _currentFireModeIndex = 0;
-
-
             _burstCount = _config.firingSettings.burstCount;
             _burstDelay = _config.firingSettings.burstDelay;
-            
-         
+            if (onShotFired == null) return;
+            foreach (var action in onShotFired)
+            {
+                OnShotFired += action;
+            }
         }
-
-        public bool CanFire => Time.time > _lastFireTime + _config.firingSettings.fireRate &&  !_ammoSystem.IsReloading && !_ammoSystem.IsCurrentMagazineEmpty;
-
+        
         
 
+        public bool CanFire => Time.time > _lastFireTime + _config.firingSettings.fireRate &&  !_isOutOfAmmo ;
+
+        
+        public void OnOutOfAmmo()
+        {
+            _isOutOfAmmo = true;
+        }
+        
+        public void OnReloadEnded()
+        {
+            _isOutOfAmmo = false;
+        }
+        
         public void Fire(InputAction.CallbackContext context)
         {
         
@@ -190,7 +215,6 @@ namespace Items.Guns
 
         public void Update()
         {
-            _muzzleTransform.transform.localPosition = _config.firingSettings.muzzlePoint;
             if (_currentFireType == FireType.Automatic && CanFire && _fireButtonHeld) 
                 PerformShot();
         }
@@ -198,7 +222,7 @@ namespace Items.Guns
         private IEnumerator FireBurst()
         {
             
-            for (int i = 0; i < _burstCount && !_ammoSystem.IsCurrentMagazineEmpty; i++)
+            for (int i = 0; i < _burstCount && !_isOutOfAmmo; i++)
             {
                 PerformShot();
 
@@ -216,9 +240,9 @@ namespace Items.Guns
 
         private void PerformShot()
         {
-            _ammoSystem.ConsumeAmmo();
+            
             PerformRaycast();
-            _recoilSystem.ApplyRecoil();
+            
             
         
         }
@@ -237,60 +261,41 @@ namespace Items.Guns
   
             if (hitCount <= 0)
             {
-                FireTrail(startPoint,
-                    endPoint,
-                    new RaycastHit());
-            
+               
+                OnShotFired?.Invoke( new ShotFiredEvent(startPoint, endPoint, new RaycastHit() ));
 
                 return;
             }
 
+           
 
             ProcessHits(hitCount, startPoint);
         }
 
-      
-
-        private void FireTrail(Vector3 startPoint, Vector3 endPoint, RaycastHit hit)
-        {
-            _behaviour.StartCoroutine(_trailSystem.SpawnTrail(startPoint, endPoint, hit));
-        }
+        
         
         private void ProcessHits(int hitCount, Vector3 startPoint)
         {
             for (var i = 0; i < hitCount; i++)
             {
                 var hit = _hitResults[i];
-                FireTrail(startPoint, hit.point, hit);
+             
                
                 if (hit.collider == null) continue;
+                OnShotFired?.Invoke( new ShotFiredEvent(startPoint, hit.point, hit ));
                 
                 VandullLogger.Log("Hit: " + hit.collider.name);
+
+                if (!hit.collider.TryGetComponent<BodyPart>(out var bodyPart)) continue;
                 
-                if(hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
-                {
-                    if (hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable))
-                    {
-                        damageable.TakeDamage(_config.damageSettings.damage * bodyPart.damageMultiplier);
-                        EventBus<GunFiredEvent>.Raise(new GunFiredEvent(_transform.position, _config.damageSettings.damage));
-                    }
-                }
-             
+                if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable)) continue;
+                
+                damageable.TakeDamage(_config.damageSettings.damage * bodyPart.damageMultiplier);
+                EventBus<GunFiredEvent>.Raise(new GunFiredEvent(_transform.position, _config.damageSettings.damage));
+
             }
         }
        
-    }
-
-    internal class GunFiredEvent : IEvent
-    {
-        public Vector3 Position { get; }
-        public float Damage { get; }
-
-        public GunFiredEvent(Vector3 position, float damage)
-        {
-            Position = position;
-            Damage = damage;
-        }
     }
 }
 

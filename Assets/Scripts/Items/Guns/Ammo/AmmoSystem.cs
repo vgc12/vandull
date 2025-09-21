@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using EventBus;
 using General;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -29,6 +28,8 @@ namespace Items.Guns
         public bool IsReloading => _isReloading;
         public int CurrentAmmo => CurrentMagazine.CurrentAmmo;
         public int TotalAmmo => _magazines.Count * _config.ammoSettings.magazineSize;
+        public event Action<ReloadEvent> OnReloadComplete;
+        public event Action OnOutOfAmmo;
 
         private Magazine CurrentMagazine => _magazines[_currentMagazineIndex];
         
@@ -38,15 +39,19 @@ namespace Items.Guns
         
         private readonly Transform _gunTransform;
         
-        public AmmoSystem(Gun gun)
+  
+        
+        
+        
+        public AmmoSystem(Transform gunTransform, GunConfig config, MonoBehaviour behaviour)
         {
-            _config = gun.gunConfig;
-            _gunTransform = gun.transform;
-            _behaviour = gun;
-            _magazinePrefab = gun.magazinePrefab;
+            _config = config;
+            _gunTransform = gunTransform;
+            _behaviour = behaviour;
+            _magazinePrefab = config.ammoSettings.magazinePrefab;
             _magazinePool = new ObjectPool<Magazine>(CreateMagazine);
+            
             InitializeMagazines();
-          
         }
 
         private Magazine CreateMagazine()
@@ -107,33 +112,38 @@ namespace Items.Guns
             _isReloading = false;
             
             VandullLogger.Log(this);
-           EquipCurrentMagazine();
+            EquipCurrentMagazine();
             
-           EventBus<ReloadEvent>.Raise(new ReloadEvent(CurrentMagazine));
+            OnReloadComplete?.Invoke(new ReloadEvent(currentMag));
     
         }
 
-        public class ReloadEvent : IEvent
-        {
-            public Magazine CurrentMagazine { get; }
-            
-            public ReloadEvent(Magazine currentMagazine)
-            {
-                CurrentMagazine = currentMagazine;
-            }
-            
-        }
+
 
       
 
         public void ConsumeAmmo()
         {
-            CurrentMagazine.SubtractOne();
+          
+            if (!IsCurrentMagazineEmpty)
+            {
+                CurrentMagazine.SubtractOne();
+            }
+            else
+            {
+                OnOutOfAmmo?.Invoke();
+            }
+            
         }
 
         public override string ToString()
         {
             return GetAllMagsStatus();
+        }
+
+        public void Update()
+        {
+            
         }
 
         public string GetAllMagsStatus()
