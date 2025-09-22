@@ -267,6 +267,13 @@ namespace Items.Guns
                 }
             };
 
+            ammoSystem.OnReloadComplete += (r) =>
+            {
+                foreach (var firemode in fireModeSystem.AvailableFireModes)
+                {
+                    firemode.OnReloadEnded();
+                }
+            };
       
             // Add custom ammo out handlers
             foreach (var handler in _onAmmoOut)

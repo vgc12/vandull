@@ -19,5 +19,6 @@ namespace Items.Guns.Firing
         void StopFire();
         
         void OnOutOfAmmo();
+        void OnReloadEnded();
     }
 }

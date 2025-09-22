@@ -21,6 +21,8 @@ namespace Items.Guns
         {
             switch (command)
             {
+                case FireCommand.SingleShot:
+                    break;
                 case FireCommand.StartAutomaticFire:
                     StartAutomaticFire();
                     break;
@@ -62,7 +64,7 @@ namespace Items.Guns
 
         private IEnumerator AutomaticFireRoutine()
         {
-            while (_fireButtonHeld && !IsOutOfAmmo)
+            while ( !IsOutOfAmmo)
             {
                 if (CanFire)
                 {
