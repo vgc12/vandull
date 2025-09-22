@@ -14,8 +14,6 @@ namespace Items
 
         [SerializeField] private string itemName;
 
-        public abstract void Use(InputAction.CallbackContext ctx);
-
         protected InputManager InputManager;
         protected abstract void OnUpdate();
         

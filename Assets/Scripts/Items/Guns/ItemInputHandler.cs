@@ -63,8 +63,19 @@ namespace Items.Guns
 
         private void Use(InputAction.CallbackContext obj)
         {
-            if(_currentItem == null) return;
-            _currentItem.Use(obj);
+            if(_currentItem is not Gun gun) return;
+            if (obj.started)
+            {
+                gun.ExecuteSingleShot();
+            }
+            else if (obj.performed)
+            {
+                gun.StartAutomaticFire();
+            }
+            else if (obj.canceled)
+            {
+                gun.StopAutomaticFire();
+            }
         }
 
         private void OnItemSwitched(ItemSwitchedEvent obj)

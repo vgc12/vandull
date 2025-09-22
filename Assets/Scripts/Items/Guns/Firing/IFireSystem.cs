@@ -1,18 +1,23 @@
 ﻿using System;
-using UnityEngine.InputSystem;
 
-namespace Items.Guns
+namespace Items.Guns.Firing
 {
+    public enum FireCommand
+    {
+        StartAutomaticFire,
+        StopAutomaticFire,
+        SingleShot
+    }
+    
     public interface IFireSystem : IGunSystem
     {
-    
+
+        event Action<ShotFiredEvent> OnShotFired;
+        void ExecuteFireCommand(FireCommand command);
         bool CanFire { get; }
-        void Fire(InputAction.CallbackContext context);
+        void Fire();
         void StopFire();
-        void SetFireMode(FireType fireType);
-        FireType CurrentFireType { get; }
         
-        void CycleFireMode();
         void OnOutOfAmmo();
     }
 }

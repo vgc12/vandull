@@ -3,11 +3,11 @@ using StateMachine;
 
 namespace NPC
 {
-    public abstract class NpcIdleState : BaseState
+    public abstract class NpcIdleState : NpcState
     {
         protected readonly Npc Npc;
 
-        protected NpcIdleState(Npc npc)
+        protected NpcIdleState(Npc npc) : base(npc)
         {
             Npc = npc;
         }

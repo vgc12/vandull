@@ -2223,6 +2223,7 @@ GameObject:
   - component: {fileID: 1961306330}
   - component: {fileID: 1961306329}
   - component: {fileID: 1961306332}
+  - component: {fileID: 1961306333}
   m_Layer: 9
   m_Name: Enemy
   m_TagString: Untagged
@@ -2246,6 +2247,7 @@ MonoBehaviour:
   minIdleTime: 2
   maxIdleTime: 5
   gunPrefab: {fileID: 1753336143291387222, guid: a61a8351bd3c2a149accc4427fa9e14d, type: 3}
+  playerDetector: {fileID: 1961306333}
   gunHoldPoint: {fileID: 1635582618}
   gunRotationOffset: {x: 0, y: -208.6, z: 0}
 --- !u!195 &1961306330
@@ -2301,6 +2303,22 @@ MonoBehaviour:
   animator: {fileID: 5866666021841766764}
   ragdollBones: []
   transitionDuration: 0.5
+--- !u!114 &1961306333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1961306328}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54b5a1d056ef498696a5caa0ac48524c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPC.PlayerDetector
+  detectionAngle: 60
+  detectionRange: 10
+  innerDetectionRange: 5
+  detectionCooldown: 1
 --- !u!1 &1964602097
 GameObject:
   m_ObjectHideFlags: 0
@@ -2505,7 +2523,7 @@ GameObject:
   - component: {fileID: 2126911739}
   m_Layer: 6
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

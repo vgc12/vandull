@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Attributes;
 using EventBus;
+using Items.Guns.Firing;
 using Items.Guns.Items.Guns.Builder;
 using Items.Guns.Items.Guns.Dependencies;
 using Items.Guns.Recoil;
@@ -26,18 +27,15 @@ namespace Items.Guns
         
         private GunSystems _gunSystems;
 
-  
-        public IFireSystem FireSystem { get; private set; }
+        
         public IAimingSystem AimingSystem { get; private set; }
         public IAmmoSystem AmmoSystem { get; private set; }
         public IRecoilSystem RecoilSystem { get; private set; }
         public ITrailSystem TrailSystem { get; private set; }
+        
+        public IFireModeSystem FireModeSystem { get; private set; }
 
-        public override void Use(InputAction.CallbackContext ctx)
-        {
-            if (!IsEquipped) return;
-            FireSystem?.Fire(ctx);
-        }
+      
 
         public void Initialize(GunSystems systems)
         {
@@ -53,7 +51,7 @@ namespace Items.Guns
             AmmoSystem = _gunSystems.AmmoSystem;
             AimingSystem = _gunSystems.AimingSystem;
             RecoilSystem = _gunSystems.RecoilSystem;
-            FireSystem = _gunSystems.FireSystem;
+            FireModeSystem = _gunSystems.FireModeSystem;
 
            
             StartAiming();
@@ -64,13 +62,12 @@ namespace Items.Guns
         {
             RecoilSystem?.Update();
             AimingSystem?.Update();
-            FireSystem?.Update();
+            FireModeSystem?.Update();
             AmmoSystem?.Update();
             TrailSystem?.Update();
         }
+        
 
-        // Public interface remains the same
-        public bool CanFire => FireSystem.CanFire && !AmmoSystem.IsCurrentMagazineEmpty;
         public bool IsAiming => AimingSystem.IsAiming;
         public bool IsReloading => AmmoSystem.IsReloading;
 
@@ -86,50 +83,23 @@ namespace Items.Guns
             AimingSystem.StopAiming();
         }
 
-        public void OnFireModeSwitch(InputAction.CallbackContext context)
-        {
-            if (context.started)
-            {
-                FireSystem?.CycleFireMode();
-            }
-        }
 
-        public FireType GetCurrentFireMode() => FireSystem?.CurrentFireType ?? FireType.SemiAutomatic;
-        public void SetFireMode(FireType fireType) => FireSystem?.SetFireMode(fireType);
-        public void CycleFireMode() => FireSystem.CycleFireMode();
         public IReadOnlyList<FireType> GetAvailableFireModes() => gunConfig.fireModeSettings.availableFireModes;
 
-        // Debug methods remain the same
-        public void OnDrawGizmos()
+ 
+        public void ExecuteSingleShot()
         {
-            DrawDebugGizmos();
+           FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.SingleShot);
         }
-
-        private void DrawDebugGizmos()
+        public void StartAutomaticFire()
         {
-            /*
-            if (muzzleTransform != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawRay(muzzleTransform.position, muzzleTransform.transform.forward * gunConfig.damageSettings.range);
-            }
-            
-            Gizmos.color = Color.azure; 
-            Gizmos.DrawSphere(transform.TransformPoint(gunConfig.ammoSettings.magazinePosition), 0.01f);
-            
-            if (hipFireTransform != null)
-            {
-                Gizmos.color = Color.blue;
-                Gizmos.DrawSphere(hipFireTransform.position, 0.01f);
-            }
-            
-            if (adsTransform != null)
-            {
-                Gizmos.color = Color.green;
-                Gizmos.DrawSphere(adsTransform.position, 0.01f);
-            }
-            */
+            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StartAutomaticFire);
         }
+        public void StopAutomaticFire()
+        {
+            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StopAutomaticFire);
+        }
+        
 
         public void OnShotFired(ShotFiredEvent shot)
         {
@@ -139,9 +109,27 @@ namespace Items.Guns
 
         public void OnOutOfAmmo()
         {
-            FireSystem?.OnOutOfAmmo();
+            FireModeSystem.CurrentFireSystem?.OnOutOfAmmo();
+        }
+
+        public void CycleFireMode()
+        {
+            FireModeSystem.CycleFireMode();
         }
     }
 }
     
+}
+
+namespace Items.Guns
+{
+    public interface IFireModeSystem : IGunSystem
+    {
+
+        IFireSystem CurrentFireSystem { get; }
+        IReadOnlyList<IFireSystem> AvailableFireModes { get; }
+
+        void CycleFireMode();
+     
+    }
 }

@@ -1,0 +1,78 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using Items.Guns.Firing;
+using UnityEngine;
+
+namespace Items.Guns
+{
+    public class AutomaticFireMode : BaseFireMode
+    {
+        private Coroutine _autoFireCoroutine;
+        private bool _fireButtonHeld;
+
+        public AutomaticFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(config, gunTransform, behaviour, onShotFiredSubscribers)
+        {
+        }
+
+
+        public override void ExecuteFireCommand(FireCommand command)
+        {
+            switch (command)
+            {
+                case FireCommand.StartAutomaticFire:
+                    StartAutomaticFire();
+                    break;
+                case FireCommand.StopAutomaticFire:
+                    StopFire();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(command), command, null);
+            }
+        }
+
+        public override void Fire()
+        {
+            
+        }
+
+
+        public override void StopFire()
+        {
+           
+            if (_autoFireCoroutine == null) return;
+            Behaviour.StopCoroutine(_autoFireCoroutine);
+            _autoFireCoroutine = null;
+        }
+
+        public override void Update()
+        {
+            
+        }
+
+        private void StartAutomaticFire()
+        {
+            if (_autoFireCoroutine != null) return;
+            if (!CanFire) return;
+
+            _autoFireCoroutine = Behaviour.StartCoroutine(AutomaticFireRoutine());
+        }
+
+
+        private IEnumerator AutomaticFireRoutine()
+        {
+            while (_fireButtonHeld && !IsOutOfAmmo)
+            {
+                if (CanFire)
+                {
+                    PerformShot();
+                }
+                
+                yield return new WaitForSeconds(Config.firingSettings.fireRate);
+            }
+
+            _autoFireCoroutine = null;
+        }
+    }
+}

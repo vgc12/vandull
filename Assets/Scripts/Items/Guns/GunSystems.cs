@@ -1,11 +1,12 @@
-﻿using Items.Guns.Recoil;
+﻿using System.Collections.Generic;
+using Items.Guns.Recoil;
 using Items.Guns.Trail;
 
-namespace Items.Guns.Items.Guns.Builder
+namespace Items.Guns
 {
     public struct GunSystems
     {
-        public IFireSystem FireSystem;
+        public IFireModeSystem FireModeSystem;
         public IAimingSystem AimingSystem;
         public IAmmoSystem AmmoSystem;
         public IRecoilSystem RecoilSystem;

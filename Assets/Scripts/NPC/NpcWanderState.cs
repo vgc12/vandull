@@ -3,14 +3,24 @@ using StateMachine;
 
 namespace NPC
 {
-    public abstract class NpcWalkState : BaseState
+    public class NpcState : BaseState
     {
         protected readonly Npc Npc;
 
-        protected NpcWalkState(Npc npc)
+        protected NpcState(Npc npc)
         {
             Npc = npc;
         }
+    }
+    
+    public abstract class NpcWanderState : NpcState
+    {
+        
+        protected NpcWanderState(Npc npc) : base(npc)
+        {
+            
+        }
+        
         
         public override void Enter()
         {
@@ -19,6 +29,7 @@ namespace NPC
             Npc.MoveToRandomPositionAtDistance(range, attempts);
            
         }
+        
 
         public override void Update()
         {

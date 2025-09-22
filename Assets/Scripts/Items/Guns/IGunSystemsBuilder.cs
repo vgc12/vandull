@@ -8,7 +8,7 @@ namespace Items.Guns
 {
     public interface IGunSystemsBuilder
     {
-        IGunSystemsBuilder WithFireSystem(Func<List<Action<ShotFiredEvent>>, IFireSystem> fireSystemFactory = null);
+     
         IGunSystemsBuilder WithAimingSystem(Func<IAimingSystem> aimingSystemFactory = null);
         IGunSystemsBuilder WithAmmoSystem(Func<IAmmoSystem> ammoSystemFactory = null);
         IGunSystemsBuilder WithRecoilSystem(Func<IRecoilSystem> recoilSystemFactory = null);
