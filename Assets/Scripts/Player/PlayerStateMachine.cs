@@ -100,7 +100,7 @@ namespace Player
         {
             _stateMachine.Update();
             
-            VandullLogger.Log(  _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed && IsAtNormalHeight);
+
         }
 
         private void FixedUpdate()

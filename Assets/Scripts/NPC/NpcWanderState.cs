@@ -35,7 +35,7 @@ namespace NPC
         {
         
             
-           Npc.HandleAnimation();
+          // Npc.HandleAnimation();
         }
 
         public override void FixedUpdate()

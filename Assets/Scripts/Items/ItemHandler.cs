@@ -63,10 +63,10 @@ namespace Items
                     adsTransform,
                     recoilTransform
                 );
-                var builder = new GunSystemsBuilder(dependencyContainer);
-                var gunSystems = builder.ForPlayer().Build();
+                var builder = new Gun.Initializer(gun, dependencyContainer);
+                builder.ForPlayer().Initialize();
                 
-                gun.Initialize(gunSystems);
+              
             }
             _equippedItem?.Equip();
         }

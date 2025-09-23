@@ -143,23 +143,6 @@ namespace NPC
         }
 
 
-        public void HandleAnimation()
-        {
-            Vector3 velocity = NavMeshAgent.velocity;
-            Vector3 localVelocity = transform.InverseTransformDirection(velocity).normalized;
-            float speed = velocity.magnitude;
 
-
-            if (speed > 0.01f)
-            {
-                Animator.SetFloat(HorizontalMovement, localVelocity.x / 2);
-                Animator.SetFloat(VerticalMovement, localVelocity.z / 2);
-            }
-            else
-            {
-                Animator.SetFloat(HorizontalMovement, 0);
-                Animator.SetFloat(VerticalMovement, 0);
-            }
-        }
     }
 }

@@ -49,11 +49,17 @@ namespace NPC
                 _gun.gunConfig,
                 this,
                 gunHoldPoint);
+            /*
             var gunBuilder = new GunSystemsBuilder(dependencyContainer);
             gunBuilder.WithAimingSystem(() => new EnemyAimingSystem())
                 .WithRecoilSystem(() => new EnemyRecoilSystem());
             var gunSystems = gunBuilder.Build();
-            _gun.Initialize(gunSystems);
+            */
+            var initializer = new Gun.Initializer(_gun, dependencyContainer);
+            initializer.WithAimingSystem(() => new EnemyAimingSystem())
+                .WithRecoilSystem(() => new EnemyRecoilSystem())
+                .Initialize();
+            
             _gun.Equip();
         }
 

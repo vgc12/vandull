@@ -42,7 +42,7 @@ namespace NPC
         {
             base.Update();
             _agent.SetDestination(_player.position);
-            _npc.HandleAnimation();
+           // _npc.HandleAnimation();
         }
     }
 }

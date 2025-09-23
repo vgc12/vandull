@@ -156,12 +156,12 @@ namespace Items.Guns.Recoil
                 _recoilTransform.localRotation = Quaternion.Euler(  _currentRecoil * _config.recoilSettings.recoilEffectMultiplier);
 
             }
+            
 
     
             _targetRecoil = Vector3.Lerp(_targetRecoil, Vector3.zero,
                 Time.deltaTime * _config.recoilSettings.returnSpeed);
         }
-        
         
         
         private void ApplyGunRecoil()

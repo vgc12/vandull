@@ -21,7 +21,7 @@ namespace NPC
 
         public override void Update()
         {
-           Npc.HandleAnimation();
+          // Npc.HandleAnimation();
         }
 
         public override void FixedUpdate()
