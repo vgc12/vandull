@@ -153,6 +153,7 @@ Transform:
   m_Children:
   - {fileID: 7559627929372299093}
   - {fileID: 5178359934520089236}
+  - {fileID: 7690208863603186557}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 1.205, z: 0}
 --- !u!114 &7574425041726027065
@@ -176,6 +177,11 @@ MonoBehaviour:
     ammoSettings: {fileID: 11400000, guid: 50de5aa619e79a84084c5e0337d811a5, type: 2}
     recoilSettings: {fileID: 11400000, guid: 2c6557c36f87fef44a74bfdd227b39d0, type: 2}
     trailConfig: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
+  MagazinePosition: {fileID: 0}
+  HipFireTransform: {fileID: 0}
+  RecoilTransform: {fileID: 0}
+  AdsTransform: {fileID: 0}
+  MuzzleTranform: {fileID: 0}
 --- !u!1 &4670624433527071901
 GameObject:
   m_ObjectHideFlags: 0
@@ -202,6 +208,37 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0.045, z: 0.3429}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7661752279920749504}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6475970609784857863
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7690208863603186557}
+  m_Layer: 11
+  m_Name: MagazinePosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7690208863603186557
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6475970609784857863}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.0006, y: -0.018699467, z: 0.0838}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

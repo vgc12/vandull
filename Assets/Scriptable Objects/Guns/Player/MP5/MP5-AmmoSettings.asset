@@ -15,6 +15,5 @@ MonoBehaviour:
   magazineSize: 35
   magazineCount: 10
   reloadTime: 2
-  magazinePosition: {x: 0, y: -0.07, z: 0.132}
   magazineRotation: {x: 0, y: 90, z: 0}
   magazinePrefab: {fileID: 8083715352898168017, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}

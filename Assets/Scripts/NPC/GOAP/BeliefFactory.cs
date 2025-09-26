@@ -7,37 +7,37 @@ namespace NPC.GOAP
     public class BeliefFactory
     {
         private readonly GoapAgent _agent;
-        private readonly Dictionary<string, AgentBelief> _beliefs;
+        private readonly Dictionary<BeliefType, AgentBelief> _beliefs;
 
-        public BeliefFactory(GoapAgent agent, Dictionary<string, AgentBelief> beliefs)
+        public BeliefFactory(GoapAgent agent, Dictionary<BeliefType, AgentBelief> beliefs)
         {
             _agent = agent;
             _beliefs = beliefs;
         }
 
-        public void AddBelief(string key, Func<bool> condition)
+        public void AddBelief(BeliefType key, Func<bool> condition)
         {
-            _beliefs.Add(key, new AgentBelief.Builder(key)
+            _beliefs.Add(key, new AgentBelief.Builder(key.ToString())
                 .WithCondition(condition)
                 .Build());
         }
 
-        public void AddLocationBelief(string key, float distance, Transform locationCondition)
+        public void AddLocationBelief(BeliefType key, float distance, Transform locationCondition)
         {
             AddLocationBelief(key,distance,locationCondition.position);
         }
 
-        public void AddSensorBelief(string key, Sensor sensor)
+        public void AddSensorBelief<T>(BeliefType key, ISensor<T> sensor) where T : Component
         {
-            _beliefs.Add(key, new AgentBelief.Builder(key)
-                .WithCondition(() => sensor.IsTargetInRange)
+            _beliefs.Add(key, new AgentBelief.Builder(key.ToString())
+                .WithCondition(() => sensor.IsTargetPresent)
                 .WithLocation(() => sensor.TargetPosition)
                 .Build());
         }
     
-        public void AddLocationBelief(string key, float distance, Vector3 locationCondition)
+        public void AddLocationBelief(BeliefType key, float distance, Vector3 locationCondition)
         {
-            _beliefs.Add(key, new AgentBelief.Builder(key)
+            _beliefs.Add(key, new AgentBelief.Builder(key.ToString())
                 .WithCondition(() => InRangeOf(locationCondition, distance))
                 .WithLocation(() => locationCondition)
                 .Build());

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace NPC.GOAP
 {
@@ -8,8 +9,8 @@ namespace NPC.GOAP
     
         private readonly NavMeshAgent _navMeshAgent;
         private readonly float _wanderRadius;
-    
-  
+        
+        
         public bool CanPerform => !Complete;
         public bool Complete => _navMeshAgent.remainingDistance <= 2f && !_navMeshAgent.pathPending;
         
@@ -25,6 +26,7 @@ namespace NPC.GOAP
         public void Start()
         { 
             MoveToRandomPositionAtDistance(_wanderRadius, 20);
+            _navMeshAgent.speed = 2.0f;
             //WalkToRandomPoint(_wanderRadius);
         }
         

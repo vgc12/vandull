@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace Items.Guns.Firing
 {
@@ -12,6 +13,7 @@ namespace Items.Guns.Firing
     public interface IFireSystem : IGunSystem
     {
 
+        public Transform MuzzleTransform { get; }
         event Action<ShotFiredEvent> OnShotFired;
         void ExecuteFireCommand(FireCommand command);
         bool CanFire { get; }

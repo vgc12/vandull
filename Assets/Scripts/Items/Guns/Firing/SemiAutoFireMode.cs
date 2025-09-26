@@ -7,8 +7,8 @@ namespace Items.Guns
 {
     public class SemiAutoFireMode : BaseFireMode
     {
-        public SemiAutoFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour, onShotFiredSubscribers)
+        public SemiAutoFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(config, gunTransform, behaviour, muzzleTransform,onShotFiredSubscribers)
         {
           
         }

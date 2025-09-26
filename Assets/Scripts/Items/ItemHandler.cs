@@ -18,25 +18,20 @@ namespace Items
    
         private Item _equippedItem; 
         public Item EquippedItem => _equippedItem;
-        [SerializeField, Required] public List<GameObject> prefabs = new List<GameObject>();
+        [SerializeField, Required] public List<Gun> gunObjects = new List<Gun>();
         private List<Item> _inventory = new List<Item>();
         public List<Item> Inventory
         {
             get => _inventory;
             private set => _inventory = value;
         }
-        
-        
-        [Required, SerializeField] private Transform hipFireTransform;
-        [Required, SerializeField] private Transform adsTransform;
-        [Required, SerializeField] private Transform recoilTransform;
 
    
 
         // Call this from Awake() or Start() in your MonoBehaviour
         public void Awake()
         {
-            prefabs ??= new List<GameObject>();
+            gunObjects ??= new List<Gun>();
             
             _inventory ??= new List<Item>();
 
@@ -55,15 +50,8 @@ namespace Items
             {
                 if (i is not Gun gun) continue;
                 
-                var dependencyContainer = new GunDependencyContainer(
-                    gun.transform,
-                    gun.gunConfig,
-                    this,
-                    hipFireTransform,
-                    adsTransform,
-                    recoilTransform
-                );
-                var builder = new Gun.Initializer(gun, dependencyContainer);
+             
+                var builder = new Gun.Initializer(gun);
                 builder.ForPlayer().Initialize();
                 
               
@@ -74,7 +62,7 @@ namespace Items
         private void LogPrefabs()
         {
             Debug.Log("Current Prefabs:");
-            foreach (var prefab in prefabs)
+            foreach (var prefab in gunObjects)
             {
                 VandullLogger.Log(prefab.name);
             }
@@ -91,18 +79,10 @@ namespace Items
         
         public void SetUpItems()
         {
-            foreach (var i in prefabs)
+            gunObjects = GetComponentsInChildren<Gun>().ToList();
+            foreach (var i in gunObjects)
             {
-                
-                var obj= Instantiate(i);
-                var item = obj.GetComponent<Item>();
-                _inventory.Add(item);
-                
-                item.transform.SetParent(transform);
-                
-                item.UnEquip();
-               
-              
+                _inventory.Add(i);
             }
         }
 
@@ -115,7 +95,7 @@ namespace Items
         {
             if (_inventory.Count == 0) return;
             int currentIndex = _inventory.IndexOf(_equippedItem);
-            int nextIndex = Math.Abs((currentIndex + direction) % prefabs.Count);
+            int nextIndex = Math.Abs((currentIndex + direction) % gunObjects.Count);
             EquipItem(_inventory[nextIndex]);
         }
         

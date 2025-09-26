@@ -15,8 +15,7 @@ public class GoapPlanner : IGoapPlanner
     {
         // Order goals by priority, descending
         var orderedGoals = goals
-            .Where(g => g.DesiredEffects
-                .Any(b => !b.Evaluate()))
+            .Where(g => g.DesiredEffects.Any(b => !b.Evaluate()))
             .OrderByDescending(g => g == mostRecentGoal ? g.Priority - 0.01 : g.Priority)
             .ToList();
 

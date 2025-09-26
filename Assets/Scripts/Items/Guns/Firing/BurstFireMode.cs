@@ -12,8 +12,8 @@ namespace Items.Guns
         private readonly int _burstCount;
         private readonly float _burstDelay;
 
-        public BurstFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour, onShotFiredSubscribers)
+        public BurstFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour, Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(config, gunTransform, behaviour,muzzleTransform, onShotFiredSubscribers)
         {
             _burstCount = Config.firingSettings.burstCount;
             _burstDelay = Config.firingSettings.burstDelay;

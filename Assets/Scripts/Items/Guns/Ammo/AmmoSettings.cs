@@ -13,7 +13,6 @@ namespace Items.Guns
         [Min(0.1f)]
         public float reloadTime = 2f;
         
-        public Vector3 magazinePosition;
         public Vector3 magazineRotation;
         
         public GameObject magazinePrefab;

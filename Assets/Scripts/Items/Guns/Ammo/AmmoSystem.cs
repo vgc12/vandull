@@ -42,15 +42,15 @@ namespace Items.Guns
   
         
         
-        
-        public AmmoSystem(Transform gunTransform, GunConfig config, MonoBehaviour behaviour)
+        private Transform _MagazineSpawnPosition;
+        public AmmoSystem(Transform gunTransform, GunConfig config, Transform MagazineSpawnPosition, MonoBehaviour behaviour)
         {
             _config = config;
             _gunTransform = gunTransform;
             _behaviour = behaviour;
             _magazinePrefab = config.ammoSettings.magazinePrefab;
             _magazinePool = new ObjectPool<Magazine>(CreateMagazine);
-            
+            _MagazineSpawnPosition = MagazineSpawnPosition;
             InitializeMagazines();
         }
 
@@ -62,7 +62,7 @@ namespace Items.Guns
             var collider = magObject.GetOrAddComponent<BoxCollider>();
             var mr = magObject.GetOrAddComponent<MeshRenderer>();
             var magazine = magObject.GetOrAddComponent<Magazine>();
-            magazine.ParentTransform = _gunTransform;
+            magazine.MagazinePosition = _MagazineSpawnPosition;
             magazine.AmmoSettings = _config.ammoSettings;
             return magazine;
         }

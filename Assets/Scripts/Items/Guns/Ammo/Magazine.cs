@@ -11,12 +11,14 @@ namespace Items.Guns
         public int CurrentAmmo { get; set; }
         public int Capacity { get; set; }
         
+
+        
         public bool IsEmpty => CurrentAmmo <= 0;
         public bool IsFull => CurrentAmmo >= Capacity;
         
         public bool IsDropped { get; private set; }
         
-        public Transform ParentTransform { get; set; }
+        public Transform MagazinePosition { get; set; }
         
         private Rigidbody _rigidbody;
         
@@ -60,7 +62,7 @@ namespace Items.Guns
         {
             if (transform.parent != null)
             {
-                transform.localPosition = _ammoSettings.magazinePosition;
+                transform.position= MagazinePosition.position;
             }
         }
 
@@ -68,9 +70,8 @@ namespace Items.Guns
         {
             if (CheckErrors()) return;
             MeshRenderer.enabled = true;
-            transform.SetParent(ParentTransform);            
-            transform.localPosition = _ammoSettings.magazinePosition;
-            transform.localRotation = Quaternion.Euler(_ammoSettings.magazineRotation);
+            transform.SetParent(MagazinePosition);
+            transform.rotation = MagazinePosition.rotation;
             _rigidbody.isKinematic = true;
             _collider.enabled = false;
             IsDropped = false;
@@ -103,9 +104,9 @@ namespace Items.Guns
                 VandullLogger.LogError("AmmoSettings is not set on Magazine");
                 hasError = true;
             }
-            if(ParentTransform == null)
+            if(MagazinePosition == null)
             {
-                VandullLogger.LogError("ParentTransform is not set on Magazine");
+                VandullLogger.LogError("MagazineTransform is not set on Magazine");
                 hasError = true;
             }
             return hasError;

@@ -29,8 +29,10 @@ namespace Items.Guns
 
         private void Initialize()
         {
-            StartAiming();
-            StopAiming();
+            if (HipFireTransform)
+            {
+                transform.position = HipFireTransform.position;
+            }
         }
 
         
@@ -105,13 +107,14 @@ namespace Items.Guns
                 GunConfig config,
                 Transform gunTransform,
                 MonoBehaviour behaviour,
+                Transform muzzleTransform,
                 List<Action<ShotFiredEvent>> shotHandlers = null)
             {
                 IFireSystem fireSystem = fireType switch
                 {
-                    FireType.SemiAutomatic => new SemiAutoFireMode(config, gunTransform, behaviour),
-                    FireType.Automatic => new AutomaticFireMode(config, gunTransform, behaviour),
-                    FireType.Burst => new BurstFireMode(config, gunTransform, behaviour),
+                    FireType.SemiAutomatic => new SemiAutoFireMode(config, gunTransform, behaviour, muzzleTransform ),
+                    FireType.Automatic => new AutomaticFireMode(config, gunTransform, behaviour, muzzleTransform),
+                    FireType.Burst => new BurstFireMode(config, gunTransform, behaviour, muzzleTransform),
                     _ => throw new ArgumentException($"Unsupported fire type: {fireType}")
                 };
 
@@ -127,12 +130,11 @@ namespace Items.Guns
 
         public class Initializer : IGunSystemsBuilder
         {
-            private readonly GunDependencyContainer _container;
             private readonly List<Action<ShotFiredEvent>> _onShotFired = new List<Action<ShotFiredEvent>>();
-            private readonly List<Action> _onAmmoOut = new List<Action>();
+            private readonly List<Action> _onAmmoOut = new();
 
             // Fire mode configuration
-            private List<FireType> _enabledFireModes;
+            private List<FireType> _enabledFireModes = new();
             private readonly Dictionary<FireType, Func<IFireSystem>> _customFireModeFactories;
 
             // Other system factories
@@ -142,10 +144,10 @@ namespace Items.Guns
             private Func<IRecoilSystem> _recoilSystemFactory;
             private Func<ITrailSystem> _trailSystemFactory;
             private Gun _gun;
-            public Initializer(Gun gun, GunDependencyContainer container)
+            public Initializer(Gun gun)
             {
                 _gun = gun;
-                _container = container ?? throw new ArgumentNullException(nameof(container));
+            
                 _customFireModeFactories = new Dictionary<FireType, Func<IFireSystem>>();
 
                 SetDefaultConfiguration();
@@ -154,7 +156,7 @@ namespace Items.Guns
 
             private void SetDefaultConfiguration()
             {
-                _enabledFireModes = _container.Config?.fireModeSettings?.availableFireModes?.ToList()
+                _enabledFireModes = _gun?.gunConfig?.fireModeSettings?.availableFireModes?.ToList()
                                     ?? new List<FireType> { FireType.SemiAutomatic };
             }
 
@@ -168,26 +170,28 @@ namespace Items.Guns
                 };
 
                 _aimingSystemFactory = () => new AimingSystem(
-                    _container.GunTransform,
-                    _container.Config,
-                    _container.HipFireTransform,
-                    _container.AdsTransform
+                    
+                    _gun.transform,
+                    _gun.gunConfig,
+                    _gun.HipFireTransform,
+                    _gun.AdsTransform
                 );
 
                 _ammoSystemFactory = () => new AmmoSystem(
-                    _container.GunTransform,
-                    _container.Config,
-                    _container.Behaviour
+                   _gun.transform,
+                   _gun.gunConfig,
+                   _gun.MagazinePosition,
+                   _gun
                 );
 
                 _recoilSystemFactory = () => new RecoilSystem(
-                    _container.Config,
-                    _container.GunTransform,
-                    _container.RecoilTransform,
-                    _container.Behaviour
+                    _gun.gunConfig,
+                    _gun.transform,
+                    _gun.RecoilTransform,
+                    _gun
                 );
 
-                _trailSystemFactory = () => new TrailSystem(_container.Config.trailConfig);
+                _trailSystemFactory = () => new TrailSystem(_gun.gunConfig.trailConfig);
             }
 
             private List<IFireSystem> CreateFireModes()
@@ -208,9 +212,10 @@ namespace Items.Guns
                         // Use default factory
                         fireMode = FireModeFactory.CreateFireMode(
                             fireType,
-                            _container.Config,
-                            _container.GunTransform,
-                            _container.Behaviour,
+                            _gun.gunConfig,
+                            _gun.transform,
+                            _gun,
+                            _gun.MuzzleTranform,
                             _onShotFired
                         );
                     }
@@ -334,6 +339,7 @@ namespace Items.Guns
                 _gun.AmmoSystem = ammoSystem;
                _gun.RecoilSystem = recoilSystem;
                 _gun.TrailSystem = trailSystem;
+         
                 _gun.Initialize();
                 
             }
@@ -343,7 +349,7 @@ namespace Items.Guns
             {
                 _onShotFired.Add(e => recoilSystem.ApplyRecoil());
                 _onShotFired.Add(e => ammoSystem.ConsumeAmmo());
-                _onShotFired.Add(e => _container.Behaviour.StartCoroutine(
+                _onShotFired.Add(e => _gun.StartCoroutine(
                     trailSystem.SpawnTrail(e.ShootPoint, e.EndPoint, e.Hit)));
             }
 
@@ -373,6 +379,18 @@ namespace Items.Guns
                 }
             }
         }
+
+        public Transform MagazinePosition;
+
+        public Transform HipFireTransform;
+
+        public Transform RecoilTransform;
+        
+        public Transform AdsTransform;
+
+        public Transform MuzzleTranform;
+        
+        
     }
 }
 
@@ -383,6 +401,8 @@ namespace Items.Guns
     {
         IFireSystem CurrentFireSystem { get; }
         IReadOnlyList<IFireSystem> AvailableFireModes { get; }
+        
+        void SetCurrentFireMode(FireType fireType);
 
         void CycleFireMode();
     }

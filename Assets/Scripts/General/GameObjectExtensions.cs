@@ -89,5 +89,14 @@ namespace General {
             obj.gameObject.SetActive(false);
             return obj;
         }
+        
+        public static T TryGetComponentInParent<T>(this GameObject obj) where T : Component {
+            return obj.GetComponentInParent<T>();
+        }
+        
+        public static T IsInLayer<T>(this T obj, LayerMask layerMask) where T : MonoBehaviour {
+            if (!layerMask.Contains(obj.gameObject.layer)) return null;
+            return obj;
+        }
     }
 }

@@ -1,77 +1,141 @@
-using System;
+﻿using System;
 using Attributes;
-using Items;
+using General;
 using Items.Guns;
-using Items.Guns.Items.Guns;
-using Items.Guns.Items.Guns.Builder;
+using Items.Guns.Firing;
 using Items.Guns.Items.Guns.Dependencies;
-using StateMachine;
+using NPC.GOAP;
 using UnityEngine;
 using UnityEngine.AI;
 
 namespace NPC
 {
-    [RequireComponent(typeof(PlayerDetector))]
-    [RequireComponent(typeof(NavMeshAgent))]
-    public class Enemy : Npc
+    public class Enemy : GoapAgent
     {
         
-        [SerializeField] private GameObject gunPrefab;
-        [SerializeField,Required] private PlayerDetector playerDetector; 
-        [Required] public Transform gunHoldPoint;
-        private Gun _gun;
-   
-        public Vector3 gunRotationOffset;
+        [SerializeField, Required] private Gun gun;
+        [SerializeField, Required] private Transform aimPoint;
 
-
-
-        protected override void InitializeStateMachine()
+        protected override void Start()
         {
-          
-            var walkState = new EnemyWanderState(this);
-            var idleState = new EnemyIdleState(this);
-            var chaseState = new EnemyChaseState(this, NavMeshAgent, playerDetector.Player);
-            StateMachine.AddTransition(walkState, idleState,() => !NavMeshAgent.isActiveAndEnabled ||( NavMeshAgent.remainingDistance <= NavMeshAgent.stoppingDistance && !NavMeshAgent.pathPending));
-            StateMachine.AddTransition(idleState, walkState, () => CanWalk);
-            StateMachine.AddAnyTransition(chaseState, playerDetector.CanDetectPlayer);
-            StateMachine.SetState(idleState);
-
-        
-        }
-
-        protected override void Awake()
-        {
-            base.Awake();
-            var gunObject = Instantiate(gunPrefab, gunHoldPoint, false);
-             _gun = gunObject.GetComponent<Gun>();
-            var dependencyContainer = new GunDependencyContainer(
-                _gun.transform,
-                _gun.gunConfig,
-                this,
-                gunHoldPoint);
-            /*
-            var gunBuilder = new GunSystemsBuilder(dependencyContainer);
-            gunBuilder.WithAimingSystem(() => new EnemyAimingSystem())
-                .WithRecoilSystem(() => new EnemyRecoilSystem());
-            var gunSystems = gunBuilder.Build();
-            */
-            var initializer = new Gun.Initializer(_gun, dependencyContainer);
-            initializer.WithAimingSystem(() => new EnemyAimingSystem())
-                .WithRecoilSystem(() => new EnemyRecoilSystem())
+            
+            Gun.Initializer initializer = new(gun);
+            initializer.
+                WithAimingSystem(() => new EnemyAimingSystem()).
+                WithRecoilSystem(() => new EnemyRecoilSystem())
                 .Initialize();
-            
-            _gun.Equip();
+            base.Start();
+          
         }
 
-        protected override void Update()
+
+        protected override void SetupActions()
         {
-            base.Update();
-            _gun.transform.rotation = gunHoldPoint.rotation;
+            base.SetupActions();
+            Actions.Add(new AgentAction.Builder("Flee")
+                .AddPrecondition(Beliefs[BeliefType.IsNotSafe])
+                .WithStrategy(new FleeStrategy(NavMeshAgent, () => playerRaycastSensor.IsTargetPresent,
+                    () => coverPointSensor.TargetPositions, () => playerRaycastSensor.TargetPosition))
+                .AddEffect(Beliefs[BeliefType.IsSafe])
+                .Build());
+            Actions.Add(new AgentAction.Builder("Shoot Player").AddPrecondition(Beliefs[BeliefType.HasAmmo])
+                .AddPrecondition(Beliefs[BeliefType.PlayerAlive])
+                .AddPrecondition(Beliefs[BeliefType.HasAmmo])
+                .WithStrategy(new ShootPlayerStrategy(NavMeshAgent, AnimationController,gun, aimPoint,() => playerRaycastSensor.IsTargetPresent,
+                    () => playerRaycastSensor.TargetPosition))
+                .AddEffect(Beliefs[BeliefType.IsSafe])
+                .AddEffect(Beliefs[BeliefType.PlayerDead])
+                .Build());
         }
-        
-        public void Attack()
+
+        protected override void SetupGoals()
         {
+            base.SetupGoals();
+            Goals.Add(new AgentGoal.Builder("Kill Player") 
+                .WithDesiredEffect(Beliefs[BeliefType.PlayerDead])
+                .WithPriority(2)
+                .Build());
+        }
+
+
+        protected override void SetupBeliefs()
+        {
+            base.SetupBeliefs();
+            Factory.AddBelief(BeliefType.HasAmmo, () => !gun.AmmoSystem.IsCurrentMagazineEmpty);
+            Factory.AddBelief(BeliefType.PlayerDead, () => playerRaycastSensor.TargetComponent?.Health <= 0);
+            Factory.AddBelief(BeliefType.PlayerAlive, () =>  playerRaycastSensor.TargetComponent?.Health > 0);
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (Beliefs == null) return;
+            if (Beliefs.TryGetValue(BeliefType.CoverInRange, out var belief))
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(belief.Location, 0.3f);
+            }
+        }
+    }
+
+    public class ShootPlayerStrategy : IActionStrategy
+    {
+        private readonly Gun _gun;
+        private readonly NavMeshAgent _navMesh;
+        private readonly Func<bool> _canSeeTarget;
+        private readonly Func<Vector3> _target;
+        private readonly AnimationController _animationController;
+        private readonly Transform _aimPoint;
+        
+        public ShootPlayerStrategy(NavMeshAgent navMesh,AnimationController animationController,  Gun gun, Transform aimPoint, Func<bool> canSeeTarget, Func<Vector3> target)
+        {
+            _navMesh = navMesh;
+            _gun = gun;
+            _canSeeTarget = canSeeTarget;
+            _target = target;
+            _animationController = animationController;
+            _aimPoint = aimPoint;
+
+        }
+
+        public void Start()
+        {
+            VandullLogger.LogWarning("Starting to shoot at player");
+            _gun.StartAutomaticFire();
+     
             
         }
+
+
+        public void Update(float deltaTime)
+        {
+            if (!_canSeeTarget())
+            {
+           
+                return;
+            }
+            
+            
+            _navMesh.isStopped = true;
+            var direction = _target() - _gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
+            _navMesh.transform.rotation = Quaternion.Slerp(_navMesh.transform.rotation, Quaternion.LookRotation(direction), deltaTime * 10f);
+            _navMesh.transform.rotation = Quaternion.Euler(0, _navMesh.transform.rotation.eulerAngles.y, 0);
+       
+            _aimPoint.position = _target();
+      
+            VandullLogger.LogWarning("Shooting at player");
+      
+        }
+        public void Stop()
+        {
+            VandullLogger.LogWarning("Stopping shooting at player");
+            _gun.StopAutomaticFire();
+            _navMesh.isStopped = false;
+        }
+
+        public bool CanPerform => !Complete;
+        public bool Complete => _gun.AmmoSystem.IsCurrentMagazineEmpty;
+
+
+
     }
 }

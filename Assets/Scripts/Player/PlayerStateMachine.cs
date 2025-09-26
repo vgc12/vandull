@@ -1,15 +1,17 @@
 ﻿using System;
 using General;
+using NPC;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
 using StateMachine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Player
 {
     [RequireComponent(typeof(GroundChecker), typeof(PlayerMovement), typeof(PlayerLooking))]
-    public class PlayerStateMachine : MonoBehaviour
+    public class PlayerStateMachine : MonoBehaviour, IKillable, IDamageable
     {
         private StateMachine.StateMachine _stateMachine;
 
@@ -91,6 +93,9 @@ namespace Player
             _groundChecker = GetComponent<GroundChecker>();
             PlayerMovement = GetComponent<PlayerMovement>();
             PlayerLooking = GetComponent<PlayerLooking>();
+
+
+            Health = 100;
             
 
             InitializeStateMachine();
@@ -106,6 +111,19 @@ namespace Player
         private void FixedUpdate()
         {
             _stateMachine.FixedUpdate();
+        }
+
+        public float Health { get; set; }
+
+        public void Die()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
+        public void TakeDamage(float amount)
+        {
+            VandullLogger.Log($"Player took {amount} damage");
+            Health -= amount;
         }
     }
 }

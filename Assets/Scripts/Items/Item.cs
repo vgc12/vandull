@@ -21,6 +21,7 @@ namespace Items
         {
             if (IsEquipped)
             {
+                
                 OnUpdate();
             }
         }

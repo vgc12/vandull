@@ -11,8 +11,8 @@ namespace Items.Guns
         private Coroutine _autoFireCoroutine;
         private bool _fireButtonHeld;
 
-        public AutomaticFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour, onShotFiredSubscribers)
+        public AutomaticFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(config, gunTransform, behaviour, muzzleTransform, onShotFiredSubscribers)
         {
         }
 

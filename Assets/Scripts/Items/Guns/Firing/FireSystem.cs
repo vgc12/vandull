@@ -16,7 +16,7 @@ namespace Items.Guns
     public abstract class BaseFireMode : IFireSystem
     {
         protected readonly GunConfig Config;
-        protected readonly Transform MuzzleTransform;
+        public  Transform MuzzleTransform { get; }
         protected readonly Transform Transform;
         protected readonly MonoBehaviour Behaviour;
         protected readonly RaycastHit[] HitResults = new RaycastHit[10];
@@ -32,17 +32,14 @@ namespace Items.Guns
 
         public event Action<ShotFiredEvent> OnShotFired;
 
-        protected BaseFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
+        protected BaseFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour, Transform muzzleTransform,
             List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             Transform = gunTransform ?? throw new ArgumentNullException(nameof(gunTransform));
             Behaviour = behaviour ?? throw new ArgumentNullException(nameof(behaviour));
 
-            var go = new GameObject("MuzzlePoint");
-            MuzzleTransform = go.transform;
-            MuzzleTransform.SetParent(gunTransform, false);
-            MuzzleTransform.localPosition = Config.firingSettings.muzzlePoint;
+            MuzzleTransform = muzzleTransform ?? throw new ArgumentNullException(nameof(muzzleTransform));
 
             if (onShotFiredSubscribers == null) return;
             foreach (var subscriber in onShotFiredSubscribers)
