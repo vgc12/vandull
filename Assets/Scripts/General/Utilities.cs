@@ -16,7 +16,7 @@ namespace General
     }
 
         public abstract class Timer {
-            protected float InitialTime;
+            public float InitialTime { get; set; }
             protected float Time { get; set; }
             public bool IsRunning { get; protected set; }
         
