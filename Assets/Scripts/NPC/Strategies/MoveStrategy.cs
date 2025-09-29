@@ -1,6 +1,8 @@
 ﻿using System;
+using General;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace NPC.GOAP
 {
@@ -9,32 +11,37 @@ namespace NPC.GOAP
     
         private readonly NavMeshAgent _navMeshAgent;
         private readonly float _wanderRadius;
-    
-  
-        public bool CanPerform => !Complete;
-        public bool Complete => _navMeshAgent.remainingDistance <= 2f && !_navMeshAgent.pathPending;
+       
+        
+        public virtual bool CanPerform => !Complete;
+        public virtual bool Complete
+        {
+            get => _navMeshAgent.remainingDistance <= 2f && !_navMeshAgent.pathPending;
+            protected set => Complete = value;
+        }
 
-        public readonly Func<Vector3> _destination;
-    
-        public MoveStrategy(NavMeshAgent navMeshAgent, Func<Vector3> destination)
+
+        public MoveStrategy(NavMeshAgent navMeshAgent, float wanderRadius = 10)
         {
             _navMeshAgent = navMeshAgent;
-            _destination = destination;
-      
-           
+            _wanderRadius = wanderRadius;
+         
         }
 
-        public void Start()
+        public virtual void Update(float deltaTime){}
+     
+        public virtual void Start()
         { 
-            MoveTo(_destination());
-            // MoveToRandomPositionAtDistance(_wanderRadius, 20);
-            //WalkToRandomPoint(_wanderRadius);
+            VandullLogger.LogWarning("MoveStrategy Start");
+            MoveToRandomPositionAtDistance(_wanderRadius, 20);
+            _navMeshAgent.speed = 2.0f;
+          
         }
-        
-        public void MoveTo(Vector3 position)
+
+        public void MoveTo(Vector3 targetPosition)
         {
-            if (!_navMeshAgent.isActiveAndEnabled) return;
-            _navMeshAgent.SetDestination(position);
+            if(!_navMeshAgent.enabled) return;
+            _navMeshAgent.SetDestination(targetPosition);
         }
         
         public void WalkToRandomPoint(float range)
@@ -44,9 +51,41 @@ namespace NPC.GOAP
             randomDirection += _navMeshAgent.transform.position;
             NavMeshHit navHit;
             NavMesh.SamplePosition(randomDirection, out navHit, range, -1);
-            _navMeshAgent.SetDestination(navHit.position);
+           _navMeshAgent.SetDestination(navHit.position);
         }
+
+        public virtual void Stop(){}
         
-        
+        public void MoveToRandomPositionAtDistance(float targetDistance, int maxAttempts)
+        {
+            if (!_navMeshAgent.isActiveAndEnabled) return;
+            Vector3 startPosition = _navMeshAgent.transform.position;
+
+            for (int i = 0; i < maxAttempts; i++)
+            {
+                // Generate random direction
+                Vector3 randomDirection = Random.insideUnitSphere;
+                randomDirection.y = 0; // Keep on same Y level
+
+
+                // Calculate target position
+                Vector3 targetPosition = startPosition + randomDirection * targetDistance;
+
+                // Check if position is on NavMesh
+                NavMeshHit hit;
+                if (NavMesh.SamplePosition(targetPosition, out hit, 2f, NavMesh.AllAreas))
+                {
+                    // Verify the actual distance is close to desired
+                    float actualDistance = Vector3.Distance(startPosition, hit.position);
+
+                    if (Mathf.Abs(actualDistance - targetDistance) < 0.5f)
+                    {
+                        Debug.DrawLine(startPosition, hit.position, Color.red, 50);
+                        _navMeshAgent.SetDestination(hit.position);
+                        return;
+                    }
+                }
+            }
+        }
     }
 }

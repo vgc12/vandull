@@ -24,7 +24,7 @@ namespace Items.Guns
         private int _currentMagazineIndex;
         private bool _isReloading;
         private readonly MonoBehaviour _behaviour;
-        public bool IsCurrentMagazineEmpty => CurrentMagazine.IsEmpty;
+        public bool CurrentMagazineEmpty => CurrentMagazine.IsEmpty;
         public bool IsReloading => _isReloading;
         public int CurrentAmmo => CurrentMagazine.CurrentAmmo;
         public int TotalAmmo => _magazines.Count * _config.ammoSettings.magazineSize;
@@ -37,20 +37,17 @@ namespace Items.Guns
 
         private readonly GameObject _magazinePrefab;
         
-        private readonly Transform _gunTransform;
-        
-  
         
         
-        private Transform _MagazineSpawnPosition;
-        public AmmoSystem(Transform gunTransform, GunConfig config, Transform MagazineSpawnPosition, MonoBehaviour behaviour)
+        private readonly Transform _magazineSpawnPosition;
+        public AmmoSystem(GunConfig config, Transform MagazineSpawnPosition, MonoBehaviour behaviour)
         {
             _config = config;
-            _gunTransform = gunTransform;
+         
             _behaviour = behaviour;
             _magazinePrefab = config.ammoSettings.magazinePrefab;
             _magazinePool = new ObjectPool<Magazine>(CreateMagazine);
-            _MagazineSpawnPosition = MagazineSpawnPosition;
+            _magazineSpawnPosition = MagazineSpawnPosition;
             InitializeMagazines();
         }
 
@@ -62,7 +59,7 @@ namespace Items.Guns
             var collider = magObject.GetOrAddComponent<BoxCollider>();
             var mr = magObject.GetOrAddComponent<MeshRenderer>();
             var magazine = magObject.GetOrAddComponent<Magazine>();
-            magazine.MagazinePosition = _MagazineSpawnPosition;
+            magazine.MagazinePosition = _magazineSpawnPosition;
             magazine.AmmoSettings = _config.ammoSettings;
             return magazine;
         }
@@ -102,9 +99,8 @@ namespace Items.Guns
 
         private IEnumerator ReloadRoutine()
         {
-            var currentMag = CurrentMagazine;
-            currentMag.Drop();
-            _magazines.RemoveAt(_currentMagazineIndex);
+          
+            DropMagazine();
             
             yield return new WaitForSeconds(_config.ammoSettings.reloadTime);
             
@@ -114,18 +110,24 @@ namespace Items.Guns
             VandullLogger.Log(this);
             EquipCurrentMagazine();
             
-            OnReloadComplete?.Invoke(new ReloadEvent(currentMag));
+            OnReloadComplete?.Invoke(new ReloadEvent(CurrentMagazine));
     
         }
 
 
+        public void DropMagazine()
+        {
+            var currentMag = CurrentMagazine;
+            currentMag.Drop();
+            _magazines.RemoveAt(_currentMagazineIndex);
+        }
 
       
 
         public void ConsumeAmmo()
         {
           
-            if (!IsCurrentMagazineEmpty)
+            if (!CurrentMagazineEmpty)
             {
                 CurrentMagazine.SubtractOne();
             }

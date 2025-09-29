@@ -23,7 +23,13 @@ namespace Player
 
         private GroundChecker _groundChecker;
 
-        private class MovementStates
+        
+        [SerializeField] private bool invulnerable;
+        public bool Invulnerable => invulnerable;
+        public float Health { get; set; }
+
+        
+        private class Factory
         {
             public IdleState IdleState { get; private init; }
             public WalkState WalkState { get; private init; }
@@ -32,7 +38,7 @@ namespace Player
             public CrouchState CrouchState { get; private init; }
             public IState CrouchWalkState { get; private init; }
 
-            public static MovementStates Create(PlayerStateMachine sm) => new()
+            public static Factory Create(PlayerStateMachine sm) => new()
             {
                 IdleState = new IdleState(sm),
                 WalkState = new WalkState(sm),
@@ -46,7 +52,7 @@ namespace Player
 
         private void InitializeStateMachine()
         {
-            var movementStates = MovementStates.Create(this);
+            var movementStates = Factory.Create(this);
 
             _stateMachine = new StateMachine.StateMachine();
 
@@ -66,7 +72,7 @@ namespace Player
             Mathf.Approximately(PlayerMovement.config.InitialHeight,
                 PlayerMovement.PlayerModel.localScale.y);
 
-        private void CreateAnyTransitions(MovementStates states)
+        private void CreateAnyTransitions(Factory states)
         {
             _stateMachine.AddAnyTransition(states.JumpState,
                 new FuncPredicate(() =>
@@ -113,17 +119,22 @@ namespace Player
             _stateMachine.FixedUpdate();
         }
 
-        public float Health { get; set; }
-
         public void Die()
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
-        public void TakeDamage(float amount)
+        public void TakeDamage(float amount, Vector3 direction)
         {
+        
+            if (Invulnerable) return;
+            
             VandullLogger.Log($"Player took {amount} damage");
             Health -= amount;
+            if (Health <= 0)
+            {
+                Die();
+            }
         }
     }
 }

@@ -12,6 +12,11 @@
         IsNotSafe,
         HasAmmo,
         PlayerDead,
-        PlayerAlive
+        PlayerAlive,
+        HasNoAmmo,
+        JustTookDamage,
+        CanSeePlayer,
+        CanNotSeePlayer,
+        NotDamagedRecently
     }
 }

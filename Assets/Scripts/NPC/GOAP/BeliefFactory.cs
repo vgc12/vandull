@@ -27,11 +27,11 @@ namespace NPC.GOAP
             AddLocationBelief(key,distance,locationCondition.position);
         }
 
-        public void AddSensorBelief<T>(BeliefType key, ISensor<T> sensor) where T : Component
+        public void AddSensorBelief(BeliefType key, ISensor sensor) 
         {
             _beliefs.Add(key, new AgentBelief.Builder(key.ToString())
-                .WithCondition(() => sensor.IsTargetPresent)
-                .WithLocation(() => sensor.TargetPosition)
+                .WithCondition(() => sensor.CanSeeTarget)
+                .WithLocation(() => sensor.Target.position)
                 .Build());
         }
     
@@ -44,5 +44,11 @@ namespace NPC.GOAP
         }
 
         private bool InRangeOf(Vector3 pos, float range) => Vector3.Distance(_agent.transform.position, pos) < range;
+    }
+
+    public interface ISensor
+    {
+        public bool CanSeeTarget { get; }
+        public Transform Target { get; }
     }
 }

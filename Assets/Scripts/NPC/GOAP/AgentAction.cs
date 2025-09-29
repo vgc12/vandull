@@ -38,7 +38,7 @@ public class GoapPlanner : IGoapPlanner
                 return new ActionPlan(goal, actions, goalNode.Cost);
             }
         }
-        VandullLogger.LogWarning("No Plan Found");
+//        VandullLogger.LogWarning("No Plan Found");
         return null;
         
     }
@@ -135,6 +135,8 @@ public class AgentAction
     public HashSet<AgentBelief> Preconditions { get; } = new();
     public HashSet<AgentBelief> Effects { get; } = new();
 
+    public IActionStrategy Strategy => _strategy;
+    
     private IActionStrategy _strategy;
 
     public bool Complete => _strategy.Complete;

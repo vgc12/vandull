@@ -46,17 +46,8 @@ namespace Items
 
         private void Start()
         {
-            foreach (var i in _inventory)
-            {
-                if (i is not Gun gun) continue;
-                
-             
-                var builder = new Gun.Initializer(gun);
-                builder.ForPlayer().Initialize();
-                
-              
-            }
             _equippedItem?.Equip();
+            
         }
 
         private void LogPrefabs()

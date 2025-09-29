@@ -23,6 +23,7 @@ namespace NPC.Strategies
 
         public void Start()
         {
+            VandullLogger.Log("Idle strategy");
             _timer.Start();
         }
 

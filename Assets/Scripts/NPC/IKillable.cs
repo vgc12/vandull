@@ -2,7 +2,8 @@
 {
     public interface IKillable
     {
-        float Health { get; }
+        bool Invulnerable { get; }
+        float Health => 100f;
         void Die();
     }
 }

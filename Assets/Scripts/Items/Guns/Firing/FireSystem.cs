@@ -88,7 +88,7 @@ namespace Items.Guns
                 MuzzleTransform.forward,
                 HitResults,
                 Config.damageSettings.range,
-                ~LayerMask.GetMask("Ignore Raycast", "Player"));
+                ~LayerMask.GetMask("Ignore Raycast"));
 
             if (hitCount <= 0)
             {
@@ -108,14 +108,21 @@ namespace Items.Guns
                 if (hit.collider == null) continue;
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
 
-                VandullLogger.Log("Hit: " + hit.collider.name);
-
-                if (!hit.collider.TryGetComponent<BodyPart>(out var bodyPart)) continue;
-
-                if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable)) continue;
-
-                damageable.TakeDamage(Config.damageSettings.damage * bodyPart.damageMultiplier);
-                EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position, Config.damageSettings.damage));
+//                VandullLogger.Log("Hit: " + hit.collider.name);
+                
+                
+                if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable) &&
+                    !hit.collider.transform.root.TryGetComponent(out damageable)) continue;
+                if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
+                {
+                    damageable.TakeDamage(Config.damageSettings.damage * bodyPart.damageMultiplier, MuzzleTransform.forward);
+                    EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
+                        Config.damageSettings.damage));
+                }
+                else
+                {
+                    damageable.TakeDamage(Config.damageSettings.damage, MuzzleTransform.forward);
+                }
             }
         }
     }

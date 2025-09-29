@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using General;
 using NPC.Strategies;
 using Player;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,49 +13,59 @@ namespace NPC.GOAP
 {
     public abstract class GoapAgent : MonoBehaviour, IDamageable, IKillable
     {
-        [Header("Sensors")] 
-        [SerializeField] protected CoverPointSensor coverPointSensor;
-        [SerializeField] protected PlayerSensor playerRaycastSensor;
-        
+        [Header("Sensors")] [SerializeField] protected CoverPointSensor coverPointSensor;
+        [SerializeField] protected EnemyObjectSensor playerRaycastSensor;
+
+        [Header("Configuration")] [SerializeField]
+        private float damageTurnCooldown = 5f;
+
+        // Components
+        private RagdollController _ragdollController;
         protected NavMeshAgent NavMeshAgent { get; private set; }
-  
         protected Rigidbody Rigidbody { get; private set; }
+        
+        protected AnimationController AnimationController;
 
+        // Health & State
+        [SerializeField] private bool invulnerable;
+        public bool Invulnerable => invulnerable;
         public float Health { get; private set; }
+
+        // GOAP System
         public ActionPlan ActionPlan { get; private set; }
-
-        private CountdownTimer _statsTimer;
-
-        private GameObject _target;
-
-        private Vector3 _destination;
-
-        private AgentGoal _lastGoal;
-
         public AgentGoal CurrentGoal;
-
-        //public ActionPlan currentPlan;
         public AgentAction CurrentAction;
-
         public Dictionary<BeliefType, AgentBelief> Beliefs;
         public HashSet<AgentAction> Actions;
         public HashSet<AgentGoal> Goals;
 
         private IGoapPlanner _goapPlanner;
-
-        protected AnimationController AnimationController;
-        
         protected BeliefFactory Factory;
-    
+        private AgentGoal _lastGoal;
+
+        // Timers
+        private CountdownTimer _statsTimer;
+        private CountdownTimer _damageTurnTimer;
+        private CountdownTimer _damagedRecentlyTimer;
+        
+        // Movement & Targeting
+        private GameObject _target;
+        private Vector3 _destination;
+        private bool _canTurn = true;
+        public bool DamagedRecently => _damagedRecently;
+        private bool _damagedRecently = false;
+
+
         public virtual void Awake()
         {
             AnimationController = GetComponentInChildren<AnimationController>();
             NavMeshAgent = GetComponent<NavMeshAgent>();
-          
+
             Rigidbody = GetComponent<Rigidbody>();
             Rigidbody.freezeRotation = true;
             _goapPlanner = new GoapPlanner();
-            
+            _ragdollController = GetComponent<RagdollController>();
+            _ragdollController.DisableRagdoll();
             Health = 100;
         }
 
@@ -69,16 +81,19 @@ namespace NPC.GOAP
         {
             Actions = new HashSet<AgentAction>
             {
-                
                 new AgentAction.Builder("Idle")
-                    .WithStrategy(new IdleStrategy( 5))
+                    .AddPrecondition(Beliefs[BeliefType.IsSafe])
+                    .AddPrecondition(Beliefs[BeliefType.NotDamagedRecently])
+                    .WithStrategy(new IdleStrategy(5))
+                    .WithCost(5)
                     .AddEffect(Beliefs[BeliefType.Nothing])
                     .Build(),
                 new AgentAction.Builder("Wander Around")
-                    .WithStrategy(new WanderStrategy(NavMeshAgent, 10))
+                    .AddPrecondition(Beliefs[BeliefType.NotDamagedRecently])
+                    .AddPrecondition(Beliefs[BeliefType.IsSafe])
+                    .WithStrategy(new MoveStrategy(NavMeshAgent, 10))
                     .AddEffect(Beliefs[BeliefType.AgentMoving])
                     .Build()
-                    
             };
         }
 
@@ -110,9 +125,15 @@ namespace NPC.GOAP
             Factory.AddBelief(BeliefType.AgentMoving, () => NavMeshAgent.hasPath);
             Factory.AddBelief(BeliefType.HealthLow, () => Health <= 30);
             Factory.AddBelief(BeliefType.HealthFine, () => Health >= 75);
-            Factory.AddBelief(BeliefType.IsSafe, () => !playerRaycastSensor.IsTargetPresent || Health >= 75);
-            Factory.AddBelief(BeliefType.IsNotSafe, () => playerRaycastSensor.IsTargetPresent && Health <= 30);
-            Factory.AddSensorBelief(BeliefType.CoverInRange, coverPointSensor);
+            Factory.AddBelief(BeliefType.IsSafe,
+                () => !playerRaycastSensor.canSeeTarget || Mathf.Approximately(Health, 100));
+            Factory.AddBelief(BeliefType.IsNotSafe, () => playerRaycastSensor.canSeeTarget && Health <= 30);
+            Factory.AddBelief(BeliefType.JustTookDamage, () => _damagedRecently);
+         
+            Factory.AddBelief(BeliefType.NotDamagedRecently, () => !_damagedRecently);
+            Factory.AddBelief(BeliefType.CanSeePlayer, () => playerRaycastSensor.canSeeTarget);
+            
+            Factory.AddBelief(BeliefType.CanNotSeePlayer, () => !playerRaycastSensor.CanSeeTarget);
         }
 
         private void SetupTimers()
@@ -123,29 +144,40 @@ namespace NPC.GOAP
                 UpdateStats();
                 _statsTimer.Start();
             };
+
+            _damageTurnTimer = new CountdownTimer(damageTurnCooldown);
+            _damageTurnTimer.OnTimerStop += () => { _canTurn = true; };
+            
+            _damagedRecentlyTimer = new CountdownTimer(15f);
+            _damagedRecentlyTimer.OnTimerStart += () => { _damagedRecently = true; };
+            _damagedRecentlyTimer.OnTimerStop += () => { _damagedRecently = false; };
+
             _statsTimer.Start();
         }
 
         protected virtual void UpdateStats()
         {
-            
         }
 
-        protected bool InRangeOf(Vector3 position, float range) => Vector3.Distance(transform.position, position) < range;
-        
-        private bool findEmergencyCover;
+        protected bool InRangeOf(Vector3 position, float range) =>
+            Vector3.Distance(transform.position, position) < range;
 
-        public void TakeDamage(float amount)
+
+        public void TakeDamage(float amount, Vector3 direction)
         {
-            Health -= amount;
+            if (Invulnerable) return;
 
-            if (Health <= 35 && !findEmergencyCover)
+            _damagedRecentlyTimer.Start();
+            Health -= amount;
+            if (direction != Vector3.zero && _canTurn && Beliefs[BeliefType.IsSafe].Evaluate())
             {
-                findEmergencyCover = true;
-                CurrentAction = null;
-                CurrentGoal = null;
+                
+                ResetGoal();
+                _canTurn = false;
+                _damageTurnTimer.Start();
+                StartCoroutine(TurnToDamage(-direction));
             }
-            
+
             VandullLogger.Log($"{gameObject.name} took {amount} damage, health now at {Health}");
             if (Health <= 0)
             {
@@ -153,41 +185,66 @@ namespace NPC.GOAP
             }
         }
 
-
-        public void Die()
+        protected void ResetGoal()
         {
-            gameObject.SetActive(false);
-        }
-
-        protected virtual void HandleTargetChanged()
-        {
-            VandullLogger.Log("Target changged, clearing current action and goal");
-            CurrentGoal = null;
             CurrentAction = null;
+            CurrentGoal = null;
         }
 
-       protected virtual void Update() {
-           
+
+        private IEnumerator TurnToDamage(Vector3 direction)
+        {
+            float t = 0;
+            while (t < 1)
+            {
+                t += Time.deltaTime * .2f;
+                NavMeshAgent.transform.rotation = Quaternion.Slerp(NavMeshAgent.transform.rotation,
+                    Quaternion.LookRotation(direction), t);
+                NavMeshAgent.transform.rotation = Quaternion.Euler(0, NavMeshAgent.transform.rotation.eulerAngles.y, 0);
+                yield return null;
+            }
+        }
+
+
+        public virtual void Die()
+        {
+            NavMeshAgent.enabled = false;
+            CurrentAction = null;
+            CurrentGoal = null;
+            _ragdollController.EnableRagdoll();
+        }
+
+
+        protected virtual void Update()
+        {
             _statsTimer.Tick(Time.deltaTime);
             AnimationController.HandleMovementBlendTree(NavMeshAgent.velocity);
-        
+
             // Update the plan and current action if there is one
-            if (CurrentAction == null) {
-                VandullLogger.Log("Calculating any potential new plan");
+            if (CurrentAction == null)
+            {
+//                VandullLogger.Log("Calculating any potential new plan");
                 CalculatePlan();
 
-                if (ActionPlan != null && ActionPlan.Actions.Count > 0) {
-                    NavMeshAgent.ResetPath();
+                if (ActionPlan != null && ActionPlan.Actions.Count > 0)
+                {
+                    if (NavMeshAgent.enabled)
+                    {
+                        NavMeshAgent.ResetPath();
+                    }
 
                     CurrentGoal = ActionPlan.AgentGoal;
-                    VandullLogger.Log($"Goal: {CurrentGoal.Name} with {ActionPlan.Actions.Count} actions in plan");
+                //    VandullLogger.Log($"Goal: {CurrentGoal.Name} with {ActionPlan.Actions.Count} actions in plan");
                     CurrentAction = ActionPlan.Actions.Pop();
-                    VandullLogger.Log($"Popped action: {CurrentAction.Name}");
+               //     VandullLogger.Log($"Popped action: {CurrentAction.Name}");
                     // Verify all precondition effects are true
-                    if (CurrentAction.Preconditions.All(b => b.Evaluate())) {
+                    if (CurrentAction.Preconditions.All(b => b.Evaluate()))
+                    {
                         CurrentAction.Start();
-                    } else {
-                        VandullLogger.Log("Preconditions not met, clearing current action and goal");
+                    }
+                    else
+                    {
+             //           VandullLogger.Log("Preconditions not met, clearing current action and goal");
                         CurrentAction = null;
                         CurrentGoal = null;
                     }
@@ -195,15 +252,18 @@ namespace NPC.GOAP
             }
 
             // If we have a current action, execute it
-            if (ActionPlan != null && CurrentAction != null) {
+            if (ActionPlan != null && CurrentAction != null)
+            {
                 CurrentAction.Update(Time.deltaTime);
 
-                if (CurrentAction.Complete) {
+                if (CurrentAction.Complete)
+                {
                     VandullLogger.Log($"{CurrentAction.Name} complete");
                     CurrentAction.Stop();
                     CurrentAction = null;
 
-                    if (ActionPlan.Actions.Count == 0) {
+                    if (ActionPlan.Actions.Count == 0)
+                    {
                         VandullLogger.Log("Plan complete");
                         _lastGoal = CurrentGoal;
                         CurrentGoal = null;
@@ -217,7 +277,7 @@ namespace NPC.GOAP
             var priorityLevel = CurrentGoal?.Priority ?? 0;
 
             HashSet<AgentGoal> goalsToCheck = Goals;
-        
+
             // If there is a current goal we only want to check goals with a higher priority
 
             if (CurrentGoal != null)
@@ -225,14 +285,13 @@ namespace NPC.GOAP
                 VandullLogger.Log("Current goal exists, checking goals with a higher priority");
                 goalsToCheck = new HashSet<AgentGoal>(Goals.Where(g => g.Priority > priorityLevel));
             }
-        
+
             var potentialPlan = _goapPlanner.Plan(this, goalsToCheck, _lastGoal);
 
             if (potentialPlan != null)
             {
                 ActionPlan = potentialPlan;
             }
-
         }
 
         private void OnDrawGizmos()
@@ -243,25 +302,33 @@ namespace NPC.GOAP
                 Gizmos.color = Color.red;
                 Gizmos.DrawSphere(belief.Location, 0.3f);
             }
+
             Gizmos.DrawSphere(NavMeshAgent.destination, 1f);
         }
 
         private void OnEnable()
         {
-            if (coverPointSensor != null)
-            {
-               // coverPointSensor.OnTargetChanged += HandleTargetChanged;
-            }
+            playerRaycastSensor.OnTargetSpotted += HandleTargetFound;
+            playerRaycastSensor.OnTargetLost += HandleTargetLost;
         }
-        
+
+        protected virtual void HandleTargetLost()
+        {
+            
+        }
+
+        protected virtual void HandleTargetFound()
+        {
+            
+        }
+
+  
         private void OnDisable()
         {
-            if (coverPointSensor != null)
-            {
-              //  coverPointSensor.OnTargetChanged -= HandleTargetChanged;
-            }
+            if (playerRaycastSensor == null) return;
+          
+            playerRaycastSensor.OnTargetLost -= HandleTargetLost;
+            playerRaycastSensor.OnTargetSpotted -= HandleTargetFound;
         }
     }
-
-
 }

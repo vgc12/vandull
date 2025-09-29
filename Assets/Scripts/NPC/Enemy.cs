@@ -1,70 +1,97 @@
-﻿using System;
-using Attributes;
-using General;
+﻿using Attributes;
 using Items.Guns;
 using Items.Guns.Firing;
 using Items.Guns.Items.Guns.Dependencies;
 using NPC.GOAP;
+using Player;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace NPC
 {
     public class Enemy : GoapAgent
     {
-        
         [SerializeField, Required] private Gun gun;
         [SerializeField, Required] private Transform aimPoint;
-
-        protected override void Start()
-        {
-            
-            Gun.Initializer initializer = new(gun);
-            initializer.
-                WithAimingSystem(() => new EnemyAimingSystem()).
-                WithRecoilSystem(() => new EnemyRecoilSystem())
-                .Initialize();
-            base.Start();
-          
-        }
 
 
         protected override void SetupActions()
         {
             base.SetupActions();
+
             Actions.Add(new AgentAction.Builder("Flee")
                 .AddPrecondition(Beliefs[BeliefType.IsNotSafe])
-                .WithStrategy(new FleeStrategy(NavMeshAgent, () => playerRaycastSensor.IsTargetPresent,
-                    () => coverPointSensor.TargetPositions, () => playerRaycastSensor.TargetPosition))
+                .WithStrategy(new FleeStrategy(NavMeshAgent,
+                    coverPointSensor, playerRaycastSensor))
                 .AddEffect(Beliefs[BeliefType.IsSafe])
+                .WithCost(3)
                 .Build());
-            Actions.Add(new AgentAction.Builder("Shoot Player").AddPrecondition(Beliefs[BeliefType.HasAmmo])
-                .AddPrecondition(Beliefs[BeliefType.PlayerAlive])
+
+            Actions.Add(new AgentAction.Builder("Shoot Player")
+                .AddPrecondition(Beliefs[BeliefType.CanSeePlayer])
                 .AddPrecondition(Beliefs[BeliefType.HasAmmo])
-                .WithStrategy(new ShootPlayerStrategy(NavMeshAgent, AnimationController,gun, aimPoint,() => playerRaycastSensor.IsTargetPresent,
-                    () => playerRaycastSensor.TargetPosition))
+                .AddPrecondition(Beliefs[BeliefType.PlayerAlive])/*
+                .WithStrategy(new ShootPlayerStrategy(NavMeshAgent, AnimationController, gun, aimPoint,
+                     playerRaycastSensor, () => DamagedRecently))*/
+                .WithStrategy(new CombatEngageStrategy(NavMeshAgent, gun, playerRaycastSensor, aimPoint, () => DamagedRecently,10))
                 .AddEffect(Beliefs[BeliefType.IsSafe])
                 .AddEffect(Beliefs[BeliefType.PlayerDead])
+                .AddEffect(Beliefs[BeliefType.HasNoAmmo])
                 .Build());
+
+            Actions.Add(new AgentAction.Builder("Reload Gun")
+                .AddPrecondition(Beliefs[BeliefType.HasNoAmmo])
+                .WithStrategy(new ReloadStrategy(gun)).AddEffect(Beliefs[BeliefType.HasAmmo]).Build());
         }
 
         protected override void SetupGoals()
         {
             base.SetupGoals();
-            Goals.Add(new AgentGoal.Builder("Kill Player") 
+
+            Goals.Add(new AgentGoal.Builder("Kill Player")
                 .WithDesiredEffect(Beliefs[BeliefType.PlayerDead])
-                .WithPriority(2)
+                .WithPriority(3)
                 .Build());
         }
 
+        protected override void HandleTargetFound()
+        {
+            if (CurrentAction?.Strategy?.GetType() == typeof(ShootPlayerStrategy))
+            {
+                return;
+            }
+            
+            ResetGoal();
+
+        }
+
+       
+        
 
         protected override void SetupBeliefs()
         {
             base.SetupBeliefs();
-            Factory.AddBelief(BeliefType.HasAmmo, () => !gun.AmmoSystem.IsCurrentMagazineEmpty);
-            Factory.AddBelief(BeliefType.PlayerDead, () => playerRaycastSensor.TargetComponent?.Health <= 0);
-            Factory.AddBelief(BeliefType.PlayerAlive, () =>  playerRaycastSensor.TargetComponent?.Health > 0);
+            Factory.AddBelief(BeliefType.HasAmmo, () => !gun.AmmoSystem.CurrentMagazineEmpty);
+            Factory.AddBelief(BeliefType.HasNoAmmo, () => !gun.AmmoSystem.CurrentMagazineEmpty);
+
+            Factory.AddBelief(BeliefType.PlayerDead, () =>
+            {
+                var killable = playerRaycastSensor.Target.GetComponentInParent<PlayerStateMachine>();
+                return killable is { Health: <= 0 };
+            });
+            Factory.AddBelief(BeliefType.PlayerAlive, () =>
+            {
+                var killable = playerRaycastSensor.Target.GetComponentInParent<PlayerStateMachine>();
+                return killable is { Health: > 0 };
+            });
         }
+
+        public override void Die()
+        {
+            base.Die();
+            gun.Drop();
+        }
+        
+        
 
         private void OnDrawGizmos()
         {
@@ -75,67 +102,5 @@ namespace NPC
                 Gizmos.DrawSphere(belief.Location, 0.3f);
             }
         }
-    }
-
-    public class ShootPlayerStrategy : IActionStrategy
-    {
-        private readonly Gun _gun;
-        private readonly NavMeshAgent _navMesh;
-        private readonly Func<bool> _canSeeTarget;
-        private readonly Func<Vector3> _target;
-        private readonly AnimationController _animationController;
-        private readonly Transform _aimPoint;
-        
-        public ShootPlayerStrategy(NavMeshAgent navMesh,AnimationController animationController,  Gun gun, Transform aimPoint, Func<bool> canSeeTarget, Func<Vector3> target)
-        {
-            _navMesh = navMesh;
-            _gun = gun;
-            _canSeeTarget = canSeeTarget;
-            _target = target;
-            _animationController = animationController;
-            _aimPoint = aimPoint;
-
-        }
-
-        public void Start()
-        {
-            VandullLogger.LogWarning("Starting to shoot at player");
-            _gun.StartAutomaticFire();
-     
-            
-        }
-
-
-        public void Update(float deltaTime)
-        {
-            if (!_canSeeTarget())
-            {
-           
-                return;
-            }
-            
-            
-            _navMesh.isStopped = true;
-            var direction = _target() - _gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
-            _navMesh.transform.rotation = Quaternion.Slerp(_navMesh.transform.rotation, Quaternion.LookRotation(direction), deltaTime * 10f);
-            _navMesh.transform.rotation = Quaternion.Euler(0, _navMesh.transform.rotation.eulerAngles.y, 0);
-       
-            _aimPoint.position = _target();
-      
-            VandullLogger.LogWarning("Shooting at player");
-      
-        }
-        public void Stop()
-        {
-            VandullLogger.LogWarning("Stopping shooting at player");
-            _gun.StopAutomaticFire();
-            _navMesh.isStopped = false;
-        }
-
-        public bool CanPerform => !Complete;
-        public bool Complete => _gun.AmmoSystem.IsCurrentMagazineEmpty;
-
-
-
     }
 }

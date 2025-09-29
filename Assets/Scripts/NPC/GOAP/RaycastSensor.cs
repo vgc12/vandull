@@ -2,111 +2,216 @@
 using Attributes;
 using General;
 using Player;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace NPC.GOAP
 {
-    public class PlayerSensor : RaycastSensor<PlayerStateMachine>
+
+
+    public class EnemyObjectSensor : MonoBehaviour, ISensor
     {
+        [Header("Detection Settings")] [SerializeField]
+        private Transform targetObject;
+
+        [SerializeField] private float detectionRange = 10f;
+        [SerializeField] private float detectionAngle = 60f;
+        [SerializeField] private LayerMask obstructionLayers = 1;
+
+        [Header("Sensor Origin")] [SerializeField]
+        private Transform sensorOrigin;
+
+        [Header("Debug")] [SerializeField] private bool showDebugRays = true;
+        [SerializeField] private Color visibleColor = Color.green;
+        [SerializeField] private Color obstructedColor = Color.red;
+        [SerializeField] private Color outOfRangeColor = Color.yellow;
+
+        public bool CanSeeTarget => canSeeTarget;
+
+        public bool canSeeTarget;
+        public bool IsTargetInRange { get; private set; }
+        public bool IsTargetInAngle { get; private set; }
+        public bool IsTargetObstructed { get; private set; }
+        public float DistanceToTarget { get; private set; }
+        public Transform Target => targetObject;
         
-    }
-    public abstract class RaycastSensor <T> : MonoBehaviour, ISensor<T> where T : Component
-    {
-        [SerializeField] private float timerInterval = 1f;
-        [SerializeField] private LayerMask detectionLayer;
-        [SerializeField] private LayerMask obstructionLayer;
-        [SerializeField] private Transform rayOrigin;
- 
-        private SphereCollider _detectionRange;
-        public event Action OnTargetChanged = delegate { };
-    
-        public T TargetComponent { get; private set; }
-        public Vector3 TargetPosition => _foundTarget ? _foundTarget.transform.position : Vector3.zero;
-        public bool IsTargetPresent { get; private set; }
+        public Vector3 LastKnownPosition { get; private set; }
 
-        // The currently detected target
-        private GameObject _foundTarget;
 
-        // The object that the sensor is trying to detect
-        [Required, SerializeField] private GameObject sensorTarget;
- 
-        private Vector3 _lastKnownPosition;
+        public System.Action OnTargetSpotted;
+        public System.Action OnTargetLost;
+        public System.Action OnTargetObstructed;
+        public System.Action OnTargetUnobstructed;
 
-        private CountdownTimer _timer;
-    
-        [SerializeField] private float detectionAngle = 90;
-        [SerializeField] private  float detectionRadius;
-    
-    
+        private bool _wasTargetVisible;
+        private bool _wasTargetObstructed;
 
-        private void Start()
+        void Start()
         {
-            _timer = new CountdownTimer(timerInterval);
-            _timer.OnTimerStop += () =>
-            {
-            
-                UpdateTargetPosition(_foundTarget.OrNull());
-                _timer.Start();
-            };
-            _timer.Start();
+            // If no sensor origin is specified, use this transform
+            if (sensorOrigin == null)
+                sensorOrigin = transform;
+
+            // Initialize previous states
+            _wasTargetVisible = false;
+            _wasTargetObstructed = false;
         }
 
-        void UpdateTargetPosition(GameObject target = null)
+        void Update()
         {
-            IsTargetPresent = target;
-            TargetComponent = target ? target.transform.root.TryGetComponent<T>(out var component) ? component : null : null;
-            _foundTarget = target;
-            if (!IsTargetPresent || (_lastKnownPosition == TargetPosition && _lastKnownPosition == Vector3.zero)) return;
-            _lastKnownPosition = TargetPosition;
-            OnTargetChanged.Invoke();
+            UpdateDetection();
+            CheckForStateChanges();
         }
 
-    
-    
-        private void Update()
+        private void UpdateDetection()
         {
-        
-            if(Physics.Raycast(rayOrigin.position, sensorTarget.transform.position - rayOrigin.transform.position, out RaycastHit hit, Mathf.Infinity, detectionLayer | obstructionLayer))
+            // Reset detection states
+            canSeeTarget = false;
+            IsTargetInRange = false;
+            IsTargetInAngle = false;
+            IsTargetObstructed = false;
+            DistanceToTarget = 0f;
+
+            // Early exit if no target is assigned
+            if (targetObject == null)
+                return;
+
+            Vector3 directionToTarget = targetObject.position - sensorOrigin.position;
+            DistanceToTarget = directionToTarget.magnitude;
+
+            // Check if target is within range
+            IsTargetInRange = DistanceToTarget <= detectionRange;
+            if (!IsTargetInRange)
             {
-       
-                if( detectionLayer.Contains( hit.collider.gameObject.layer))
-                {
-                    UpdateTargetPosition(hit.collider.gameObject);
-                }
-                else
-                {
-                    UpdateTargetPosition();
-                }
-           
+//                VandullLogger.Log("Target not in range! ");
+                return;
+            }
+
+            // Check if target is within detection angle
+            Vector3 forwardDirection = sensorOrigin.forward;
+            float angleToTarget = Vector3.Angle(forwardDirection, directionToTarget);
+            IsTargetInAngle = angleToTarget <= detectionAngle / 2f;
+
+            if (!IsTargetInAngle)
+            {
+//                VandullLogger.Log("Target not in angle!" );
+                return;
+            }
+
+            // Perform raycast to check for obstructions
+RaycastHit hit;
+            if (Physics.Raycast(sensorOrigin.position, directionToTarget.normalized,out hit, DistanceToTarget,
+                    obstructionLayers))
+            {
+               
+             //   VandullLogger.LogWarning(hit.collider.gameObject.name);
+                IsTargetObstructed = true;
             }
             else
             {
-                UpdateTargetPosition();
+                LastKnownPosition = targetObject.position;
+                canSeeTarget = true;
             }
         }
-        
-        
-        public bool InFieldOfView (Transform target, float range)
+
+        private void CheckForStateChanges()
         {
-            var directionToTarget = (target.position - transform.position).normalized;
-            var angleToPlayer = Vector3.Angle(transform.forward, directionToTarget);
-        
-            // If the player is outside the detection angle or outside the detection radius, return false
-            if(!(angleToPlayer < detectionAngle / 2f) || !(directionToTarget.magnitude < detectionRadius))
-                return false;
-            
-            return true;
+            // Check if target visibility changed
+            if (canSeeTarget != _wasTargetVisible)
+            {
+                if (canSeeTarget)
+                    OnTargetSpotted?.Invoke();
+                else
+                    OnTargetLost?.Invoke();
+
+                _wasTargetVisible = canSeeTarget;
+            }
+
+            // Check if obstruction state changed
+            if (IsTargetObstructed != _wasTargetObstructed)
+            {
+                if (IsTargetObstructed)
+                    OnTargetObstructed?.Invoke();
+                else
+                    OnTargetUnobstructed?.Invoke();
+
+                _wasTargetObstructed = IsTargetObstructed;
+            }
         }
 
-    
-
-        private void OnDrawGizmos()
+        // Public methods for external control
+        public void SetTarget(Transform newTarget)
         {
-            if (rayOrigin == null) return;
-            Gizmos.color = Color.red;
-            var go = GameObject.FindGameObjectWithTag("Player");
-            Gizmos.DrawRay(rayOrigin.position, go.transform.position - rayOrigin.position);
-        
+            targetObject = newTarget;
+        }
+
+        public void SetDetectionRange(float newRange)
+        {
+            detectionRange = Mathf.Max(0f, newRange);
+        }
+
+        public void SetDetectionAngle(float newAngle)
+        {
+            detectionAngle = Mathf.Clamp(newAngle, 0f, 360f);
+        }
+
+        public void SetObstructionLayers(LayerMask newLayers)
+        {
+            obstructionLayers = newLayers;
+        }
+
+        // Debug visualization
+        void OnDrawGizmos()
+        {
+            if (!showDebugRays || sensorOrigin == null)
+                return;
+
+            Vector3 origin = sensorOrigin.position;
+            Vector3 forward = sensorOrigin.forward;
+
+            // Draw detection range circle
+            Gizmos.color = Color.white;
+            Gizmos.DrawWireSphere(origin, detectionRange);
+
+            // Draw detection angle cone
+            float halfAngle = detectionAngle / 2f;
+            Vector3 leftBoundary = Quaternion.AngleAxis(-halfAngle, sensorOrigin.up) * forward * detectionRange;
+            Vector3 rightBoundary = Quaternion.AngleAxis(halfAngle, sensorOrigin.up) * forward * detectionRange;
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(origin, origin + leftBoundary);
+            Gizmos.DrawLine(origin, origin + rightBoundary);
+
+            // Draw arc for detection cone
+            int arcSegments = 20;
+            Vector3 previousPoint = origin + leftBoundary;
+            for (int i = 1; i <= arcSegments; i++)
+            {
+                float currentAngle = Mathf.Lerp(-halfAngle, halfAngle, (float)i / arcSegments);
+                Vector3 currentPoint =
+                    origin + Quaternion.AngleAxis(currentAngle, sensorOrigin.up) * forward * detectionRange;
+                Gizmos.DrawLine(previousPoint, currentPoint);
+                previousPoint = currentPoint;
+            }
+
+            // Draw line to target if it exists
+            if (targetObject != null)
+            {
+                if (canSeeTarget)
+                    Gizmos.color = visibleColor;
+                else if (IsTargetObstructed)
+                    Gizmos.color = obstructedColor;
+                else
+                    Gizmos.color = outOfRangeColor;
+
+                Gizmos.DrawLine(origin, targetObject.position);
+
+                // Draw a small sphere at target position
+                Gizmos.DrawWireSphere(targetObject.position, 0.5f);
+            }
         }
     }
 }
+
+    
+    

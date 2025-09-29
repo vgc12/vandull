@@ -15,6 +15,6 @@ namespace Items.Guns
         IGunSystemsBuilder WithTrailSystem(Func<ITrailSystem> trailSystemFactory = null);
         IGunSystemsBuilder AddShotFiredHandler(Action<ShotFiredEvent> handler);
         IGunSystemsBuilder AddAmmoOutHandler(Action onOutOfAmmo);
-        void Initialize();
+        GunSystems Build();
     }
 }

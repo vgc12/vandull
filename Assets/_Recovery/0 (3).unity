@@ -2200,7 +2200,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.33455205
+  m_Radius: 0.5
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
@@ -4646,12 +4646,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RaycastSensor
   targetObject: {fileID: 571391914}
-  detectionRange: 201.37
-  detectionAngle: 185
+  detectionRange: 31.93
+  detectionAngle: 99.2
   obstructionLayers:
     serializedVersion: 2
-    m_Bits: 1
-  sensorOrigin: {fileID: 1427157125}
+    m_Bits: 4535
+  sensorOrigin: {fileID: 825068497}
   showDebugRays: 1
   visibleColor: {r: 0, g: 1, b: 0, a: 1}
   obstructedColor: {r: 1, g: 0, b: 0, a: 1}
@@ -5283,10 +5283,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   updateInterval: 0.5
-  requireLineOfSight: 0
+  requireLineOfSight: 1
   obstructionLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   sensorOrigin: {fileID: 825068497}
   prioritizeClosest: 1
   maxTargets: 10
@@ -6355,7 +6355,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ecb2af2c57647e4b4ace348c884ff98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player.Movement.PlayerStateMachine
-  invulnerable: 0
+  invulnerable: 1
 --- !u!114 &2126911736
 MonoBehaviour:
   m_ObjectHideFlags: 0
