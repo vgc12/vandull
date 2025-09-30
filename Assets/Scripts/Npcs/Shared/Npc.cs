@@ -33,6 +33,8 @@ namespace Npcs.Shared
         public bool Invulnerable => invulnerable;
         public float Health => health;
 
+        public bool IsDead => health <= 0;
+
         #endregion
 
         #region Protected Fields
@@ -97,7 +99,6 @@ namespace Npcs.Shared
         {
             if (invulnerable) return;
             health -= amount;
-            if (health <= 0) Die();
         }
 
         public virtual void Die()

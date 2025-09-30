@@ -64,9 +64,12 @@ namespace Npcs
             var wanderState = new EnemyWanderState(this);
             var attackState = new AttackPlayerState(this);
             var damagedState = new EnemyDamagedState(this);
+            var deadState = new EnemyDeadState(this);
 
-            StateMachine.AddAnyTransition(attackState, () => playerSensor.CanSeeTarget);
-            StateMachine.AddAnyTransition(damagedState, () => !playerSensor.CanSeeTarget && _recentlyDamaged);
+            StateMachine.AddAnyTransition(deadState, () => IsDead);
+            StateMachine.AddAnyTransition(attackState, () => playerSensor.CanSeeTarget && !IsDead);
+            StateMachine.AddAnyTransition(damagedState,
+                () => !playerSensor.CanSeeTarget && _recentlyDamaged && !IsDead);
             StateMachine.AddTransition(attackState, idleState,
                 () => !playerSensor.CanSeeTarget && !NavMeshAgent.pathPending);
             StateMachine.AddTransition(attackState, wanderState,

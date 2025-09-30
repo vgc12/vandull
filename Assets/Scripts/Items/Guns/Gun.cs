@@ -118,6 +118,11 @@ namespace Items.Guns
 
             AmmoSystem.DropMagazine();
         }
+
+        public void StopFiring()
+        {
+            FireModeSystem.CurrentFireSystem.StopFire();
+        }
     }
 }
 
