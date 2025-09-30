@@ -1,39 +1,18 @@
-﻿
-using Items.Guns;
-using Player;
-
+﻿using Player;
 using UnityEngine;
-using UnityEngine.InputSystem;
-
 
 namespace Items
 {
     public abstract class Item : MonoBehaviour, IEquippable
     {
-        public bool IsEquipped { get; protected set; }
-
         [SerializeField] private string itemName;
 
         protected InputManager InputManager;
-        protected abstract void OnUpdate();
-        
+        public bool IsEquipped { get; protected set; }
+
         public void Update()
         {
-            if (IsEquipped)
-            {
-                
-                OnUpdate();
-            }
-        }
-
-        public virtual void Despawn()
-        {
-          
-            
-            if (gameObject!= null)
-            {
-                Destroy(gameObject);
-            }
+            if (IsEquipped) OnUpdate();
         }
 
         public virtual void Equip()
@@ -45,12 +24,15 @@ namespace Items
 
         public virtual void UnEquip()
         {
-            
-           gameObject.SetActive(false);
+            gameObject.SetActive(false);
             IsEquipped = false;
         }
 
+        protected abstract void OnUpdate();
 
- 
+        public virtual void Despawn()
+        {
+            if (gameObject != null) Destroy(gameObject);
+        }
     }
 }

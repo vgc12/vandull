@@ -1,11 +1,9 @@
-﻿using Items.Guns;
-
-namespace Items.Guns
+﻿namespace Items.Guns.Aiming
 {
     public class EnemyAimingSystem : IAimingSystem
     {
-    
         public bool IsAiming { get; private set; }
+
         public void StartAiming()
         {
             IsAiming = true;
@@ -15,11 +13,10 @@ namespace Items.Guns
         {
             IsAiming = false;
         }
-        
+
 
         public void Update()
         {
-            
         }
     }
 }

@@ -1,5 +1,8 @@
 ﻿using System;
 using Attributes;
+using Items.Guns.Aiming;
+using Items.Guns.Ammo;
+using Items.Guns.Firing;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
 
@@ -15,22 +18,16 @@ namespace Items.Guns
         [Required] public AmmoSettings ammoSettings;
         [Required] public RecoilSettings recoilSettings;
         [Required] public TrailConfig trailConfig;
-
-      
-        
     }
 
 
     public class GunSystems
     {
         public IRecoilSystem RecoilSystem { get; init; }
-        public ITrailSystem TrailSystem { get;  init; }
+        public ITrailSystem TrailSystem { get; init; }
         public IAimingSystem AimingSystem { get; init; }
 
-        public IFireModeSystem FireModeSystem { get;  init; }
-        public IAmmoSystem AmmoSystem { get;  init; }
-        
-
-        
+        public IFireModeSystem FireModeSystem { get; init; }
+        public IAmmoSystem AmmoSystem { get; init; }
     }
 }

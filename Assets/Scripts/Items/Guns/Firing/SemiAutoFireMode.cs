@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using Items.Guns.Firing;
 using UnityEngine;
 
-namespace Items.Guns
+namespace Items.Guns.Firing
 {
     public class SemiAutoFireMode : BaseFireMode
     {
-        public SemiAutoFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour, muzzleTransform,onShotFiredSubscribers)
+        public SemiAutoFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
+            Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(config, gunTransform, behaviour, muzzleTransform, onShotFiredSubscribers)
         {
-          
         }
 
 
@@ -28,7 +27,6 @@ namespace Items.Guns
                 default:
                     throw new ArgumentOutOfRangeException(nameof(command), command, null);
             }
-            
         }
 
         public override void Fire()
@@ -36,7 +34,6 @@ namespace Items.Guns
             PerformShot();
         }
 
-        
 
         public override void StopFire()
         {

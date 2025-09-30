@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using Attributes;
 using UnityEngine;
 
@@ -8,25 +7,22 @@ namespace Player.Looking
     [RequireComponent(typeof(Rigidbody))]
     public class CameraBobber : MonoBehaviour
     {
-        [Header("Configuration")]
-        [Required] 
-        public CameraBobConfig cameraBobConfig;
+        [Header("Configuration")] [Required] public CameraBobConfig cameraBobConfig;
 
-        [Header("Transform References")]
-        [SerializeField, Required] 
+        [Header("Transform References")] [SerializeField] [Required]
         private Transform cameraBobTransform;
 
-        private Vector3 _initialPosition;
-        private float _bobTimer;
-        private Rigidbody _rigidBody;
-        private Coroutine _bobCoroutine;
 
-       
-        [SerializeField] private  float movementThreshold = 0.1f;
+        [SerializeField] private float movementThreshold = 0.1f;
         [SerializeField] private float positionLerpSpeed = 1000f;
-        [SerializeField] private  float stopBobLerpSpeed = 10f;
-       
+        [SerializeField] private float stopBobLerpSpeed = 10f;
+
         [SerializeField] private float positionSnapThreshold = 0.01f;
+        private Coroutine _bobCoroutine;
+        private float _bobTimer;
+
+        private Vector3 _initialPosition;
+        private Rigidbody _rigidBody;
 
         private void Awake()
         {
@@ -37,7 +33,7 @@ namespace Player.Looking
         public void CameraBob(CameraBobSetting cameraBobSetting)
         {
             StopCurrentBobCoroutine();
-            
+
             var velocity = _rigidBody.linearVelocity;
             var horizontalSpeed = new Vector3(velocity.x, 0, velocity.z).magnitude;
             var isMoving = horizontalSpeed > movementThreshold;
@@ -51,11 +47,11 @@ namespace Player.Looking
         public void StopBobbing()
         {
             if (_bobCoroutine != null) return;
-            
+
             _bobCoroutine = StartCoroutine(LerpToPosition(_initialPosition));
             _bobTimer = 0f;
         }
-        
+
 
         private void StopCurrentBobCoroutine()
         {
@@ -66,17 +62,17 @@ namespace Player.Looking
 
         private void UpdateBobTimer(CameraBobSetting cameraBobSetting, float horizontalSpeed)
         {
-            _bobTimer += Time.deltaTime * cameraBobSetting.frequency * 
-                       Mathf.Min(horizontalSpeed, cameraBobSetting.maxSpeed);
+            _bobTimer += Time.deltaTime * cameraBobSetting.frequency *
+                         Mathf.Min(horizontalSpeed, cameraBobSetting.maxSpeed);
         }
 
         private void ApplyBobMovement(CameraBobSetting cameraBobSetting, float horizontalSpeed)
         {
             var horizontalBob = Mathf.Sin(_bobTimer) * cameraBobSetting.horizontalAmplitude;
             var verticalBob = Mathf.Sin(_bobTimer * 2) * cameraBobSetting.verticalAmplitude;
-            
+
             var speedMultiplier = Mathf.Min(horizontalSpeed / cameraBobSetting.speedCurve, 1f);
-            
+
             var bobOffset = new Vector3(
                 horizontalBob * speedMultiplier,
                 verticalBob * speedMultiplier,
@@ -85,20 +81,20 @@ namespace Player.Looking
 
             var targetPosition = _initialPosition + bobOffset;
             cameraBobTransform.localPosition = Vector3.Lerp(
-                cameraBobTransform.localPosition, 
+                cameraBobTransform.localPosition,
                 targetPosition,
                 Time.deltaTime * positionLerpSpeed
             );
         }
-        
+
 
         private IEnumerator LerpToPosition(Vector3 targetPosition)
         {
             while (Vector3.Distance(cameraBobTransform.localPosition, targetPosition) > positionSnapThreshold)
             {
                 cameraBobTransform.localPosition = Vector3.Lerp(
-                    cameraBobTransform.localPosition, 
-                    targetPosition, 
+                    cameraBobTransform.localPosition,
+                    targetPosition,
                     Time.deltaTime * stopBobLerpSpeed
                 );
 

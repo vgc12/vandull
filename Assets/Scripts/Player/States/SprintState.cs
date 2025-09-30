@@ -10,20 +10,19 @@ namespace Player.States
         {
             _sm = pm;
         }
-        
+
         public override void Enter()
         {
- 
         }
 
         public override void Update()
         {
             _sm.PlayerMovement.ApplyDrag();
-            
+
             _sm.PlayerLooking.Look();
             var ce = _sm.PlayerLooking.CameraBobber;
             ce.CameraBob(ce.cameraBobConfig.sprintConfig);
-         
+
             _sm.PlayerLooking.Lean();
         }
 
@@ -31,10 +30,9 @@ namespace Player.States
         {
             _sm.PlayerMovement.Move(_sm.PlayerMovement.config.SprintSpeed);
         }
-        
+
         public override void Exit()
         {
-            
         }
     }
 }

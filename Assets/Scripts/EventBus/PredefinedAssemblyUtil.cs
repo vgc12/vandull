@@ -6,14 +6,6 @@ namespace EventBus
 {
     public static class PredefinedAssemblyUtil
     {
-        private enum AssemblyType
-        {
-            AssemblyCSharp,
-            AssemblyCSharpEditor,
-            AssemblyCSharpEditorFirstPass,
-            AssemblyCSharpFirstPass
-        }
-
         private static AssemblyType? GetAssemblyType(string assemblyName)
         {
             return assemblyName switch
@@ -30,7 +22,7 @@ namespace EventBus
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             Dictionary<AssemblyType, Type[]> assemblyTypes = new();
-            List < Type > types = new();
+            List<Type> types = new();
             foreach (var t in assemblies)
             {
                 var assemblyType = GetAssemblyType(t.GetName().Name);
@@ -42,15 +34,23 @@ namespace EventBus
 
             assemblyTypes.TryGetValue(AssemblyType.AssemblyCSharpFirstPass, out var assemblyCSharpFirstPassTypes);
             AddTypesFromAssembly(assemblyCSharpFirstPassTypes, interfaceType, types);
-            
+
             return types;
         }
 
         private static void AddTypesFromAssembly(Type[] assemblyType, Type interfaceType, List<Type> types)
         {
-            if(assemblyType == null) return;
+            if (assemblyType == null) return;
 
             types.AddRange(assemblyType.Where(type => type != interfaceType && interfaceType.IsAssignableFrom(type)));
+        }
+
+        private enum AssemblyType
+        {
+            AssemblyCSharp,
+            AssemblyCSharpEditor,
+            AssemblyCSharpEditorFirstPass,
+            AssemblyCSharpFirstPass
         }
     }
 }

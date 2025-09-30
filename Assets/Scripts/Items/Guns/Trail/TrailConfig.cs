@@ -18,7 +18,7 @@ namespace Items.Guns.Trail
 
         public object Clone()
         {
-            TrailConfig config = CreateInstance<TrailConfig>();
+            var config = CreateInstance<TrailConfig>();
 
             Utilities.CopyValues(this, config);
 

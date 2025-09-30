@@ -1,38 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.InputSystem;
 using EventBus;
 using General;
-using Items.Guns.Firing;
-using Items.Guns.Items.Guns;
-using NPC;
-using Player;
+using UnityEngine;
 
-namespace Items.Guns
+namespace Items.Guns.Firing
 {
-
-
     public abstract class BaseFireMode : IFireSystem
     {
-        protected readonly GunConfig Config;
-        public  Transform MuzzleTransform { get; }
-        protected readonly Transform Transform;
         protected readonly MonoBehaviour Behaviour;
+        protected readonly GunConfig Config;
         protected readonly RaycastHit[] HitResults = new RaycastHit[10];
-
-        protected float LastFireTime;
+        protected readonly Transform Transform;
         protected bool IsOutOfAmmo;
 
+        protected float LastFireTime;
 
-
-        public abstract void ExecuteFireCommand(FireCommand command);
-
-        public virtual bool CanFire => Time.time > LastFireTime + Config.firingSettings.fireRate && !IsOutOfAmmo;
-
-        public event Action<ShotFiredEvent> OnShotFired;
-
-        protected BaseFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour, Transform muzzleTransform,
+        protected BaseFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
+            Transform muzzleTransform,
             List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
@@ -42,16 +27,19 @@ namespace Items.Guns
             MuzzleTransform = muzzleTransform ?? throw new ArgumentNullException(nameof(muzzleTransform));
 
             if (onShotFiredSubscribers == null) return;
-            foreach (var subscriber in onShotFiredSubscribers)
-            {
-                OnShotFired += subscriber;
-            }
-
+            foreach (var subscriber in onShotFiredSubscribers) OnShotFired += subscriber;
         }
 
+        public Transform MuzzleTransform { get; }
+
+
+        public abstract void ExecuteFireCommand(FireCommand command);
+
+        public virtual bool CanFire => Time.time > LastFireTime + Config.firingSettings.fireRate && !IsOutOfAmmo;
+
+        public event Action<ShotFiredEvent> OnShotFired;
+
         public abstract void Fire();
-
-
 
 
         public abstract void StopFire();
@@ -81,7 +69,7 @@ namespace Items.Guns
         private void PerformRaycast()
         {
             var startPoint = MuzzleTransform.position;
-            var endPoint = startPoint + (MuzzleTransform.forward * Config.damageSettings.range);
+            var endPoint = startPoint + MuzzleTransform.forward * Config.damageSettings.range;
 
             var hitCount = Physics.RaycastNonAlloc(
                 startPoint,
@@ -109,13 +97,14 @@ namespace Items.Guns
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
 
 //                VandullLogger.Log("Hit: " + hit.collider.name);
-                
-                
+
+
                 if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable) &&
                     !hit.collider.transform.root.TryGetComponent(out damageable)) continue;
                 if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
                 {
-                    damageable.TakeDamage(Config.damageSettings.damage * bodyPart.damageMultiplier, MuzzleTransform.forward);
+                    damageable.TakeDamage(Config.damageSettings.damage * bodyPart.damageMultiplier,
+                        MuzzleTransform.forward);
                     EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
                         Config.damageSettings.damage));
                 }
@@ -126,5 +115,4 @@ namespace Items.Guns
             }
         }
     }
-
 }

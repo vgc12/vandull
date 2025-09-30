@@ -1,6 +1,4 @@
-﻿using System;
-using General;
-using NPC;
+﻿using General;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
@@ -13,6 +11,10 @@ namespace Player
     [RequireComponent(typeof(GroundChecker), typeof(PlayerMovement), typeof(PlayerLooking))]
     public class PlayerStateMachine : MonoBehaviour, IKillable, IDamageable
     {
+        [SerializeField] private bool invulnerable;
+
+
+        private GroundChecker _groundChecker;
         private StateMachine.StateMachine _stateMachine;
 
 
@@ -20,33 +22,56 @@ namespace Player
 
         public PlayerLooking PlayerLooking { get; private set; }
 
+        private bool IsGroundedAndNotCrouching =>
+            _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed;
 
-        private GroundChecker _groundChecker;
+        private bool IsGroundedAndCrouching =>
+            _groundChecker.IsGrounded && (PlayerMovement.CrouchPressed || !IsAtNormalHeight);
 
-        
-        [SerializeField] private bool invulnerable;
+        private bool IsMoving => PlayerMovement.MoveInput != Vector2.zero;
+
+        private bool IsAtNormalHeight =>
+            Mathf.Approximately(PlayerMovement.config.InitialHeight,
+                PlayerMovement.PlayerModel.localScale.y);
+
+        private void Awake()
+        {
+            _groundChecker = GetComponent<GroundChecker>();
+            PlayerMovement = GetComponent<PlayerMovement>();
+            PlayerLooking = GetComponent<PlayerLooking>();
+
+
+            Health = 100;
+
+
+            InitializeStateMachine();
+        }
+
+        private void Update()
+        {
+            _stateMachine.Update();
+        }
+
+        private void FixedUpdate()
+        {
+            _stateMachine.FixedUpdate();
+        }
+
+        public void TakeDamage(float amount, Vector3 direction)
+        {
+            if (Invulnerable) return;
+
+            VandullLogger.Log($"Player took {amount} damage");
+            Health -= amount;
+            if (Health <= 0) Die();
+        }
+
         public bool Invulnerable => invulnerable;
         public float Health { get; set; }
 
-        
-        private class Factory
+        public void Die()
         {
-            public IdleState IdleState { get; private init; }
-            public WalkState WalkState { get; private init; }
-            public SprintState SprintState { get; private init; }
-            public JumpState JumpState { get; private init; }
-            public CrouchState CrouchState { get; private init; }
-            public IState CrouchWalkState { get; private init; }
-
-            public static Factory Create(PlayerStateMachine sm) => new()
-            {
-                IdleState = new IdleState(sm),
-                WalkState = new WalkState(sm),
-                SprintState = new SprintState(sm),
-                JumpState = new JumpState(sm),
-                CrouchState = new CrouchState(sm),
-                CrouchWalkState = new CrouchWalkState(sm)
-            };
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
 
@@ -59,18 +84,6 @@ namespace Player
             CreateAnyTransitions(movementStates);
             _stateMachine.SetState(movementStates.IdleState);
         }
-
-        private bool IsGroundedAndNotCrouching =>
-            _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed ;
-
-        private bool IsGroundedAndCrouching =>
-            _groundChecker.IsGrounded && (PlayerMovement.CrouchPressed || !IsAtNormalHeight);
-
-        private bool IsMoving => PlayerMovement.MoveInput != Vector2.zero;
-
-        private bool IsAtNormalHeight =>
-            Mathf.Approximately(PlayerMovement.config.InitialHeight,
-                PlayerMovement.PlayerModel.localScale.y);
 
         private void CreateAnyTransitions(Factory states)
         {
@@ -94,46 +107,27 @@ namespace Player
                 new FuncPredicate(() => IsGroundedAndCrouching && IsMoving));
         }
 
-        private void Awake()
+
+        private class Factory
         {
-            _groundChecker = GetComponent<GroundChecker>();
-            PlayerMovement = GetComponent<PlayerMovement>();
-            PlayerLooking = GetComponent<PlayerLooking>();
+            public IdleState IdleState { get; private init; }
+            public WalkState WalkState { get; private init; }
+            public SprintState SprintState { get; private init; }
+            public JumpState JumpState { get; private init; }
+            public CrouchState CrouchState { get; private init; }
+            public IState CrouchWalkState { get; private init; }
 
-
-            Health = 100;
-            
-
-            InitializeStateMachine();
-        }
-
-        private void Update()
-        {
-            _stateMachine.Update();
-            
-
-        }
-
-        private void FixedUpdate()
-        {
-            _stateMachine.FixedUpdate();
-        }
-
-        public void Die()
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
-
-        public void TakeDamage(float amount, Vector3 direction)
-        {
-        
-            if (Invulnerable) return;
-            
-            VandullLogger.Log($"Player took {amount} damage");
-            Health -= amount;
-            if (Health <= 0)
+            public static Factory Create(PlayerStateMachine sm)
             {
-                Die();
+                return new Factory
+                {
+                    IdleState = new IdleState(sm),
+                    WalkState = new WalkState(sm),
+                    SprintState = new SprintState(sm),
+                    JumpState = new JumpState(sm),
+                    CrouchState = new CrouchState(sm),
+                    CrouchWalkState = new CrouchWalkState(sm)
+                };
             }
         }
     }

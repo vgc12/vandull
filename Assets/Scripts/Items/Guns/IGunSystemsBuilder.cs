@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using Items.Guns.Items.Guns.Builder;
+using Items.Guns.Aiming;
+using Items.Guns.Ammo;
+using Items.Guns.Firing;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
 
@@ -8,7 +9,6 @@ namespace Items.Guns
 {
     public interface IGunSystemsBuilder
     {
-     
         IGunSystemsBuilder WithAimingSystem(Func<IAimingSystem> aimingSystemFactory = null);
         IGunSystemsBuilder WithAmmoSystem(Func<IAmmoSystem> ammoSystemFactory = null);
         IGunSystemsBuilder WithRecoilSystem(Func<IRecoilSystem> recoilSystemFactory = null);

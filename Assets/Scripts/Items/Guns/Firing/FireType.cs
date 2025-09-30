@@ -1,8 +1,9 @@
-﻿using UnityEngine.InputSystem;
-
-public enum FireType
+﻿namespace Items.Guns.Firing
 {
-    SemiAutomatic,
-    Automatic,
-    Burst
+    public enum FireType
+    {
+        SemiAutomatic,
+        Automatic,
+        Burst
+    }
 }

@@ -12,7 +12,7 @@ namespace Editor
     {
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            float totalHeight = EditorGUIUtility.singleLineHeight;
+            var totalHeight = EditorGUIUtility.singleLineHeight;
 
             if (property.objectReferenceValue == null || !property.isExpanded)
                 return totalHeight;
@@ -20,18 +20,16 @@ namespace Editor
             var data = property.objectReferenceValue as ScriptableObject;
             if (data == null) return totalHeight;
 
-            SerializedObject serializedObject = new SerializedObject(data);
-            SerializedProperty prop = serializedObject.GetIterator();
+            var serializedObject = new SerializedObject(data);
+            var prop = serializedObject.GetIterator();
 
             if (prop.NextVisible(true))
-            {
                 do
                 {
                     if (prop.name == "m_Script") continue;
                     var height = EditorGUI.GetPropertyHeight(prop, null, true);
                     totalHeight += height + EditorGUIUtility.standardVerticalSpacing;
                 } while (prop.NextVisible(false));
-            }
 
             return totalHeight;
         }
@@ -39,8 +37,8 @@ namespace Editor
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
-            
-   
+
+
             property.isExpanded = EditorGUI.Foldout(
                 new Rect(position.x, position.y, 15, EditorGUIUtility.singleLineHeight),
                 property.isExpanded, GUIContent.none);
@@ -57,15 +55,14 @@ namespace Editor
                     // Create indented area for ScriptableObject properties
                     EditorGUI.indentLevel++;
 
-                    SerializedObject serializedObject = new SerializedObject(data);
+                    var serializedObject = new SerializedObject(data);
                     serializedObject.Update();
 
                     var yPos = position.y + EditorGUIUtility.singleLineHeight +
                                EditorGUIUtility.standardVerticalSpacing;
 
-                    SerializedProperty prop = serializedObject.GetIterator();
+                    var prop = serializedObject.GetIterator();
                     if (prop.NextVisible(true))
-                    {
                         do
                         {
                             // Skip the script reference
@@ -79,7 +76,6 @@ namespace Editor
 
                             yPos += height + EditorGUIUtility.standardVerticalSpacing;
                         } while (prop.NextVisible(false));
-                    }
 
                     // Apply changes to the ScriptableObject
                     if (serializedObject.hasModifiedProperties)

@@ -5,24 +5,21 @@ namespace StateMachine
 {
     public class StateMachine
     {
+        private readonly HashSet<ITransition> _anyTransitions = new();
+
+        private readonly Dictionary<Type, StateNode> _nodes = new();
         private StateNode _currentState;
 
-        private Dictionary<Type, StateNode> _nodes = new();
-
-        private readonly HashSet<ITransition> _anyTransitions = new();
         public void Update()
         {
             var transition = GetTransition();
-            if (transition != null)
-            {
-                ChangeState(transition.To);
-            }
+            if (transition != null) ChangeState(transition.To);
             _currentState.State?.Update();
         }
 
         private void ChangeState(IState to)
         {
-            if(_currentState.State == to)
+            if (_currentState.State == to)
                 return;
             var previousState = _currentState.State;
             var nextState = _nodes[to.GetType()].State;
@@ -34,21 +31,13 @@ namespace StateMachine
         private ITransition GetTransition()
         {
             foreach (var transition in _anyTransitions)
-            {
                 if (transition.Predicate.Evaluate())
                     return transition;
-                
-                
-            }
 
             foreach (var transition in _currentState.Transitions)
-            {
                 if (transition.Predicate.Evaluate())
-                {
                     return transition;
-                }
-            }
-           
+
             return null;
         }
 
@@ -67,7 +56,7 @@ namespace StateMachine
         {
             GetOrAddNode(from).AddTransition(GetOrAddNode(to).State, condition);
         }
-        
+
         public void AddTransition(IState from, IState to, Func<bool> predicate)
         {
             AddTransition(from, to, new FuncPredicate(predicate));
@@ -77,12 +66,12 @@ namespace StateMachine
         {
             AddAnyTransition(to, new FuncPredicate(predicate));
         }
-        
+
         public void AddAnyTransition(IState to, IPredicate condition)
         {
             _anyTransitions.Add(new Transition(GetOrAddNode(to).State, condition));
         }
-        
+
         private StateNode GetOrAddNode(IState state)
         {
             var node = _nodes.GetValueOrDefault(state.GetType());
@@ -98,20 +87,19 @@ namespace StateMachine
 
         private class StateNode
         {
-            public IState State { get; }
-            public HashSet<ITransition> Transitions { get; } 
-            
             public StateNode(IState state)
             {
                 State = state;
                 Transitions = new HashSet<ITransition>();
             }
-            
+
+            public IState State { get; }
+            public HashSet<ITransition> Transitions { get; }
+
             public void AddTransition(IState to, IPredicate predicate)
             {
                 Transitions.Add(new Transition(to, predicate));
             }
         }
-
     }
 }

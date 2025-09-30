@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Items.Guns.Firing;
 using UnityEngine;
 
-namespace Items.Guns
+namespace Items.Guns.Firing
 {
     public class AutomaticFireMode : BaseFireMode
     {
         private Coroutine _autoFireCoroutine;
         private bool _fireButtonHeld;
 
-        public AutomaticFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+        public AutomaticFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
+            Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
             : base(config, gunTransform, behaviour, muzzleTransform, onShotFiredSubscribers)
         {
         }
@@ -36,13 +36,11 @@ namespace Items.Guns
 
         public override void Fire()
         {
-            
         }
 
 
         public override void StopFire()
         {
-           
             if (_autoFireCoroutine == null) return;
             Behaviour.StopCoroutine(_autoFireCoroutine);
             _autoFireCoroutine = null;
@@ -50,7 +48,6 @@ namespace Items.Guns
 
         public override void Update()
         {
-            
         }
 
         private void StartAutomaticFire()
@@ -64,13 +61,10 @@ namespace Items.Guns
 
         private IEnumerator AutomaticFireRoutine()
         {
-            while ( !IsOutOfAmmo)
+            while (!IsOutOfAmmo)
             {
-                if (CanFire)
-                {
-                    PerformShot();
-                }
-                
+                if (CanFire) PerformShot();
+
                 yield return new WaitForSeconds(Config.firingSettings.fireRate);
             }
 

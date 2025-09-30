@@ -1,40 +1,38 @@
-﻿using System;
-using General;
+﻿using General;
 using UnityEngine;
 
-namespace Items.Guns
+namespace Items.Guns.Ammo
 {
     [RequireComponent(typeof(Rigidbody), typeof(Collider))]
     public class Magazine : MonoBehaviour, IEquippable
     {
-       
+        private AmmoSettings _ammoSettings;
+
+        private Collider _collider;
+
+        private Rigidbody _rigidbody;
+
         public int CurrentAmmo { get; set; }
         public int Capacity { get; set; }
-        
 
-        
+
         public bool IsEmpty => CurrentAmmo <= 0;
         public bool IsFull => CurrentAmmo >= Capacity;
-        
+
         public bool IsDropped { get; private set; }
-        
+
         public Transform MagazinePosition { get; set; }
-        
-        private Rigidbody _rigidbody;
-        
-        private Collider _collider;
-        
+
         public MeshRenderer MeshRenderer { get; private set; }
 
-        private AmmoSettings _ammoSettings;
         public AmmoSettings AmmoSettings
         {
             get => _ammoSettings;
             set
             {
-                  _ammoSettings = value;
-                  Capacity = _ammoSettings.magazineSize;
-                  CurrentAmmo = Capacity;   
+                _ammoSettings = value;
+                Capacity = _ammoSettings.magazineSize;
+                CurrentAmmo = Capacity;
             }
         }
 
@@ -48,22 +46,9 @@ namespace Items.Guns
             IsDropped = false;
         }
 
-        public void SubtractAmmo(int amount)
-        {
-            CurrentAmmo = Mathf.Max(0, CurrentAmmo - amount);
-        }
-
-        public void SubtractOne()
-        {
-            SubtractAmmo(1);
-        }
-
         private void Update()
         {
-            if (transform.parent != null)
-            {
-                transform.position= MagazinePosition.position;
-            }
+            if (transform.parent != null) transform.position = MagazinePosition.position;
         }
 
         public void Equip()
@@ -86,7 +71,17 @@ namespace Items.Guns
             _collider.enabled = false;
             IsDropped = false;
         }
-        
+
+        public void SubtractAmmo(int amount)
+        {
+            CurrentAmmo = Mathf.Max(0, CurrentAmmo - amount);
+        }
+
+        public void SubtractOne()
+        {
+            SubtractAmmo(1);
+        }
+
         public void Drop()
         {
             transform.SetParent(null);
@@ -98,21 +93,20 @@ namespace Items.Guns
 
         private bool CheckErrors()
         {
-            bool hasError = false;
-            if(AmmoSettings == null)
+            var hasError = false;
+            if (AmmoSettings == null)
             {
                 VandullLogger.LogError("AmmoSettings is not set on Magazine");
                 hasError = true;
             }
-            if(MagazinePosition == null)
+
+            if (MagazinePosition == null)
             {
                 VandullLogger.LogError("MagazineTransform is not set on Magazine");
                 hasError = true;
             }
+
             return hasError;
-            
         }
     }
-    
-    
 }
