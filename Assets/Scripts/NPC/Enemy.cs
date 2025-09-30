@@ -1,106 +1,88 @@
 ﻿using Attributes;
 using Items.Guns;
-using Items.Guns.Firing;
-using Items.Guns.Items.Guns.Dependencies;
+using NPC;
 using NPC.GOAP;
-using Player;
+using Player.States;
 using UnityEngine;
 
 namespace NPC
 {
-    public class Enemy : GoapAgent
+}
+
+public class Enemy : Npc
     {
-        [SerializeField, Required] private Gun gun;
-        [SerializeField, Required] private Transform aimPoint;
+        [SerializeField,Required] public Gun gun;
+        [SerializeField,Required] public Transform aimPoint;
+        [SerializeField,Required] public EnemyObjectSensor playerSensor;
+        [SerializeField, Required] public CoverPointSensor coverPointSensor;
+    
+        private float _engagementRange;
 
-
-        protected override void SetupActions()
-        {
-            base.SetupActions();
-
-            Actions.Add(new AgentAction.Builder("Flee")
-                .AddPrecondition(Beliefs[BeliefType.IsNotSafe])
-                .WithStrategy(new FleeStrategy(NavMeshAgent,
-                    coverPointSensor, playerRaycastSensor))
-                .AddEffect(Beliefs[BeliefType.IsSafe])
-                .WithCost(3)
-                .Build());
-
-            Actions.Add(new AgentAction.Builder("Shoot Player")
-                .AddPrecondition(Beliefs[BeliefType.CanSeePlayer])
-                .AddPrecondition(Beliefs[BeliefType.HasAmmo])
-                .AddPrecondition(Beliefs[BeliefType.PlayerAlive])/*
-                .WithStrategy(new ShootPlayerStrategy(NavMeshAgent, AnimationController, gun, aimPoint,
-                     playerRaycastSensor, () => DamagedRecently))*/
-                .WithStrategy(new CombatEngageStrategy(NavMeshAgent, gun, playerRaycastSensor, aimPoint, () => DamagedRecently,10))
-                .AddEffect(Beliefs[BeliefType.IsSafe])
-                .AddEffect(Beliefs[BeliefType.PlayerDead])
-                .AddEffect(Beliefs[BeliefType.HasNoAmmo])
-                .Build());
-
-            Actions.Add(new AgentAction.Builder("Reload Gun")
-                .AddPrecondition(Beliefs[BeliefType.HasNoAmmo])
-                .WithStrategy(new ReloadStrategy(gun)).AddEffect(Beliefs[BeliefType.HasAmmo]).Build());
-        }
-
-        protected override void SetupGoals()
-        {
-            base.SetupGoals();
-
-            Goals.Add(new AgentGoal.Builder("Kill Player")
-                .WithDesiredEffect(Beliefs[BeliefType.PlayerDead])
-                .WithPriority(3)
-                .Build());
-        }
-
-        protected override void HandleTargetFound()
-        {
-            if (CurrentAction?.Strategy?.GetType() == typeof(ShootPlayerStrategy))
-            {
-                return;
-            }
-            
-            ResetGoal();
-
-        }
-
-       
         
-
-        protected override void SetupBeliefs()
+        protected override void InitializeStateMachine()
         {
-            base.SetupBeliefs();
-            Factory.AddBelief(BeliefType.HasAmmo, () => !gun.AmmoSystem.CurrentMagazineEmpty);
-            Factory.AddBelief(BeliefType.HasNoAmmo, () => !gun.AmmoSystem.CurrentMagazineEmpty);
-
-            Factory.AddBelief(BeliefType.PlayerDead, () =>
-            {
-                var killable = playerRaycastSensor.Target.GetComponentInParent<PlayerStateMachine>();
-                return killable is { Health: <= 0 };
-            });
-            Factory.AddBelief(BeliefType.PlayerAlive, () =>
-            {
-                var killable = playerRaycastSensor.Target.GetComponentInParent<PlayerStateMachine>();
-                return killable is { Health: > 0 };
-            });
-        }
-
-        public override void Die()
-        {
-            base.Die();
-            gun.Drop();
+            var idleState = new NpcIdleState(this);
+            var wanderState = new EnemyWanderState(this);
+            var attackState = new AttackPlayerState(this);
+            StateMachine.AddAnyTransition(attackState, () => playerSensor.CanSeeTarget);
+            StateMachine.AddTransition(attackState, idleState, () => !playerSensor.CanSeeTarget && !NavMeshAgent.pathPending);
+            StateMachine.AddTransition(attackState, wanderState, () => !playerSensor.CanSeeTarget && NavMeshAgent.pathPending && NavMeshAgent.remainingDistance <= 1f);
+           
         }
         
         
-
-        private void OnDrawGizmos()
+        public void HandleTacticalMovement()
         {
-            if (Beliefs == null) return;
-            if (Beliefs.TryGetValue(BeliefType.CoverInRange, out var belief))
+            var distanceToTarget = Vector3.Distance(NavMeshAgent.transform.position, playerSensor.Target.transform.position);
+
+
+            if (NavMeshAgent.remainingDistance <= 2f || !NavMeshAgent.hasPath)
             {
-                Gizmos.color = Color.red;
-                Gizmos.DrawSphere(belief.Location, 0.3f);
+                var strafePosition = GetStrafePosition(distanceToTarget);
+                NavMeshAgent.SetDestination(strafePosition);
             }
         }
+
+        private Vector3 GetStrafePosition(float currentDistance)
+        {
+            Vector3 targetPos = playerSensor.Target.transform.position;
+            Vector3 currentPos = NavMeshAgent.transform.position;
+
+
+            if (currentDistance < _engagementRange * 0.7f)
+            {
+                var awayDirection = (currentPos - targetPos).normalized;
+                return targetPos + awayDirection * _engagementRange;
+            }
+
+
+            if (currentDistance > _engagementRange * 1.3f)
+            {
+                var towardDirection = (targetPos - currentPos).normalized;
+                return currentPos + towardDirection * 5f;
+            }
+   
+
+            var toTarget = (targetPos - currentPos).normalized;
+            var rightDirection = Vector3.Cross(toTarget, Vector3.up).normalized;
+
+   
+            var strafeDirection = Random.value > 0.5f ? rightDirection : -rightDirection;
+            return currentPos + strafeDirection * 8f;
+        }
+
+        public void LookAtTarget(Vector3 target, float turnSpeed)
+        {
+            var direction = target - gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
+            NavMeshAgent.transform.rotation = Quaternion.Slerp(NavMeshAgent.transform.rotation,
+                Quaternion.LookRotation(direction), Time.deltaTime * turnSpeed);
+            NavMeshAgent.transform.rotation = Quaternion.Euler(0, NavMeshAgent.transform.rotation.eulerAngles.y, 0);
+        }
+    }
+
+public class EnemyWanderState : NpcWanderState
+{
+    public EnemyWanderState(Npc enemy) : base(enemy)
+    {
     }
 }

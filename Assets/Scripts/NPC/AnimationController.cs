@@ -25,8 +25,8 @@ namespace NPC
 
             if (speed > 0.01f)
             {
-                Animator.SetFloat(HorizontalMovement, localVelocity.x / 2);
-                Animator.SetFloat(VerticalMovement, localVelocity.z / 2);
+                Animator.SetFloat(HorizontalMovement, localVelocity.x *2);
+                Animator.SetFloat(VerticalMovement, localVelocity.z *2);
             }
             else
             {
