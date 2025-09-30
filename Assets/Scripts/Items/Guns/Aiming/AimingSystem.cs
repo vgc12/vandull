@@ -2,19 +2,12 @@
 using EventBus;
 using UnityEngine;
 
-namespace Items.Guns
+namespace Items.Guns.Aiming
 {
     public class AimingSystem : IAimingSystem
     {
-        private readonly Transform _transform;
         private readonly GunConfig _config;
-
-
-        public Transform HipFirePoint { get; }
-
-        public Transform AimFirePoint { get; }
-        
-        public bool IsAiming { get; private set; }
+        private readonly Transform _transform;
 
         public AimingSystem(
             Transform gunTransform,
@@ -27,7 +20,15 @@ namespace Items.Guns
             HipFirePoint = hipFirePoint ?? throw new ArgumentNullException(nameof(hipFirePoint));
             AimFirePoint = aimFirePoint ?? throw new ArgumentNullException(nameof(aimFirePoint));
         }
-        public void StartAiming( )
+
+
+        public Transform HipFirePoint { get; }
+
+        public Transform AimFirePoint { get; }
+
+        public bool IsAiming { get; private set; }
+
+        public void StartAiming()
         {
             IsAiming = true;
             EventBus<AimChangedEvent>.Raise(new AimChangedEvent(true, AimFirePoint));
@@ -42,7 +43,8 @@ namespace Items.Guns
         public void Update()
         {
             _transform.position = Vector3.Lerp(_transform.position,
-                IsAiming ? AimFirePoint.position : HipFirePoint.position, Time.deltaTime * (1f / _config.aimSettings.adsTime));
+                IsAiming ? AimFirePoint.position : HipFirePoint.position,
+                Time.deltaTime * (1f / _config.aimSettings.adsTime));
         }
     }
 }

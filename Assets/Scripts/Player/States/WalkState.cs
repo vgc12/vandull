@@ -1,20 +1,20 @@
-﻿using General;
-using StateMachine;
+﻿using StateMachine;
 
 namespace Player.States
 {
     public class WalkState : BaseState
     {
         private readonly PlayerStateMachine _sm;
-        
+
         public WalkState(PlayerStateMachine sm)
         {
             _sm = sm;
         }
+
         public override void Enter()
         {
-      
         }
+
         public override void Update()
         {
             _sm.PlayerMovement.ApplyDrag();
@@ -27,13 +27,11 @@ namespace Player.States
         public override void FixedUpdate()
         {
             _sm.PlayerMovement.Move(_sm.PlayerMovement.config.WalkSpeed);
-            
         }
 
 
         public override void Exit()
         {
-            
         }
     }
 }

@@ -4,6 +4,5 @@
     {
         public IPredicate Predicate { get; }
         public IState To { get; }
-
     }
 }

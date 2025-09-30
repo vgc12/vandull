@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Items.Guns
+namespace Items.Guns.Aiming
 {
     public class AimSettings : ScriptableObject
     {

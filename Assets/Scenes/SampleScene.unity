@@ -1212,8 +1212,8 @@ GameObject:
   - component: {fileID: 386033903}
   - component: {fileID: 386033902}
   - component: {fileID: 386033905}
-  - component: {fileID: 386033906}
   - component: {fileID: 386033907}
+  - component: {fileID: 386033908}
   m_Layer: 9
   m_Name: Enemy (1)
   m_TagString: Untagged
@@ -1304,24 +1304,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &386033906
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 386033900}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4276062e80794bedb6fec485a1972dc1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NPC.Enemy
-  coverPointSensor: {fileID: 1646251917}
-  playerRaycastSensor: {fileID: 1427157126}
-  damageTurnCooldown: 5
-  invulnerable: 0
-  gun: {fileID: 1602912329}
-  aimPoint: {fileID: 900042990}
 --- !u!114 &386033907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1337,6 +1319,35 @@ MonoBehaviour:
   animator: {fileID: 171392971}
   ragdollBones: []
   transitionDuration: 0.5
+--- !u!114 &386033908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 386033900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4276062e80794bedb6fec485a1972dc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPC.Enemy
+  health: 100
+  invulnerable: 0
+  minIdleTime: 2
+  maxIdleTime: 5
+  animationController: {fileID: 171392972}
+  strafeDistance: 8
+  closeRangeMultiplier: 0.7
+  farRangeMultiplier: 1.3
+  approachDistance: 5
+  pathCompletionThreshold: 2
+  engagementRange: 7
+  damagedDuration: 4
+  lookAtDamageSpeed: 10
+  gun: {fileID: 1602912329}
+  aimPoint: {fileID: 900042990}
+  playerSensor: {fileID: 1427157126}
+  coverPointSensor: {fileID: 1646251917}
 --- !u!1 &391215218
 GameObject:
   m_ObjectHideFlags: 0
@@ -3431,16 +3442,28 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 995892383}
     - target: {fileID: 7661752279920749504, guid: a61a8351bd3c2a149accc4427fa9e14d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7661752279920749504, guid: a61a8351bd3c2a149accc4427fa9e14d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7661752279920749504, guid: a61a8351bd3c2a149accc4427fa9e14d, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7661752279920749504, guid: a61a8351bd3c2a149accc4427fa9e14d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.0568
+      value: -0.057
       objectReference: {fileID: 0}
     - target: {fileID: 7661752279920749504, guid: a61a8351bd3c2a149accc4427fa9e14d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.1575
+      value: 0.141
       objectReference: {fileID: 0}
     - target: {fileID: 7661752279920749504, guid: a61a8351bd3c2a149accc4427fa9e14d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.0242
+      value: 0.024
       objectReference: {fileID: 0}
     - target: {fileID: 7661752279920749504, guid: a61a8351bd3c2a149accc4427fa9e14d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5224,7 +5247,7 @@ GameObject:
   - component: {fileID: 1646251915}
   - component: {fileID: 1646251917}
   m_Layer: 9
-  m_Name: ViewRangeSensor
+  m_Name: CoverPointSensor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5275,19 +5298,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 1646251913}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d716b8cdba194f8698f62ae5a2009486, type: 3}
+  m_Script: {fileID: 11500000, guid: 6df0b697af464f5fa93490110679a151, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPC.GOAP.CoverPointSensor
-  detectionRadius: 10
+  detectionRadius: 191.09
   detectionLayers:
     serializedVersion: 2
     m_Bits: 4294967295
   updateInterval: 0.5
-  requireLineOfSight: 0
+  requireLineOfSight: 1
   obstructionLayers:
     serializedVersion: 2
-    m_Bits: 0
-  sensorOrigin: {fileID: 825068497}
+    m_Bits: 1
+  sensorOrigin: {fileID: 0}
   prioritizeClosest: 1
   maxTargets: 10
   showDebugGizmos: 1
@@ -5926,7 +5949,7 @@ Transform:
   m_GameObject: {fileID: 1952177268}
   serializedVersion: 2
   m_LocalRotation: {x: -0.000000007375791, y: -0.000000013250199, z: -0.000000001906301, w: 1}
-  m_LocalPosition: {x: -0.363, y: 1.796, z: 0.36}
+  m_LocalPosition: {x: -0.363, y: 1.6397, z: 0.36}
   m_LocalScale: {x: 0.10000001, y: 0.099999994, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6159,7 +6182,7 @@ Transform:
   m_GameObject: {fileID: 2034700502}
   serializedVersion: 2
   m_LocalRotation: {x: -0.23418757, y: 0.67323107, z: 0.6123822, w: 0.3419126}
-  m_LocalPosition: {x: -0.1093, y: -0.0143, z: -0.0628}
+  m_LocalPosition: {x: -0.072, y: -0.021, z: -0.077}
   m_LocalScale: {x: 0.09999998, y: 0.09999998, z: 0.09999996}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6355,7 +6378,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ecb2af2c57647e4b4ace348c884ff98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player.Movement.PlayerStateMachine
-  invulnerable: 0
+  invulnerable: 1
 --- !u!114 &2126911736
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,20 +1,17 @@
 ﻿using System;
 
-namespace Items.Guns
+namespace Items.Guns.Ammo
 {
     public interface IAmmoSystem : IGunSystem
     {
-   
-
-        
         bool CurrentMagazineEmpty { get; }
         bool IsReloading { get; }
         bool CanReload { get; }
-        void StartReload();
-        void ConsumeAmmo();
         int CurrentAmmo { get; }
         int TotalAmmo { get; }
-        
+        void StartReload();
+        void ConsumeAmmo();
+
         void DropMagazine();
 
         public event Action<ReloadEvent> OnReloadComplete;

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Items.Guns.Items.Guns.Dependencies
+namespace Items.Guns
 {
     public interface IMonoBehaviourContext
     {

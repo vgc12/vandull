@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Items.Guns.Firing;
 using UnityEngine;
 
-namespace Items.Guns
+namespace Items.Guns.Firing
 {
     public class BurstFireMode : BaseFireMode
     {
-        private Coroutine _burstFireCoroutine;
         private readonly int _burstCount;
         private readonly float _burstDelay;
+        private Coroutine _burstFireCoroutine;
 
-        public BurstFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour, Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour,muzzleTransform, onShotFiredSubscribers)
+        public BurstFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
+            Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(config, gunTransform, behaviour, muzzleTransform, onShotFiredSubscribers)
         {
             _burstCount = Config.firingSettings.burstCount;
             _burstDelay = Config.firingSettings.burstDelay;
@@ -39,7 +39,6 @@ namespace Items.Guns
 
         public override void Fire()
         {
-            
         }
 
 
@@ -65,17 +64,11 @@ namespace Items.Guns
 
         private IEnumerator FireBurst()
         {
-            for (int i = 0; i < _burstCount && !IsOutOfAmmo; i++)
+            for (var i = 0; i < _burstCount && !IsOutOfAmmo; i++)
             {
-                if (CanFire)
-                {
-                    PerformShot();
-                }
+                if (CanFire) PerformShot();
 
-                if (i < _burstCount - 1)
-                {
-                    yield return new WaitForSeconds(_burstDelay);
-                }
+                if (i < _burstCount - 1) yield return new WaitForSeconds(_burstDelay);
             }
 
             yield return new WaitForSeconds(Config.firingSettings.fireRate - _burstDelay);

@@ -8,53 +8,81 @@ using UnityEngine;
 using UnityEngine.Pool;
 using Object = UnityEngine.Object;
 
-namespace Items.Guns
+namespace Items.Guns.Ammo
 {
-    
-
-    
-    
-    
-    
     public class AmmoSystem : IAmmoSystem
     {
-        
-        private readonly GunConfig _config;
-        private readonly List<Magazine> _magazines = new();
-        private int _currentMagazineIndex;
-        private bool _isReloading;
         private readonly MonoBehaviour _behaviour;
+
+        private readonly GunConfig _config;
+
+        private readonly ObjectPool<Magazine> _magazinePool;
+
+        private readonly GameObject _magazinePrefab;
+        private readonly List<Magazine> _magazines = new();
+
+
+        private readonly Transform _magazineSpawnPosition;
+        private int _currentMagazineIndex;
+
+        public AmmoSystem(GunConfig config, Transform magazineSpawnPosition, MonoBehaviour behaviour)
+        {
+            _config = config;
+
+            _behaviour = behaviour;
+            _magazinePrefab = config.ammoSettings.magazinePrefab;
+            _magazinePool = new ObjectPool<Magazine>(CreateMagazine);
+            _magazineSpawnPosition = magazineSpawnPosition;
+            InitializeMagazines();
+        }
+
+        private Magazine CurrentMagazine { get; set; } 
+
+        private bool HasSpareAmmo => _magazines.Count > 1;
         public bool CurrentMagazineEmpty => CurrentMagazine.IsEmpty;
-        public bool IsReloading => _isReloading;
+        public bool IsReloading { get; private set; }
+
         public int CurrentAmmo => CurrentMagazine.CurrentAmmo;
         public int TotalAmmo => _magazines.Count * _config.ammoSettings.magazineSize;
         public event Action<ReloadEvent> OnReloadComplete;
         public event Action OnOutOfAmmo;
 
-        private Magazine CurrentMagazine => _magazines[_currentMagazineIndex];
-        
-        private readonly ObjectPool<Magazine> _magazinePool;
+        public bool CanReload => !IsReloading && HasSpareAmmo;
 
-        private readonly GameObject _magazinePrefab;
-        
-        
-        
-        private readonly Transform _magazineSpawnPosition;
-        public AmmoSystem(GunConfig config, Transform MagazineSpawnPosition, MonoBehaviour behaviour)
+        public void StartReload()
         {
-            _config = config;
-         
-            _behaviour = behaviour;
-            _magazinePrefab = config.ammoSettings.magazinePrefab;
-            _magazinePool = new ObjectPool<Magazine>(CreateMagazine);
-            _magazineSpawnPosition = MagazineSpawnPosition;
-            InitializeMagazines();
+            if (!CanReload) return;
+
+            IsReloading = true;
+
+            _behaviour.StartCoroutine(ReloadRoutine());
+        }
+
+
+        public void DropMagazine()
+        {
+            var currentMag = CurrentMagazine;
+            currentMag.Drop();
+            _magazines.RemoveAt(_currentMagazineIndex);
+        }
+
+
+        public void ConsumeAmmo()
+        {
+            if (!CurrentMagazineEmpty)
+                CurrentMagazine.SubtractOne();
+            else
+                OnOutOfAmmo?.Invoke();
+        }
+
+        public void Update()
+        {
         }
 
         private Magazine CreateMagazine()
         {
-           var magObject = Object.Instantiate(_magazinePrefab);
-      
+            var magObject = Object.Instantiate(_magazinePrefab);
+
             var rigidbody = magObject.GetOrAddComponent<Rigidbody>();
             var collider = magObject.GetOrAddComponent<BoxCollider>();
             var mr = magObject.GetOrAddComponent<MeshRenderer>();
@@ -66,7 +94,7 @@ namespace Items.Guns
 
         private void InitializeMagazines()
         {
-            for (int i = 0; i < _config.ammoSettings.magazineCount; i++)
+            for (var i = 0; i < _config.ammoSettings.magazineCount; i++)
             {
                 var mag = _magazinePool.Get();
                 mag.Capacity = _config.ammoSettings.magazineSize;
@@ -74,68 +102,29 @@ namespace Items.Guns
                 _magazines.Add(mag);
                 mag.UnEquip();
             }
-            
+
             EquipCurrentMagazine();
-
         }
 
-        public bool CanReload => !_isReloading && HasSpareAmmo;
-
-        private bool HasSpareAmmo => _magazines.Count > 1 ;
-
-        public void StartReload()
-        {
-            if (!CanReload) return;
-
-            _isReloading = true;
-            
-           _behaviour.StartCoroutine(ReloadRoutine());
-        }
-        
         private void EquipCurrentMagazine()
         {
+            CurrentMagazine = _magazines[_currentMagazineIndex];
             CurrentMagazine.Equip();
         }
 
         private IEnumerator ReloadRoutine()
         {
-          
             DropMagazine();
-            
+
             yield return new WaitForSeconds(_config.ammoSettings.reloadTime);
-            
+
             _currentMagazineIndex = (_currentMagazineIndex + 1) % _magazines.Count;
-            _isReloading = false;
-            
+            IsReloading = false;
+
             VandullLogger.Log(this);
             EquipCurrentMagazine();
-            
+
             OnReloadComplete?.Invoke(new ReloadEvent(CurrentMagazine));
-    
-        }
-
-
-        public void DropMagazine()
-        {
-            var currentMag = CurrentMagazine;
-            currentMag.Drop();
-            _magazines.RemoveAt(_currentMagazineIndex);
-        }
-
-      
-
-        public void ConsumeAmmo()
-        {
-          
-            if (!CurrentMagazineEmpty)
-            {
-                CurrentMagazine.SubtractOne();
-            }
-            else
-            {
-                OnOutOfAmmo?.Invoke();
-            }
-            
         }
 
         public override string ToString()
@@ -143,20 +132,12 @@ namespace Items.Guns
             return GetAllMagsStatus();
         }
 
-        public void Update()
-        {
-            
-        }
-
         public string GetAllMagsStatus()
         {
-            StringBuilder stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine(MagazineStatus());
-         
-            for (int i = 0; i < _magazines.Count; i++)
-            {
-                stringBuilder.AppendLine(MagazineStatus(i));
-            }
+
+            for (var i = 0; i < _magazines.Count; i++) stringBuilder.AppendLine(MagazineStatus(i));
 
             return stringBuilder.ToString();
         }

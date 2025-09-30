@@ -1,9 +1,6 @@
-using System;
-using System.Globalization;
 using Attributes;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 
 namespace Player.Looking
 {
@@ -19,14 +16,14 @@ namespace Player.Looking
             None = 0
         }
 
-        [Required]  public ObjectSwayer objectSwayer;
+        [Required] public ObjectSwayer objectSwayer;
 
         private PlayerInputActions _input;
 
         private Vector2 _mouseDelta;
 
         private LeanDirection _leanDirection = LeanDirection.None;
-        
+
         private Vector2 _cameraRotation = Vector2.zero;
 
 
@@ -34,19 +31,18 @@ namespace Player.Looking
 
         public CameraBobber CameraBobber { get; private set; }
 
-        [Header("Configuration")] 
-        [Required, SerializeField]
+        [Header("Configuration")] [Required] [SerializeField]
         private PlayerLookingConfig config;
 
         [Required] public SwayConfig swayConfig;
-   
 
-        [Header("Transforms")] [SerializeField, Required]
+
+        [Header("Transforms")] [SerializeField] [Required]
         private Transform cameraHolder;
 
-        [SerializeField, Required] private Transform orientation;
+        [SerializeField] [Required] private Transform orientation;
 
-        [SerializeField, Required] private Transform leanPoint;
+        [SerializeField] [Required] private Transform leanPoint;
 
         #endregion
 
@@ -70,7 +66,6 @@ namespace Player.Looking
             _input.Player.Lean.started -= OnLeaning;
             _input.Player.Lean.canceled -= OnLeaning;
         }
-
 
         #endregion
 
@@ -105,20 +100,17 @@ namespace Player.Looking
 
         #region StateMachineFunctions
 
-
         public void Lean()
         {
-         
             var rot = Quaternion.Slerp(leanPoint.rotation,
                 Quaternion.Euler(0, _cameraRotation.y, -(float)_leanDirection * config.LeanAngle),
                 config.LeanSpeed * Time.deltaTime);
-            
+
             leanPoint.rotation = rot;
             cameraHolder.rotation = Quaternion.Euler(_cameraRotation.x, _cameraRotation.y, 0);
         }
 
 
-        
         public void Look()
         {
             var mouseX = _mouseDelta.x * Time.deltaTime * config.Sensitivity;
@@ -135,7 +127,4 @@ namespace Player.Looking
 
         #endregion
     }
-    
-    
-    
 }

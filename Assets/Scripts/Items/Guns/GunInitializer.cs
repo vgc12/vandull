@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Items.Guns.Aiming;
+using Items.Guns.Ammo;
 using Items.Guns.Firing;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
@@ -11,7 +13,7 @@ namespace Items.Guns
     public abstract class GunInitializer : ScriptableObject
     {
         public abstract GunSystems CreateGunSystems(Gun gun);
-      
+
 
         private abstract class FireModeFactory
         {
@@ -25,17 +27,14 @@ namespace Items.Guns
             {
                 IFireSystem fireSystem = fireType switch
                 {
-                    FireType.SemiAutomatic => new SemiAutoFireMode(config, gunTransform, behaviour, muzzleTransform ),
+                    FireType.SemiAutomatic => new SemiAutoFireMode(config, gunTransform, behaviour, muzzleTransform),
                     FireType.Automatic => new AutomaticFireMode(config, gunTransform, behaviour, muzzleTransform),
                     FireType.Burst => new BurstFireMode(config, gunTransform, behaviour, muzzleTransform),
                     _ => throw new ArgumentException($"Unsupported fire type: {fireType}")
                 };
 
                 if (shotHandlers == null) return fireSystem;
-                foreach (var handler in shotHandlers)
-                {
-                    fireSystem.OnShotFired += handler;
-                }
+                foreach (var handler in shotHandlers) fireSystem.OnShotFired += handler;
 
                 return fireSystem;
             }
@@ -43,144 +42,29 @@ namespace Items.Guns
 
         protected class Builder : IGunSystemsBuilder
         {
-            private readonly List<Action<ShotFiredEvent>> _onShotFired = new List<Action<ShotFiredEvent>>();
+            private readonly Dictionary<FireType, Func<IFireSystem>> _customFireModeFactories;
+            private readonly Gun _gun;
             private readonly List<Action> _onAmmoOut = new();
+            private readonly List<Action<ShotFiredEvent>> _onShotFired = new();
+            private Func<IAimingSystem> _aimingSystemFactory;
+            private Func<IAmmoSystem> _ammoSystemFactory;
 
             // Fire mode configuration
             private List<FireType> _enabledFireModes = new();
-            private readonly Dictionary<FireType, Func<IFireSystem>> _customFireModeFactories;
 
             // Other system factories
             private Func<IFireModeSystem> _fireModeSystemFactory;
-            private Func<IAimingSystem> _aimingSystemFactory;
-            private Func<IAmmoSystem> _ammoSystemFactory;
             private Func<IRecoilSystem> _recoilSystemFactory;
             private Func<ITrailSystem> _trailSystemFactory;
-            private Gun _gun;
+
             public Builder(Gun gun)
             {
                 _gun = gun;
-            
+
                 _customFireModeFactories = new Dictionary<FireType, Func<IFireSystem>>();
 
                 SetDefaultConfiguration();
                 SetDefaultFactories();
-            }
-
-            private void SetDefaultConfiguration()
-            {
-                _enabledFireModes = _gun?.gunConfig?.fireModeSettings?.availableFireModes?.ToList()
-                                    ?? new List<FireType> { FireType.SemiAutomatic };
-            }
-
-            private void SetDefaultFactories()
-            {
-                // Default fire mode system factory
-                _fireModeSystemFactory = () =>
-                {
-                    var fireModes = CreateFireModes();
-                    return new FireModeSwitcher(fireModes);
-                };
-
-                _aimingSystemFactory = () => new AimingSystem(
-                    
-                    _gun.transform,
-                    _gun.gunConfig,
-                    _gun.hipFireTransform,
-                    _gun.adsTransform
-                );
-
-                _ammoSystemFactory = () => new AmmoSystem(
-                    _gun.gunConfig,
-                    _gun.magazinePosition,
-                    _gun
-                );
-
-                _recoilSystemFactory = () => new RecoilSystem(
-                    _gun.gunConfig,
-                    _gun.transform,
-                    _gun.recoilTransform,
-                    _gun
-                );
-
-                _trailSystemFactory = () => new TrailSystem(_gun.gunConfig.trailConfig);
-            }
-
-            private List<IFireSystem> CreateFireModes()
-            {
-                var fireModes = new List<IFireSystem>();
-
-                foreach (var fireType in _enabledFireModes)
-                {
-                    IFireSystem fireMode;
-
-                    // Check if there's a custom factory for this fire type
-                    if (_customFireModeFactories.TryGetValue(fireType, out var factory))
-                    {
-                        fireMode = factory();
-                    }
-                    else
-                    {
-                        // Use default factory
-                        fireMode = FireModeFactory.CreateFireMode(
-                            fireType,
-                            _gun.gunConfig,
-                            _gun.transform,
-                            _gun,
-                            _gun.muzzleTranform,
-                            _onShotFired
-                        );
-                    }
-
-                    fireModes.Add(fireMode);
-                }
-
-                return fireModes;
-            }
-
-            // Builder methods for fire modes
-            public IGunSystemsBuilder WithFireModes(params FireType[] fireModes)
-            {
-                if (fireModes != null && fireModes.Length > 0)
-                {
-                    _enabledFireModes = fireModes.ToList();
-                }
-
-                return this;
-            }
-
-            public IGunSystemsBuilder WithFireModes(List<FireType> fireModes)
-            {
-                if (fireModes is { Count: > 0 })
-                {
-                    _enabledFireModes = fireModes;
-                }
-
-                return this;
-            }
-
-            public IGunSystemsBuilder WithCustomFireMode<T>(FireType fireType, Func<T> customFactory)
-                where T : IFireSystem
-            {
-                if (customFactory != null)
-                {
-                    _customFireModeFactories[fireType] = () => customFactory();
-
-                    // Add to enabled fire modes if not already present
-                    if (!_enabledFireModes.Contains(fireType))
-                    {
-                        _enabledFireModes.Add(fireType);
-                    }
-                }
-
-                return this;
-            }
-
-            public IGunSystemsBuilder WithFireModeSystem(Func<IFireModeSystem> fireModeSystemFactory)
-            {
-                if (fireModeSystemFactory != null)
-                    _fireModeSystemFactory = fireModeSystemFactory;
-                return this;
             }
 
 
@@ -226,7 +110,6 @@ namespace Items.Guns
                 return this;
             }
 
-       
 
             public GunSystems Build()
             {
@@ -253,9 +136,111 @@ namespace Items.Guns
                     FireModeSystem = fireModeSystem,
                     AimingSystem = aimingSystem,
                     AmmoSystem = ammoSystem,
-                    RecoilSystem = recoilSystem,
+                    RecoilSystem = recoilSystem
                 };
                 return systems;
+            }
+
+            private void SetDefaultConfiguration()
+            {
+                _enabledFireModes = _gun?.gunConfig?.fireModeSettings?.availableFireModes?.ToList()
+                                    ?? new List<FireType> { FireType.SemiAutomatic };
+            }
+
+            private void SetDefaultFactories()
+            {
+                // Default fire mode system factory
+                _fireModeSystemFactory = () =>
+                {
+                    var fireModes = CreateFireModes();
+                    return new FireModeSwitcher(fireModes);
+                };
+
+                _aimingSystemFactory = () => new AimingSystem(
+                    _gun.transform,
+                    _gun.gunConfig,
+                    _gun.hipFireTransform,
+                    _gun.adsTransform
+                );
+
+                _ammoSystemFactory = () => new AmmoSystem(
+                    _gun.gunConfig,
+                    _gun.magazinePosition,
+                    _gun
+                );
+
+                _recoilSystemFactory = () => new RecoilSystem(
+                    _gun.gunConfig,
+                    _gun.transform,
+                    _gun.recoilTransform,
+                    _gun
+                );
+
+                _trailSystemFactory = () => new TrailSystem(_gun.gunConfig.trailConfig);
+            }
+
+            private List<IFireSystem> CreateFireModes()
+            {
+                var fireModes = new List<IFireSystem>();
+
+                foreach (var fireType in _enabledFireModes)
+                {
+                    IFireSystem fireMode;
+
+                    // Check if there's a custom factory for this fire type
+                    if (_customFireModeFactories.TryGetValue(fireType, out var factory))
+                        fireMode = factory();
+                    else
+                        // Use default factory
+                        fireMode = FireModeFactory.CreateFireMode(
+                            fireType,
+                            _gun.gunConfig,
+                            _gun.transform,
+                            _gun,
+                            _gun.muzzleTranform,
+                            _onShotFired
+                        );
+
+                    fireModes.Add(fireMode);
+                }
+
+                return fireModes;
+            }
+
+            // Builder methods for fire modes
+            public IGunSystemsBuilder WithFireModes(params FireType[] fireModes)
+            {
+                if (fireModes != null && fireModes.Length > 0) _enabledFireModes = fireModes.ToList();
+
+                return this;
+            }
+
+            public IGunSystemsBuilder WithFireModes(List<FireType> fireModes)
+            {
+                if (fireModes is { Count: > 0 }) _enabledFireModes = fireModes;
+
+                return this;
+            }
+
+            public IGunSystemsBuilder WithCustomFireMode<T>(FireType fireType, Func<T> customFactory)
+                where T : IFireSystem
+            {
+                if (customFactory != null)
+                {
+                    _customFireModeFactories[fireType] = () => customFactory();
+
+                    // Add to enabled fire modes if not already present
+                    if (!_enabledFireModes.Contains(fireType)) _enabledFireModes.Add(fireType);
+                }
+
+                return this;
+            }
+
+            public IGunSystemsBuilder WithFireModeSystem(Func<IFireModeSystem> fireModeSystemFactory)
+            {
+                if (fireModeSystemFactory != null)
+                    _fireModeSystemFactory = fireModeSystemFactory;
+                return this;
             }
 
             private void AddDefaultShotHandlers(IRecoilSystem recoilSystem, IAmmoSystem ammoSystem,
@@ -272,25 +257,16 @@ namespace Items.Guns
                 // Wire ammo events to all fire modes
                 ammoSystem.OnOutOfAmmo += () =>
                 {
-                    foreach (var fireMode in fireModeSystem.AvailableFireModes)
-                    {
-                        fireMode.OnOutOfAmmo();
-                    }
+                    foreach (var fireMode in fireModeSystem.AvailableFireModes) fireMode.OnOutOfAmmo();
                 };
 
                 ammoSystem.OnReloadComplete += _ =>
                 {
-                    foreach (var firemode in fireModeSystem.AvailableFireModes)
-                    {
-                        firemode.OnReloadEnded();
-                    }
+                    foreach (var firemode in fireModeSystem.AvailableFireModes) firemode.OnReloadEnded();
                 };
 
                 // Add custom ammo out handlers
-                foreach (var handler in _onAmmoOut)
-                {
-                    ammoSystem.OnOutOfAmmo += handler;
-                }
+                foreach (var handler in _onAmmoOut) ammoSystem.OnOutOfAmmo += handler;
             }
         }
     }

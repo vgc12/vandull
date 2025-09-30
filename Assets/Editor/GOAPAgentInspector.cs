@@ -1,16 +1,13 @@
 ﻿#if UNITY_EDITOR
 
-using NPC;
-using NPC.GOAP;
-using UnityEditor;
-using UnityEngine;
 
+/*
 namespace Editor
 {
     [CustomEditor(typeof(Enemy))]
     public class GoapAgentInspector : UnityEditor.Editor {
         public override void OnInspectorGUI() {
-            GoapAgent agent = (GoapAgent)target;
+            GoapAgent agent = (Enemy)target;
 
             EditorGUILayout.Space();
             DrawDefaultInspector();
@@ -67,5 +64,5 @@ namespace Editor
         }
     }
 }
-
+*/
 #endif

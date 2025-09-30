@@ -13,7 +13,7 @@ namespace General
         {
             Debug.Log($"[{Path.GetFileName(file)}:{line} - {member}] {message}");
         }
-    
+
         public static void LogWarning(object message,
             [CallerMemberName] string member = "",
             [CallerFilePath] string file = "",
@@ -21,7 +21,7 @@ namespace General
         {
             Debug.LogWarning($"[{Path.GetFileName(file)}:{line} - {member}] {message}");
         }
-    
+
         public static void LogError(object message,
             [CallerMemberName] string member = "",
             [CallerFilePath] string file = "",

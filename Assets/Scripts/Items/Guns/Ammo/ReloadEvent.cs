@@ -1,15 +1,14 @@
 ﻿using EventBus;
 
-namespace Items.Guns
+namespace Items.Guns.Ammo
 {
     public class ReloadEvent : IEvent
     {
-        public Magazine CurrentMagazine { get; }
-            
         public ReloadEvent(Magazine currentMagazine)
         {
             CurrentMagazine = currentMagazine;
         }
-            
+
+        public Magazine CurrentMagazine { get; }
     }
 }
