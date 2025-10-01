@@ -22,7 +22,10 @@ namespace Player.States
 
         public override void Update()
         {
+            _sm.PlayerLooking.Look();
             _sm.PlayerMovement.ApplyDrag();
         }
+
+    
     }
 }

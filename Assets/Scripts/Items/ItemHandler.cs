@@ -12,7 +12,7 @@ namespace Items
     [Serializable]
     public class ItemHandler : MonoBehaviour
     {
-        [SerializeField] [Required] public List<Gun> gunObjects = new();
+        [SerializeField] public List<Gun> gunObjects = new();
 
         private List<Item> _inventory = new();
         public Item EquippedItem { get; private set; }

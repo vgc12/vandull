@@ -30,7 +30,7 @@ namespace Items
             EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_itemHandler.EquippedItem));
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             _inputManager.InputActions.Player.SwitchItem.performed -= OnItemSwitched;
         }

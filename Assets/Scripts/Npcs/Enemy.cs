@@ -20,11 +20,11 @@ namespace Npcs
         [SerializeField] private float approachDistance = 5f;
         [SerializeField] private float pathCompletionThreshold = 2f;
         [SerializeField] private float engagementRange = 7f;
-
+        [SerializeField] private float pointFollowSpeed = 5f;
         [Header("Combat Settings")] [SerializeField]
         private float damagedDuration = 4f;
 
-        [SerializeField] private float lookAtDamageSpeed = 10f;
+        [SerializeField] private float lookAtSpeed = 10f;
 
         [Header("References")] [SerializeField] [Required]
         private Gun gun;
@@ -42,6 +42,10 @@ namespace Npcs
         public Transform AimPoint => aimPoint;
         public RaycastObjectSensor PlayerSensor => playerSensor;
         public CoverPointSensor CoverPointSensor => coverPointSensor;
+        
+        public float LookAtSpeed => lookAtSpeed;
+        
+        public float PointFollowSpeed => pointFollowSpeed;
 
         protected override void Awake()
         {
@@ -51,6 +55,7 @@ namespace Npcs
 
         protected override void SetUpTimers()
         {
+     
             base.SetUpTimers();
             _damagedTimer = new CountdownTimer(damagedDuration);
             _damagedTimer.OnTimerStart += () => _recentlyDamaged = true;
@@ -74,8 +79,11 @@ namespace Npcs
                 () => !playerSensor.CanSeeTarget && !NavMeshAgent.pathPending);
             StateMachine.AddTransition(attackState, wanderState,
                 () => !playerSensor.CanSeeTarget && NavMeshAgent.pathPending && NavMeshAgent.remainingDistance <= 1f);
-            StateMachine.AddTransition(wanderState, idleState, () => !CanWalk && !playerSensor.CanSeeTarget);
-            StateMachine.AddTransition(idleState, wanderState, () => CanWalk && !playerSensor.CanSeeTarget);
+            StateMachine.AddTransition(wanderState, 
+                idleState, 
+                () => !CanWalk && !playerSensor.CanSeeTarget);
+            StateMachine.AddTransition(idleState, wanderState,
+                () => CanWalk && !playerSensor.CanSeeTarget);
             StateMachine.SetState(idleState);
         }
 
@@ -120,13 +128,14 @@ namespace Npcs
 
         public void LookAtDamageDirection()
         {
-            LookAtDirection(_lastDamageDirection, lookAtDamageSpeed);
+            LookAtDirection(_lastDamageDirection, lookAtSpeed);
         }
 
         public void LookAtTarget(Vector3 target, float turnSpeed)
         {
             var direction = target - gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
             LookAtDirection(direction, turnSpeed);
+            
         }
 
         public void LookAtDirection(Vector3 direction, float turnSpeed)
@@ -136,6 +145,10 @@ namespace Npcs
             _transform.rotation = Quaternion.Euler(0, _transform.rotation.eulerAngles.y, 0);
         }
 
+        public void FollowPoint(Transform t, Vector3 point, float speed)
+        {
+            t.position = Vector3.Lerp(t.position, point, Time.deltaTime * speed);
+        }
         public override void TakeDamage(float amount, Vector3 direction)
         {
             base.TakeDamage(amount, direction);

@@ -28,8 +28,8 @@ namespace Npcs.States.Enemy
             var aimPoint = _enemy.AimPoint;
             var sensor = _enemy.PlayerSensor;
 
-            aimPoint.position = sensor.Target.transform.position;
-            _enemy.LookAtTarget(sensor.Target.transform.position, 15f);
+            _enemy.FollowPoint(aimPoint, sensor.Target.transform.position, _enemy.PointFollowSpeed);
+            _enemy.LookAtTarget(sensor.Target.transform.position, _enemy.LookAtSpeed);
 
             _enemy.HandleTacticalMovement();
 

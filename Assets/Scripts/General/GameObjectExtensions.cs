@@ -33,6 +33,11 @@ namespace General
 
             return component;
         }
+        
+        public static T GetOrAdd<T>(this Component component) where T : Component
+        {
+            return component.gameObject.GetOrAdd<T>();
+        }
 
         /// <summary>
         ///     Returns the object itself if it exists, null otherwise.

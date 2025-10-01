@@ -18,7 +18,7 @@ namespace Player.Looking
 
         [Required] public ObjectSwayer objectSwayer;
 
-        private PlayerInputActions _input;
+        private InputManager _input;
 
         private Vector2 _mouseDelta;
 
@@ -48,23 +48,22 @@ namespace Player.Looking
 
         #region UnityFunctions
 
-        private void Awake()
-        {
-            InitializeControls();
-        }
+  
 
         private void Start()
         {
+            InitializeControls();
             CameraBobber = GetComponent<CameraBobber>();
         }
 
 
         private void OnDestroy()
         {
-            _input.Player.Look.performed -= OnMouseMove;
-            _input.Player.Look.canceled -= OnMouseMove;
-            _input.Player.Lean.started -= OnLeaning;
-            _input.Player.Lean.canceled -= OnLeaning;
+            
+            _input.InputActions.Player.Look.performed -= OnMouseMove;
+            _input.InputActions.Player.Look.canceled -= OnMouseMove;
+            _input.InputActions.Player.Lean.started -= OnLeaning;
+            _input.InputActions.Player.Lean.canceled -= OnLeaning;
         }
 
         #endregion
@@ -74,14 +73,14 @@ namespace Player.Looking
 
         private void InitializeControls()
         {
-            _input = new PlayerInputActions();
-            _input.Player.Enable();
-            _input.Player.Look.performed += OnMouseMove;
-            _input.Player.Look.canceled += OnMouseMove;
+         
+            _input = InputManager.Instance;
+            _input.InputActions.Player.Look.performed += OnMouseMove;
+            _input.InputActions.Player.Look.canceled += OnMouseMove;
 
 
-            _input.Player.Lean.started += OnLeaning;
-            _input.Player.Lean.canceled += OnLeaning;
+            _input.InputActions.Player.Lean.started += OnLeaning;
+            _input.InputActions.Player.Lean.canceled += OnLeaning;
         }
 
 

@@ -28,5 +28,5 @@ MonoBehaviour:
   crouchCheckRadius: 0.31
   excludedLayers:
     serializedVersion: 2
-    m_Bits: 118
+    m_Bits: 7798
   crouchCheckOffset: {x: 0, y: 0, z: -0.12}

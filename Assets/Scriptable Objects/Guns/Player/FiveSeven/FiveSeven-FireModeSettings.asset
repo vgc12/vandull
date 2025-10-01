@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 717a505ddf034049b262ae353b958c0d, type: 3}
-  m_Name: MP5-Damage Settings
-  m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.DamageSettings
-  damage: 28
-  range: 100
+  m_Script: {fileID: 11500000, guid: 6821bfe800fa4ab480177be32fa2db36, type: 3}
+  m_Name: FiveSeven-FireModeSettings
+  m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.FireModeSettings
+  availableFireModes: 00000000
+  defaultFireType: 0

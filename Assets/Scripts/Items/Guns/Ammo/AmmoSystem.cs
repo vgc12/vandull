@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using General;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
 using Object = UnityEngine.Object;
@@ -83,10 +82,10 @@ namespace Items.Guns.Ammo
         {
             var magObject = Object.Instantiate(_magazinePrefab);
 
-            var rigidbody = magObject.GetOrAddComponent<Rigidbody>();
-            var collider = magObject.GetOrAddComponent<BoxCollider>();
-            var mr = magObject.GetOrAddComponent<MeshRenderer>();
-            var magazine = magObject.GetOrAddComponent<Magazine>();
+            magObject.GetOrAdd<Rigidbody>();
+            magObject.GetOrAdd<BoxCollider>();
+            magObject.GetOrAdd<MeshRenderer>();
+            var magazine = magObject.GetOrAdd<Magazine>();
             magazine.MagazinePosition = _magazineSpawnPosition;
             magazine.AmmoSettings = _config.ammoSettings;
             return magazine;

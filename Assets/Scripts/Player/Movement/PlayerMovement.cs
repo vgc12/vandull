@@ -71,10 +71,6 @@ namespace Player.Movement
                     config.CrouchCheckRadius, Vector3.up, _crouchCheckHits,
                     config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y,
                     ~config.ExcludedLayers);
-                /*
-                var size = Physics.OverlapSphereNonAlloc(config.CrouchCheckOffset + headCheckTransform.position,
-                    config.CrouchCheckRadius, _crouchCheckCollider, ~config.ExcludedLayers);
-*/
 
                 if (size > 0)
                 {
@@ -207,7 +203,7 @@ namespace Player.Movement
         public void Jump()
         {
             _rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
-            _rigidbody.AddForce(_rigidbody.linearVelocity * (config.JumpForce / 4f * config.JumpMultiplier),
+            _rigidbody.AddForce(_rigidbody.linearVelocity/4 * (config.JumpForce * config.JumpMultiplier),
                 ForceMode.Impulse);
         }
 

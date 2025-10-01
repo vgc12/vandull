@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Attributes;
+using General;
 using Items.Guns.Aiming;
 using Items.Guns.Ammo;
 using Items.Guns.Firing;
@@ -111,9 +112,12 @@ namespace Items.Guns
 
         public void Drop()
         {
-            var rb = transform.GetOrAddComponent<Rigidbody>();
+            transform.GetOrAdd<Rigidbody>();
 
-            transform.GetOrAddComponent<MeshCollider>();
+            var colliderCount = transform.GetComponentsInChildren<Collider>();
+            if (colliderCount.Length == 0)
+                transform.GetOrAdd<BoxCollider>();
+            
             transform.SetParent(null);
 
             AmmoSystem.DropMagazine();
