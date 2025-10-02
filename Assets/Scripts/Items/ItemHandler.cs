@@ -15,6 +15,8 @@ namespace Items
         [SerializeField] public List<Gun> gunObjects = new();
 
         private List<Item> _inventory = new();
+
+        [Required] private RigHandler _rigHandler;
         public Item EquippedItem { get; private set; }
 
         public List<Item> Inventory
@@ -80,7 +82,12 @@ namespace Items
         {
             if (EquippedItem != null)
                 EquippedItem.UnEquip();
+
             EquippedItem = item;
+
+            _rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
+            _rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
+
             EquippedItem.Equip();
         }
     }

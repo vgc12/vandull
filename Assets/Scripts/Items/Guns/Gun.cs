@@ -6,7 +6,6 @@ using Items.Guns.Ammo;
 using Items.Guns.Firing;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Items.Guns
@@ -117,7 +116,7 @@ namespace Items.Guns
             var colliderCount = transform.GetComponentsInChildren<Collider>();
             if (colliderCount.Length == 0)
                 transform.GetOrAdd<BoxCollider>();
-            
+
             transform.SetParent(null);
 
             AmmoSystem.DropMagazine();

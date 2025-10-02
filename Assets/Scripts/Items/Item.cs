@@ -7,7 +7,16 @@ namespace Items
     {
         [SerializeField] private string itemName;
 
+        public Transform leftHandTarget;
+
+        public Transform leftHandHint;
+
+        public Transform rightHandTarget;
+
+        public Transform rightHandHint;
+
         protected InputManager InputManager;
+
         public bool IsEquipped { get; protected set; }
 
         public void Update()

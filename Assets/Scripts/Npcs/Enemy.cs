@@ -10,6 +10,7 @@ using Random = UnityEngine.Random;
 
 namespace Npcs
 {
+    [RequireComponent(typeof(RigHandler))]
     public class Enemy : Npc
     {
         [Header("Movement Settings")] [SerializeField]
@@ -21,41 +22,44 @@ namespace Npcs
         [SerializeField] private float pathCompletionThreshold = 2f;
         [SerializeField] private float engagementRange = 7f;
         [SerializeField] private float pointFollowSpeed = 5f;
+
         [Header("Combat Settings")] [SerializeField]
         private float damagedDuration = 4f;
 
         [SerializeField] private float lookAtSpeed = 10f;
 
-        [Header("References")] [SerializeField] [Required]
-        private Gun gun;
-
         [SerializeField] [Required] private Transform aimPoint;
         [SerializeField] [Required] private RaycastObjectSensor playerSensor;
         [SerializeField] [Required] private CoverPointSensor coverPointSensor;
         private CountdownTimer _damagedTimer;
+
         private Vector3 _lastDamageDirection;
 
         private bool _recentlyDamaged;
+        private RigHandler _rigHandler;
         private Transform _transform;
 
-        public Gun Gun => gun;
+        [field: Header("References")] public Gun Gun { get; private set; }
         public Transform AimPoint => aimPoint;
         public RaycastObjectSensor PlayerSensor => playerSensor;
         public CoverPointSensor CoverPointSensor => coverPointSensor;
-        
+
         public float LookAtSpeed => lookAtSpeed;
-        
+
         public float PointFollowSpeed => pointFollowSpeed;
 
         protected override void Awake()
         {
             base.Awake();
+            _rigHandler = GetComponent<RigHandler>();
+
+            Gun = GetComponentInChildren<Gun>();
+            _rigHandler.SetLeftHandData(Gun.leftHandTarget, Gun.leftHandHint);
             _transform = NavMeshAgent.transform;
         }
 
         protected override void SetUpTimers()
         {
-     
             base.SetUpTimers();
             _damagedTimer = new CountdownTimer(damagedDuration);
             _damagedTimer.OnTimerStart += () => _recentlyDamaged = true;
@@ -70,6 +74,7 @@ namespace Npcs
             var attackState = new AttackPlayerState(this);
             var damagedState = new EnemyDamagedState(this);
             var deadState = new EnemyDeadState(this);
+            // StateMachine.AddAnyTransition(idleState, () => true);
 
             StateMachine.AddAnyTransition(deadState, () => IsDead);
             StateMachine.AddAnyTransition(attackState, () => playerSensor.CanSeeTarget && !IsDead);
@@ -79,11 +84,12 @@ namespace Npcs
                 () => !playerSensor.CanSeeTarget && !NavMeshAgent.pathPending);
             StateMachine.AddTransition(attackState, wanderState,
                 () => !playerSensor.CanSeeTarget && NavMeshAgent.pathPending && NavMeshAgent.remainingDistance <= 1f);
-            StateMachine.AddTransition(wanderState, 
-                idleState, 
+            StateMachine.AddTransition(wanderState,
+                idleState,
                 () => !CanWalk && !playerSensor.CanSeeTarget);
             StateMachine.AddTransition(idleState, wanderState,
                 () => CanWalk && !playerSensor.CanSeeTarget);
+
             StateMachine.SetState(idleState);
         }
 
@@ -133,9 +139,8 @@ namespace Npcs
 
         public void LookAtTarget(Vector3 target, float turnSpeed)
         {
-            var direction = target - gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
+            var direction = target - Gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
             LookAtDirection(direction, turnSpeed);
-            
         }
 
         public void LookAtDirection(Vector3 direction, float turnSpeed)
@@ -149,6 +154,7 @@ namespace Npcs
         {
             t.position = Vector3.Lerp(t.position, point, Time.deltaTime * speed);
         }
+
         public override void TakeDamage(float amount, Vector3 direction)
         {
             base.TakeDamage(amount, direction);
