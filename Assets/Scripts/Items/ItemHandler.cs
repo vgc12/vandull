@@ -17,8 +17,11 @@ namespace Items
         private List<Item> _inventory = new();
 
         [Required] private RigHandler _rigHandler;
+        
         public Item EquippedItem { get; private set; }
 
+        [Header("Arm Animations")]
+        public Animator Animator;
         public List<Item> Inventory
         {
             get => _inventory;
@@ -32,19 +35,21 @@ namespace Items
             gunObjects ??= new List<Gun>();
 
             _inventory ??= new List<Item>();
+            
+            _rigHandler = GetComponent<RigHandler>();
 
             SetUpItems();
             LogPrefabs();
 
 
-            EquippedItem = _inventory.FirstOrDefault();
+            EquipItem(Inventory.FirstOrDefault());
 
             EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(EquippedItem));
         }
 
         private void Start()
         {
-            EquippedItem?.Equip();
+   
         }
 
         private void LogPrefabs()
@@ -62,7 +67,11 @@ namespace Items
         public void SetUpItems()
         {
             gunObjects = GetComponentsInChildren<Gun>().ToList();
-            foreach (var i in gunObjects) _inventory.Add(i);
+            foreach (var i in gunObjects)
+            {
+                _inventory.Add(i);
+                i.UnEquip();
+            }
         }
 
         public void InitializeItem(Item item)
@@ -81,13 +90,18 @@ namespace Items
         private void EquipItem(Item item)
         {
             if (EquippedItem != null)
+            {
                 EquippedItem.UnEquip();
+                
+            }
 
+         
             EquippedItem = item;
 
             _rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
             _rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
-
+            
+            Animator.SetLayerWeight((int)EquippedItem.gripType, 1);
             EquippedItem.Equip();
         }
     }

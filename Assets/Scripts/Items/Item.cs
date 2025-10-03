@@ -1,4 +1,5 @@
-﻿using Player;
+﻿using Items.Guns;
+using Player;
 using UnityEngine;
 
 namespace Items
@@ -17,6 +18,7 @@ namespace Items
 
         protected InputManager InputManager;
 
+        public GripType gripType = GripType.Pistol;
         public bool IsEquipped { get; protected set; }
 
         public void Update()

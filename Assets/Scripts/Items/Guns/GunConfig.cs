@@ -18,9 +18,15 @@ namespace Items.Guns
         [Required] public AmmoSettings ammoSettings;
         [Required] public RecoilSettings recoilSettings;
         [Required] public TrailConfig trailConfig;
+  
     }
 
-
+    public enum GripType
+    {
+        ARNoGrip,
+        Pistol,
+    }
+    
     public class GunSystems
     {
         public IRecoilSystem RecoilSystem { get; init; }

@@ -39,7 +39,8 @@ namespace Npcs
         private RigHandler _rigHandler;
         private Transform _transform;
 
-        [field: Header("References")] public Gun Gun { get; private set; }
+        [field: Header("References")] public Gun Gun => gun;
+        [SerializeField] private Gun gun;
         public Transform AimPoint => aimPoint;
         public RaycastObjectSensor PlayerSensor => playerSensor;
         public CoverPointSensor CoverPointSensor => coverPointSensor;
@@ -52,8 +53,7 @@ namespace Npcs
         {
             base.Awake();
             _rigHandler = GetComponent<RigHandler>();
-
-            Gun = GetComponentInChildren<Gun>();
+            
             _rigHandler.SetLeftHandData(Gun.leftHandTarget, Gun.leftHandHint);
             _transform = NavMeshAgent.transform;
         }

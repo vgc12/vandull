@@ -24,7 +24,7 @@ namespace Items.Guns
 
         public Transform adsTransform;
 
-        public Transform muzzleTranform;
+        public Transform muzzleTransform;
 
 
         public IAimingSystem AimingSystem { get; private set; }

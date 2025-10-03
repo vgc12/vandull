@@ -37,9 +37,7 @@ Shader "Custom/URP/CelShaded"
             "RenderPipeline" = "UniversalPipeline"
             "Queue" = "Geometry"
         }
-        LOD 200
 
-        // Outline Pass
         Pass
         {
             Name "Outline"
@@ -233,7 +231,7 @@ Shader "Custom/URP/CelShaded"
                 #endif
 
                 // Combine all lighting
-                return diffuse + specular + rim + additionalLighting * texColor;
+                return (diffuse + specular + rim + additionalLighting) * texColor;
             }
             ENDHLSL
         }

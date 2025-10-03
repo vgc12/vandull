@@ -13,7 +13,7 @@ namespace Player.States
 
         public override void Enter()
         {
-            _sm.PlayerLooking.CameraBobber.StopBobbing();
+            _sm.PlayerLooking.Bobber.StopBobbing();
         }
 
 

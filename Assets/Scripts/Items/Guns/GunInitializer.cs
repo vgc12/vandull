@@ -197,7 +197,7 @@ namespace Items.Guns
                             _gun.gunConfig,
                             _gun.transform,
                             _gun,
-                            _gun.muzzleTranform,
+                            _gun.muzzleTransform,
                             _onShotFired
                         );
 

@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 
 namespace Player.Looking
 {
-    [RequireComponent(typeof(GroundChecker), typeof(CameraBobber), typeof(Rigidbody))]
+    [RequireComponent(typeof(GroundChecker), typeof(Bobber), typeof(Rigidbody))]
     public class PlayerLooking : MonoBehaviour
     {
         #region Variables
@@ -29,7 +29,7 @@ namespace Player.Looking
 
         private Rigidbody _rigidbody;
 
-        public CameraBobber CameraBobber { get; private set; }
+        public Bobber Bobber { get; private set; }
 
         [Header("Configuration")] [Required] [SerializeField]
         private PlayerLookingConfig config;
@@ -44,6 +44,9 @@ namespace Player.Looking
 
         [SerializeField] [Required] private Transform leanPoint;
 
+        [Header("Configuration")] 
+        [Required] public CameraBobConfig cameraBobConfig;
+        
         #endregion
 
         #region UnityFunctions
@@ -53,7 +56,7 @@ namespace Player.Looking
         private void Start()
         {
             InitializeControls();
-            CameraBobber = GetComponent<CameraBobber>();
+            Bobber = GetComponent<Bobber>();
         }
 
 

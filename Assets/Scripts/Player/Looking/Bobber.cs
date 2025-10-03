@@ -5,12 +5,13 @@ using UnityEngine;
 namespace Player.Looking
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class CameraBobber : MonoBehaviour
+    public class Bobber : MonoBehaviour
     {
-        [Header("Configuration")] [Required] public CameraBobConfig cameraBobConfig;
+        
+
 
         [Header("Transform References")] [SerializeField] [Required]
-        private Transform cameraBobTransform;
+        private Transform BobTransform;
 
 
         [SerializeField] private float movementThreshold = 0.1f;
@@ -27,10 +28,10 @@ namespace Player.Looking
         private void Awake()
         {
             _rigidBody = GetComponent<Rigidbody>();
-            _initialPosition = cameraBobTransform.localPosition;
+            _initialPosition = BobTransform.localPosition;
         }
 
-        public void CameraBob(CameraBobSetting cameraBobSetting)
+        public void Bob(CameraBobSetting cameraBobSetting)
         {
             StopCurrentBobCoroutine();
 
@@ -80,8 +81,8 @@ namespace Player.Looking
             );
 
             var targetPosition = _initialPosition + bobOffset;
-            cameraBobTransform.localPosition = Vector3.Lerp(
-                cameraBobTransform.localPosition,
+            BobTransform.localPosition = Vector3.Lerp(
+                BobTransform.localPosition,
                 targetPosition,
                 Time.deltaTime * positionLerpSpeed
             );
@@ -90,10 +91,10 @@ namespace Player.Looking
 
         private IEnumerator LerpToPosition(Vector3 targetPosition)
         {
-            while (Vector3.Distance(cameraBobTransform.localPosition, targetPosition) > positionSnapThreshold)
+            while (Vector3.Distance(BobTransform.localPosition, targetPosition) > positionSnapThreshold)
             {
-                cameraBobTransform.localPosition = Vector3.Lerp(
-                    cameraBobTransform.localPosition,
+                BobTransform.localPosition = Vector3.Lerp(
+                    BobTransform.localPosition,
                     targetPosition,
                     Time.deltaTime * stopBobLerpSpeed
                 );
@@ -101,7 +102,7 @@ namespace Player.Looking
                 yield return null;
             }
 
-            cameraBobTransform.localPosition = targetPosition;
+            BobTransform.localPosition = targetPosition;
             _bobCoroutine = null;
         }
     }

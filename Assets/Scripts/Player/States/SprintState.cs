@@ -20,8 +20,8 @@ namespace Player.States
             _sm.PlayerMovement.ApplyDrag();
 
             _sm.PlayerLooking.Look();
-            var ce = _sm.PlayerLooking.CameraBobber;
-            ce.CameraBob(ce.cameraBobConfig.sprintConfig);
+            var ce = _sm.PlayerLooking.Bobber;
+            ce.Bob(_sm.PlayerLooking.cameraBobConfig.sprintConfig);
 
             _sm.PlayerLooking.Lean();
         }

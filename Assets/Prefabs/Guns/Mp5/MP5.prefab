@@ -594,6 +594,7 @@ MonoBehaviour:
   leftHandHint: {fileID: 6267678733525528255}
   rightHandTarget: {fileID: 1696449225611033681}
   rightHandHint: {fileID: 7725652028931458069}
+  gripType: 1
   gunConfig:
     fireModeSettings: {fileID: 11400000, guid: dd4a23ee97b95b343a40e9ed3b004771, type: 2}
     firingSettings: {fileID: 11400000, guid: 9b137968b1f446c4b9e24bcea5f32d3b, type: 2}
@@ -607,7 +608,7 @@ MonoBehaviour:
   hipFireTransform: {fileID: 6622877999510213927}
   recoilTransform: {fileID: 0}
   adsTransform: {fileID: 4648589758356261510}
-  muzzleTranform: {fileID: 5411058881839955612}
+  muzzleTransform: {fileID: 5411058881839955612}
 --- !u!1 &6907953005192634631
 GameObject:
   m_ObjectHideFlags: 0

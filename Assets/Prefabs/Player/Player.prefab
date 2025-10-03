@@ -318,6 +318,7 @@ GameObject:
   - component: {fileID: 5951253212750174003}
   - component: {fileID: 7594486301661258426}
   - component: {fileID: 4332915864696823165}
+  - component: {fileID: 8818783828990297783}
   m_Layer: 6
   m_Name: ItemHandler
   m_TagString: Untagged
@@ -367,6 +368,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Items.ItemHandler
   gunObjects:
   - {fileID: 0}
+  Animator: {fileID: 0}
 --- !u!114 &4332915864696823165
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -379,6 +381,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdedbc4ad88b408c8b604bfb4217548f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.PlayerGunHandler
+--- !u!114 &8818783828990297783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2798094114429424454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83e2de39352439044b571169cc73bbca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  leftHandConstraint: {fileID: 0}
+  rightHandConstraint: {fileID: 0}
+  rigBuilder: {fileID: 0}
 --- !u!1 &2890560209552210782
 GameObject:
   m_ObjectHideFlags: 0
