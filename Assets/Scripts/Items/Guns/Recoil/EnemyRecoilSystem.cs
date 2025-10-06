@@ -1,7 +1,12 @@
-﻿namespace Items.Guns.Recoil
+﻿using UnityEngine;
+
+namespace Items.Guns.Recoil
 {
     public class EnemyRecoilSystem : IRecoilSystem
     {
+        private readonly Transform _aimPoint;
+
+
         public void Update()
         {
         }

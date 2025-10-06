@@ -35,7 +35,7 @@ namespace Items.Guns.Ammo
             InitializeMagazines();
         }
 
-        private Magazine CurrentMagazine { get; set; } 
+        private Magazine CurrentMagazine { get; set; }
 
         private bool HasSpareAmmo => _magazines.Count > 1;
         public bool CurrentMagazineEmpty => CurrentMagazine.IsEmpty;
@@ -62,6 +62,7 @@ namespace Items.Guns.Ammo
         {
             var currentMag = CurrentMagazine;
             currentMag.Drop();
+            if (_currentMagazineIndex >= _magazines.Count || _currentMagazineIndex < 0) return;
             _magazines.RemoveAt(_currentMagazineIndex);
         }
 

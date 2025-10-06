@@ -71,6 +71,34 @@ namespace Items.Guns.Firing
             var startPoint = MuzzleTransform.position;
             var endPoint = startPoint + MuzzleTransform.forward * Config.damageSettings.range;
 
+            if (Physics.Raycast(startPoint, MuzzleTransform.forward, out var hit, Config.damageSettings.range,
+                    ~LayerMask.GetMask("Ignore Raycast")))
+            {
+                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
+
+                VandullLogger.Log("Hit: " + hit.collider.name);
+
+
+                if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable)) return;
+
+                if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
+                {
+                    damageable.TakeDamage(Config.damageSettings.damage * bodyPart.damageMultiplier,
+                        MuzzleTransform.forward);
+                    EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
+                        Config.damageSettings.damage));
+                }
+                else
+                {
+                    damageable.TakeDamage(Config.damageSettings.damage, MuzzleTransform.forward);
+                }
+            }
+            else
+            {
+                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, endPoint, new RaycastHit()));
+            }
+
+/*
             var hitCount = Physics.RaycastNonAlloc(
                 startPoint,
                 MuzzleTransform.forward,
@@ -84,19 +112,20 @@ namespace Items.Guns.Firing
                 return;
             }
 
-            ProcessHits(hitCount, startPoint);
+          //  ProcessHits(hitCount, startPoint);
+          */
         }
 
         private void ProcessHits(int hitCount, Vector3 startPoint)
         {
-            for (var i = 0; i < hitCount; i++)
+            for (var i = 0; i < 1; i++)
             {
                 var hit = HitResults[i];
 
                 if (hit.collider == null) continue;
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
 
-//                VandullLogger.Log("Hit: " + hit.collider.name);
+                VandullLogger.Log("Hit: " + hit.collider.name);
 
 
                 if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable) &&

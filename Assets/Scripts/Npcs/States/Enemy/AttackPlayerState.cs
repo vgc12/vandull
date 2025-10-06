@@ -18,11 +18,11 @@ namespace Npcs.States.Enemy
         {
             base.Enter();
             _enemy.Gun.FireModeSystem.SetCurrentFireMode(FireType.Automatic);
-            _enemy.Gun.StartAutomaticFire();
         }
 
         public override void Update()
         {
+            _enemy.Gun.StartAutomaticFire();
             _enemy.HandleMovementBlendTree();
 
             var aimPoint = _enemy.AimPoint;
@@ -33,10 +33,12 @@ namespace Npcs.States.Enemy
 
             _enemy.HandleTacticalMovement();
 
-            if (_gun.AmmoSystem.CurrentMagazineEmpty)
-                _gun.StopAutomaticFire();
-            else
-                _gun.AmmoSystem.StartReload();
+            if (_gun.AmmoSystem.CurrentMagazineEmpty) _gun.AmmoSystem.StartReload();
+        }
+
+        public override void Exit()
+        {
+            _gun.StopAutomaticFire();
         }
     }
 }

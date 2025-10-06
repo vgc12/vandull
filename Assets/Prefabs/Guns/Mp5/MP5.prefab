@@ -408,8 +408,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5375570212723351879}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.014, y: 0.009, z: -0.126}
+  m_LocalRotation: {x: 0.000000059604638, y: -0.000000010225903, z: -0.000000010838533, w: 1}
+  m_LocalPosition: {x: -0.0025, y: -0.127, z: 0.108}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -556,8 +556,8 @@ Transform:
   m_GameObject: {fileID: 6852199936988757893}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.067, y: -0.176, z: 0.123}
+  m_LocalScale: {x: 1.2, y: 1.2, z: 1.2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7215885916533828445}
@@ -594,7 +594,7 @@ MonoBehaviour:
   leftHandHint: {fileID: 6267678733525528255}
   rightHandTarget: {fileID: 1696449225611033681}
   rightHandHint: {fileID: 7725652028931458069}
-  gripType: 1
+  gripType: 0
   gunConfig:
     fireModeSettings: {fileID: 11400000, guid: dd4a23ee97b95b343a40e9ed3b004771, type: 2}
     firingSettings: {fileID: 11400000, guid: 9b137968b1f446c4b9e24bcea5f32d3b, type: 2}
@@ -696,7 +696,7 @@ Transform:
   m_GameObject: {fileID: 7510801649941455140}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.067, y: -0.176, z: 0.123}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

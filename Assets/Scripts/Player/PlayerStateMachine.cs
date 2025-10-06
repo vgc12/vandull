@@ -1,10 +1,10 @@
-﻿using General;
+﻿using EventBus;
+using General;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
 using StateMachine;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Player
 {
@@ -71,7 +71,7 @@ namespace Player
 
         public void Die()
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            EventBus<PlayerDeathEvent>.Raise(new PlayerDeathEvent());
         }
 
 

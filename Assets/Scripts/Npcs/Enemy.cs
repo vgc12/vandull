@@ -1,4 +1,5 @@
 ﻿using Attributes;
+using EventBus;
 using General;
 using Items.Guns;
 using Npcs.Sensors;
@@ -31,6 +32,7 @@ namespace Npcs
         [SerializeField] [Required] private Transform aimPoint;
         [SerializeField] [Required] private RaycastObjectSensor playerSensor;
         [SerializeField] [Required] private CoverPointSensor coverPointSensor;
+        [SerializeField] private Gun gun;
         private CountdownTimer _damagedTimer;
 
         private Vector3 _lastDamageDirection;
@@ -39,8 +41,7 @@ namespace Npcs
         private RigHandler _rigHandler;
         private Transform _transform;
 
-        [field: Header("References")] public Gun Gun => gun;
-        [SerializeField] private Gun gun;
+        public Gun Gun => gun;
         public Transform AimPoint => aimPoint;
         public RaycastObjectSensor PlayerSensor => playerSensor;
         public CoverPointSensor CoverPointSensor => coverPointSensor;
@@ -53,7 +54,7 @@ namespace Npcs
         {
             base.Awake();
             _rigHandler = GetComponent<RigHandler>();
-            
+
             _rigHandler.SetLeftHandData(Gun.leftHandTarget, Gun.leftHandHint);
             _transform = NavMeshAgent.transform;
         }
@@ -161,5 +162,15 @@ namespace Npcs
             _lastDamageDirection = -direction;
             _damagedTimer.Start();
         }
+
+        public override void Die()
+        {
+            base.Die();
+            EventBus<EnemyKilledEvent>.Raise(new EnemyKilledEvent());
+        }
+    }
+
+    public class EnemyKilledEvent : IEvent
+    {
     }
 }
