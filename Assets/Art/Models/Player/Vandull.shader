@@ -2,14 +2,14 @@ Shader "Custom/Vandull"
 {
     Properties
     {
-        [MainColor] _BaseColor("Base Color", Color) = (1, 1, 1, 1)
-        [MainTexture] _BaseMap("Base Map", 2D) = "white"
+        _BaseMap("Base Map", 2D) = "white"{}
+        _BaseColor("Base Color", Color) = (1,1,1,1)
 
-        _BumpMap ("Normal Map", 2D) = "bump" {}
+        _BumpMap ("Normal Map", 2D) = "bump"{}
         _BumpScale ("Normal Strength", Range(0, 2)) = 1.0
 
         [Header(Surface)]
-        _RoughnessMap("Roughness Map", 2D) = "white"
+        _RoughnessMap("Roughness Map", 2D) = "white" {}
         _Roughness("Roughness", Range(0, 1)) = 0.5
 
         [Header(Rim Lighting)]
@@ -23,6 +23,21 @@ Shader "Custom/Vandull"
         _EdgeDistanceAttenuation("Edge Distance Attenuation", Range(0, 1)) = 0.05
         _EdgeShadowAttenuation("Edge Shadow Attenuation", Range(0, 1)) = 0.05
         _EdgeRim("Edge Rim", Range(0, 1)) = 0.05
+
+        [Header(Ambient)]
+        _AmbientColor("Ambient Color", Color) = (1,1,1,1)
+        _AmbientMultiplier("Ambient Multiplier", Range(1, 10)) = 1
+        
+        [Header(Outline)]
+        _OutlineColor("Outline Color", Color) = (0,0,0,1)
+        _OutlineWidth("Outline Width", Range(0, 1)) = .03
+        
+        [Header(Normal Effects)]
+        _NormalThreshold("Normal Threshold", Range(0,1)) = .9999
+        _NormalEffectsColor("Normal Effects Color", Color) = (0,0,0,1)
+        [Toggle] _ColorX("Color X Direction", Float) = 1
+          [Toggle] _ColorY("Color Y Direction", Float) = 1
+          [Toggle] _ColorZ("Color Z Direction", Float) = 1
     }
     SubShader
     {
@@ -32,8 +47,51 @@ Shader "Custom/Vandull"
             "RenderPipeline" = "UniversalPipeline"
             "Queue" = "Geometry"
         }
+    /*
+        Pass
+        {
+            Name "Outline"
+            Cull Front
 
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
 
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _OutlineColor;
+                float _OutlineWidth;
+            CBUFFER_END
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+            };
+
+            Varyings vert(Attributes input)
+            {
+                Varyings output;
+                float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
+                float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                positionWS += normalWS * _OutlineWidth;
+                output.positionCS = TransformWorldToHClip(positionWS);
+                return output;
+            }
+
+            half4 frag(Varyings input) : SV_Target
+            {
+                return _OutlineColor;
+            }
+            ENDHLSL
+        }
+*/
         Pass
         {
             Name "ForwardLit"
@@ -65,188 +123,208 @@ Shader "Custom/Vandull"
             TEXTURE2D(_RoughnessMap);
             SAMPLER(sampler_RoughnessMap);
 
+
             CBUFFER_START(UnityPerMaterial)
-                CBUFFER_START(UnityPerMaterial)
-                    float4 _BaseMap_ST;
-                    float4 _BumpMap_ST;
-                    float _BumpScale;
-                    float4 _BaseColor;
+                float4 _BaseMap_ST;
+                float4 _BumpMap_ST;
+                float _BumpScale;
+                float4 _BaseColor;
 
-                    // Surface
-                    float _Roughness;
-                    float4 _RoughnessMap_ST;
+                // Surface
+                float _Roughness;
+                float4 _RoughnessMap_ST;
 
-                    // Rim Lighting
-                    float _RimStrength;
-                    float _RimAmount;
-                    float _RimThreshold;
+                // Rim Lighting
+                float _RimStrength;
+                float _RimAmount;
+                float _RimThreshold;
 
-                    // Edge Softness
-                    float _EdgeDiffuse;
-                    float _SpecularMap_ST;
-                    float _EdgeSpecular;
-                    float _EdgeDistanceAttenuation;
-                    float _EdgeShadowAttenuation;
-                    float _EdgeRim;
-                CBUFFER_END
+                // Edge Softness
+                float _EdgeDiffuse;
+                float _SpecularMap_ST;
+                float _EdgeSpecular;
+                float _EdgeDistanceAttenuation;
+                float _EdgeShadowAttenuation;
+                float _EdgeRim;
 
-                struct Attributes
-                {
-                    float4 positionOS : POSITION;
-                    float3 normalOS : NORMAL;
-                    float4 tangentOS : TANGENT;
-                    float2 uv : TEXCOORD0;
-                };
+                //Ambient
+                float4 _AmbientColor;
+                float _AmbientMultiplier;
 
-                struct Varyings
-                {
-                    float4 positionCS : SV_POSITION;
-                    float2 uv : TEXCOORD0;
-                    float3 normalWS : TEXCOORD1;
-                    float3 positionWS : TEXCOORD2;
-                    float3 tangentWS : TEXCOORD3;
-                    float3 bitangentWS : TEXCOORD4;
-                };
+                //Normal Effects
+                float _NormalThreshold;
+                float4 _NormalEffectsColor;
+                bool _ColorX;
+                bool _ColorY;
+                bool _ColorZ;
+            CBUFFER_END
 
-                struct EdgeConstants
-                {
-                    float diffuse;
-                    float specular;
-                    float rim;
-                    float distanceAttenuation;
-                    float shadowAttenuation;
-                };
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                float4 tangentOS : TANGENT;
+                float2 uv : TEXCOORD0;
+            };
 
-                struct SurfaceVariables
-                {
-                    float roughness;
-                    float shininess;
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                float2 uv : TEXCOORD0;
+                float3 normalWS : TEXCOORD1;
+                float3 positionWS : TEXCOORD2;
+                float3 tangentWS : TEXCOORD3;
+                float3 bitangentWS : TEXCOORD4;
+            };
 
-                    float rimStrength;
-                    float rimAmount;
-                    float rimThreshold;
+            struct EdgeConstants
+            {
+                float diffuse;
+                float specular;
+                float rim;
+                float distanceAttenuation;
+                float shadowAttenuation;
+            };
 
-                    float3 normal;
-                    float3 view;
+            struct SurfaceVariables
+            {
+                float roughness;
+                float shininess;
 
-                    EdgeConstants ec;
-                };
+                float rimStrength;
+                float rimAmount;
+                float rimThreshold;
+
+                float3 normal;
+                float3 view;
+
+                EdgeConstants ec;
+            };
 
 
-                float celBanding(float value, float bands)
-                {
-                    return floor(value * bands) / bands;
-                }
+            float celBanding(float value, float bands)
+            {
+                return floor(value * bands) / bands;
+            }
 
-                float3 CalculateCelShading(Light l, SurfaceVariables s)
-                {
-                    float attenuation =
-                        smoothstep(0.0f, s.ec.distanceAttenuation, l.distanceAttenuation) *
-                        smoothstep(0.0f, s.ec.shadowAttenuation, l.shadowAttenuation);
+            float3 CalculateCelShading(Light l, SurfaceVariables s)
+            {
+                float attenuation =
+                    smoothstep(0.0f, s.ec.distanceAttenuation, l.distanceAttenuation) *
+                    smoothstep(0.0f, s.ec.shadowAttenuation, l.shadowAttenuation);
 
-                    float diffuse = saturate(dot(s.normal, l.direction));
-                    diffuse *= attenuation;
+                float diffuse = saturate(dot(s.normal, l.direction));
+                diffuse *= attenuation;
 
-                    float3 h = SafeNormalize(l.direction + s.view);
-                    float specular = saturate(dot(s.normal, h));
-                    specular = pow(specular, s.shininess);
-                    specular *= diffuse;
+                float3 h = SafeNormalize(l.direction + s.view);
+                float specular = saturate(dot(s.normal, h));
+                specular = pow(specular, s.shininess);
+                specular *= diffuse;
 
-                    float rim = 1 - dot(s.view, s.normal);
-                    rim *= pow(diffuse, s.rimThreshold);
+                float rim = 1 - dot(s.view, s.normal);
+                rim *= pow(diffuse, s.rimThreshold);
 
-                    diffuse = smoothstep(0.0f, s.ec.diffuse, diffuse);
-                    specular = s.roughness * smoothstep(0.005f,
-                                                        0.005f + s.ec.specular * s.roughness, specular);
-                    rim = s.rimStrength * smoothstep(
-                        s.rimAmount - 0.5f * s.ec.rim,
-                        s.rimAmount + 0.5f * s.ec.rim,
-                        rim
-                    );
+                diffuse = smoothstep(0.0f, s.ec.diffuse, diffuse);
+                specular = s.roughness * smoothstep(0.005f,
+                                                    0.005f + s.ec.specular * s.roughness, specular);
+                rim = s.rimStrength * smoothstep(
+                    s.rimAmount - 0.5f * s.ec.rim,
+                    s.rimAmount + 0.5f * s.ec.rim,
+                    rim
+                );
 
-                    return l.color * (diffuse + max(specular, rim));
-                }
+                return l.color * (diffuse + max(specular, rim));
+            }
 
-                float3 LightingCelShaded(float Roughness,
-                                         float RimStrength, float RimAmount, float RimThreshold,
-                                         float3 Position, float3 Normal, float3 View, float EdgeDiffuse,
-                                         float EdgeSpecular, float EdgeDistanceAttenuation,
-                                         float EdgeShadowAttenuation, float EdgeRim, out float3 Color)
-                {
-                    Color = half3(0.5f, 0.5f, 0.5f);
+            float3 LightingCelShaded(float Roughness,
+                  float RimStrength, float RimAmount, float RimThreshold,
+                  float3 Position, float3 Normal, float3 View, float EdgeDiffuse,
+                  float EdgeSpecular, float EdgeDistanceAttenuation,
+                  float EdgeShadowAttenuation, float EdgeRim, out float3 Color)
+            {
+                Color = half3(0.5f, 0.5f, 0.5f);
 
-                    SurfaceVariables s;
-                    s.roughness = Roughness;
-                    s.shininess = exp2(10 * Roughness + 1);
-                    s.rimStrength = RimStrength;
-                    s.rimAmount = RimAmount;
-                    s.rimThreshold = RimThreshold;
-                    s.normal = normalize(Normal);
-                    s.view = SafeNormalize(View);
-                    s.ec.diffuse = EdgeDiffuse;
-                    s.ec.specular = EdgeSpecular;
-                    s.ec.distanceAttenuation = EdgeDistanceAttenuation;
-                    s.ec.shadowAttenuation = EdgeShadowAttenuation;
-                    s.ec.rim = EdgeRim;
+                SurfaceVariables s;
+                s.roughness = Roughness;
+                s.shininess = exp2(10 * Roughness + 1);
+                s.rimStrength = RimStrength;
+                s.rimAmount = RimAmount;
+                s.rimThreshold = RimThreshold;
+                s.normal = normalize(Normal);
+                s.view = SafeNormalize(View);
+                s.ec.diffuse = EdgeDiffuse;
+                s.ec.specular = EdgeSpecular;
+                s.ec.distanceAttenuation = EdgeDistanceAttenuation;
+                s.ec.shadowAttenuation = EdgeShadowAttenuation;
+                s.ec.rim = EdgeRim;
 
-                    #if SHADOWS_SCREEN
+                #if SHADOWS_SCREEN
                        float4 clipPos = TransformWorldToHClip(Position);
                        float4 shadowCoord = ComputeScreenPos(clipPos);
-                    #else
-                    float4 shadowCoord = TransformWorldToShadowCoord(Position);
-                    #endif
+                #else
+                float4 shadowCoord = TransformWorldToShadowCoord(Position);
+                #endif
 
-                    Light light = GetMainLight(shadowCoord);
-                    Color = CalculateCelShading(light, s);
+                Light light = GetMainLight(shadowCoord);
+                Color = CalculateCelShading(light, s);
 
-                    int pixelLightCount = GetAdditionalLightsCount();
-                    for (int i = 0; i < pixelLightCount; i++)
-                    {
-                        light = GetAdditionalLight(i, Position, 1);
-                        Color += CalculateCelShading(light, s);
-                    }
-                    return Color;
-                }
-
-
-                Varyings vert(Attributes input)
+                int pixelLightCount = GetAdditionalLightsCount();
+                for (int i = 0; i < pixelLightCount; i++)
                 {
-                    Varyings output;
-
-                    VertexPositionInputs positionInputs = GetVertexPositionInputs(input.positionOS.xyz);
-                    VertexNormalInputs normalInputs = GetVertexNormalInputs(input.normalOS, input.tangentOS);
-
-                    output.positionCS = positionInputs.positionCS;
-                    output.positionWS = positionInputs.positionWS;
-                    output.normalWS = normalInputs.normalWS;
-                    output.tangentWS = normalInputs.tangentWS;
-                    output.bitangentWS = normalInputs.bitangentWS;
-                    output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
-
-                    return output;
+                    light = GetAdditionalLight(i, Position);
+                    Color += CalculateCelShading(light, s);
                 }
+                return Color;
+            }
 
-                half4 frag(Varyings input) : SV_Target
-                {
-                    // Sample and unpack normal map
 
-                    float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
+            Varyings vert(Attributes input)
+            {
+                Varyings output;
 
-                    float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv) * _Roughness;
-                    half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, input.uv));
-                    float3 viewDirWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
+                VertexPositionInputs positionInputs = GetVertexPositionInputs(input.positionOS.xyz);
+                VertexNormalInputs normalInputs = GetVertexNormalInputs(input.normalOS, input.tangentOS);
 
-                    // Transform normal from tangent space to world space
-                    float3 normalWS = TransformTangentToWorld(
-                        normalTS, half3x3(input.tangentWS, input.bitangentWS, input.normalWS));
+                output.positionCS = positionInputs.positionCS;
+                output.positionWS = positionInputs.positionWS;
+                output.normalWS = normalInputs.normalWS;
+                output.tangentWS = normalInputs.tangentWS;
+                output.bitangentWS = normalInputs.bitangentWS;
+                output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
 
-                    float3 color;
+                return output;
+            }
+            bool cn(float normal)
+            {
+                return abs(normal > _NormalThreshold );
+            }
+            half4 frag(Varyings input) : SV_Target
+            {
+                // Sample and unpack normal map
 
-                    LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS, normalWS,
-                                      viewDirWS, _EdgeDiffuse, _EdgeSpecular, _EdgeDistanceAttenuation,
-                                      _EdgeShadowAttenuation, _EdgeRim, color);
-                    return float4(color, 1) * texColor;
-                }
+                float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
+
+                float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv) * _Roughness;
+
+                half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, input.uv) * _BumpScale);
+
+                // Transform normal from tangent space to world space
+                float3 normalWS = TransformTangentToWorld(
+                    normalTS, half3x3(input.tangentWS, input.bitangentWS, input.normalWS));
+
+                float3 viewDirWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
+
+                half3 ambient = (SampleSH(normalWS) * _AmbientMultiplier) + _AmbientColor;
+
+
+                float3 color;
+
+                LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS, input.normalWS,
+                 viewDirWS, _EdgeDiffuse, _EdgeSpecular, _EdgeDistanceAttenuation,
+               _EdgeShadowAttenuation, _EdgeRim, color);
+                color += ambient;
+                if((_ColorX && cn(normalTS.x)) || (_ColorY && cn(normalTS.y))|| (_ColorZ && cn(normalTS.z))) return _NormalEffectsColor;
+                return float4(color, 1) * texColor;
             }
             ENDHLSL
         }

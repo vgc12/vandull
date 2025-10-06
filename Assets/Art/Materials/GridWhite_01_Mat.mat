@@ -38,7 +38,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 6344bf96fbda94141a525046d088fb23, type: 3}
+        m_Texture: {fileID: 2800000, guid: 06382439f4546aa4dbb5e087e0d7e4af, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0.004, y: 0}
     - _Base_Texture:
@@ -46,7 +46,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
-        m_Texture: {fileID: 2800000, guid: f55f5f23ed651b144bc15f7a58bae2bd, type: 3}
+        m_Texture: {fileID: 2800000, guid: 9853bf8a786712249b6c9125d736bd95, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -85,6 +85,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 2800000, guid: b6e307a09e414694a91352b6d054bf6a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _SmoothnessMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -115,16 +119,20 @@ Material:
     - _AlphaClip: 0
     - _AlphaToMask: 0
     - _AmbientEnvironmentMultiplier: 1
+    - _AmbientMultiplier: 1
     - _Ambient_Light_Strength: 0
     - _Antialiasing: 5
     - _Bands: 4.11
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
-    - _BumpScale: 1.39
+    - _BumpScale: 0.96
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
+    - _ColorX: 1
     - _ColorXDirection: 1
+    - _ColorY: 1
     - _ColorYDirection: 1
+    - _ColorZ: 1
     - _ColorZDirection: 1
     - _Cull: 0
     - _Cutoff: 0.5
@@ -133,10 +141,10 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EdgeDiffuse: 0
-    - _EdgeDistanceAttenuation: 0.001
-    - _EdgeRim: 0
-    - _EdgeShadowAttenuation: 1
-    - _EdgeSpecular: 0.001
+    - _EdgeDistanceAttenuation: 0
+    - _EdgeRim: 0.74
+    - _EdgeShadowAttenuation: 0
+    - _EdgeSpecular: 0.843
     - _EnvironmentReflections: 0
     - _Fresnel: 0.5
     - _GlossMapScale: 1
@@ -147,8 +155,10 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _NormalReplacementValue: 0.999993
+    - _NormalThreshold: 0.9999
     - _OcclusionStrength: 0
-    - _OutlineWidth: 0.01
+    - _OublineWidth: 0.3
+    - _OutlineWidth: 0
     - _Outline_Strength: 2.23
     - _Parallax: 0.02
     - _QueueControl: 0
@@ -183,6 +193,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0.013602355, g: 0.013602355, b: 0.013602355, a: 1}
     - _HighNormalColor: {r: 0, g: 0, b: 0, a: 1}
+    - _NormalEffectsColor: {r: 0, g: 0, b: 0, a: 1}
     - _NormalReplacementColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _Outline_Color: {r: 0, g: 0, b: 0, a: 1}
