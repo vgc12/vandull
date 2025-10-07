@@ -5,23 +5,25 @@ using Attributes;
 using EventBus;
 using General;
 using Items.Guns;
+using Npcs.Shared;
 using UnityEngine;
 
 namespace Items
 {
+    [RequireComponent(typeof(ArmAnimationController))]
     [Serializable]
     public class ItemHandler : MonoBehaviour
     {
         [SerializeField] public List<Gun> gunObjects = new();
 
+        private ArmAnimationController _armAnimationController;
+
         private List<Item> _inventory = new();
 
         [Required] private RigHandler _rigHandler;
-        
+
         public Item EquippedItem { get; private set; }
 
-        [Header("Arm Animations")]
-        public Animator Animator;
         public List<Item> Inventory
         {
             get => _inventory;
@@ -30,12 +32,14 @@ namespace Items
 
 
         // Call this from Awake() or Start() in your MonoBehaviour
-        public void Awake()
+        public void Start()
         {
+            _armAnimationController = GetComponent<ArmAnimationController>();
+
             gunObjects ??= new List<Gun>();
 
             _inventory ??= new List<Item>();
-            
+
             _rigHandler = GetComponent<RigHandler>();
 
             SetUpItems();
@@ -47,10 +51,6 @@ namespace Items
             EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(EquippedItem));
         }
 
-        private void Start()
-        {
-   
-        }
 
         private void LogPrefabs()
         {
@@ -89,20 +89,17 @@ namespace Items
 
         private void EquipItem(Item item)
         {
-            if (EquippedItem != null)
-            {
-                EquippedItem.UnEquip();
-                
-            }
+            if (EquippedItem != null) EquippedItem.UnEquip();
 
-         
+
             EquippedItem = item;
+            EquippedItem.Equip();
 
             _rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
             _rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
-            
-            Animator.SetLayerWeight((int)EquippedItem.gripType, 1);
-            EquippedItem.Equip();
+//            animator.SetLayerWeight((int)EquippedItem.gripType, 1);
+
+            _armAnimationController.PlayAnimation(EquippedItem.gripType);
         }
     }
 }

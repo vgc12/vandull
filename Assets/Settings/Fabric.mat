@@ -64,7 +64,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
-        m_Texture: {fileID: 2800000, guid: 741470498b14d55488fbc6d800af4af5, type: 3}
+        m_Texture: {fileID: 2800000, guid: 919e5d0d15ba60f4a9d59b1808e4a287, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -88,7 +88,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RoughnessMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: e3db5bf60762f964980d6a05639ccbe2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
@@ -117,7 +117,7 @@ Material:
     - _Bands: 10
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
-    - _BumpScale: 1.142
+    - _BumpScale: 1.18
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _ColorX: 0
@@ -130,14 +130,16 @@ Material:
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1.23
     - _DetailNormalMapScale: 1
+    - _DiffuseBands: 4
     - _DirectionMask: 0
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EdgeDiffuse: 0.67
+    - _EdgeDiffuse: 1
     - _EdgeDistanceAttenuation: 0.05
     - _EdgeRim: 0.05
     - _EdgeShadowAttenuation: 0.05
     - _EdgeSpecular: 0.1
+    - _EmissionIntensity: 1
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0.008
@@ -146,7 +148,7 @@ Material:
     - _HighNormalThreshold: 0.972
     - _Metallic: 0
     - _NormalReplacementValue: 0.9997
-    - _NormalThreshold: 0.96
+    - _NormalThreshold: 0.941
     - _OcclusionStrength: 1
     - _OublineWidth: 0.3
     - _OutlineWidth: 0
@@ -156,9 +158,11 @@ Material:
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimAmount: 0.04
-    - _RimStrength: 0.15
+    - _RimBands: 4
+    - _RimStrength: 0.2
     - _RimThreshold: 0.51
-    - _Roughness: 0.5
+    - _Roughness: 0.391
+    - _ShadowAttenuationBands: 4
     - _ShadowSoftness: 0.327
     - _ShadowThreshold: 0.308
     - _Shadow_Bands: 5.25
@@ -173,6 +177,7 @@ Material:
     - _Surface: 0
     - _UseHighNormalMasking: 1
     - _UseNormalMap: 1
+    - _UseNormalMapInLightCalculations: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
@@ -181,7 +186,7 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Base_Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 0.30188674, g: 0.23495904, b: 0.23495904, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 1, g: 0, b: 0, a: 1}
     - _HighNormalColor: {r: 0, g: 0, b: 0, a: 1}
     - _NormalEffectsColor: {r: 0, g: 0, b: 0, a: 1}
     - _NormalReplacementColor: {r: 0, g: 0, b: 0, a: 1}

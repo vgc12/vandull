@@ -123,6 +123,7 @@ Material:
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
+    - _DiffuseBands: 4
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EdgeDiffuse: 0.05
@@ -138,17 +139,19 @@ Material:
     - _HighNormalThreshold: 0.7
     - _Metallic: 0
     - _Mode: 0
-    - _NormalThreshold: 0.5
+    - _NormalThreshold: 1
     - _OcclusionStrength: 1
     - _OutlineWidth: 0.0079
     - _Parallax: 0.02
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimAmount: 0.7
+    - _RimBands: 5
     - _RimStrength: 0.5
     - _RimThreshold: 0.1
     - _Roughness: 0.5
     - _Shades: 4
+    - _ShadowAttenuationBands: 5
     - _ShadowSoftness: 0.05
     - _ShadowThreshold: 0.5
     - _Smoothness: 0.19170846
@@ -161,6 +164,7 @@ Material:
     - _Surface: 0
     - _UVSec: 0
     - _UseHighNormalMasking: 0
+    - _UseNormalMapInLightCalculations: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1

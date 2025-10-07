@@ -81,6 +81,8 @@ namespace Items.Guns
         private void OnItemSwitched(ItemSwitchedEvent obj)
         {
             _currentItem = obj.NewItem;
+            // Important that this gets toggled off, when item is switched
+            _aimToggled = false;
             if (obj.NewItem is Gun newGun)
             {
                 if (_currentGun != null) _currentGun.StopAiming();

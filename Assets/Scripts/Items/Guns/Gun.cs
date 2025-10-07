@@ -126,6 +126,26 @@ namespace Items.Guns
         {
             FireModeSystem.CurrentFireSystem.StopFire();
         }
+
+        public override void Equip()
+        {
+            base.Equip();
+            transform.position = hipFireTransform.position;
+            if (AimingSystem != null) StopAiming();
+
+            if (FireModeSystem != null) StopFiring();
+        }
+
+        public override void UnEquip()
+        {
+            transform.position = hipFireTransform.position;
+            if (AimingSystem != null) StopAiming();
+
+            if (FireModeSystem != null) StopFiring();
+
+
+            base.UnEquip();
+        }
     }
 }
 

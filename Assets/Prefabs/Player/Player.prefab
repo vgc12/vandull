@@ -685,6 +685,7 @@ GameObject:
   - component: {fileID: 7594486301661258426}
   - component: {fileID: 4332915864696823165}
   - component: {fileID: 8818783828990297783}
+  - component: {fileID: 2442931323457913997}
   m_Layer: 6
   m_Name: ItemHandler
   m_TagString: Untagged
@@ -734,7 +735,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Items.ItemHandler
   gunObjects:
   - {fileID: 0}
-  Animator: {fileID: 0}
 --- !u!114 &4332915864696823165
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -762,6 +762,19 @@ MonoBehaviour:
   leftHandConstraint: {fileID: 0}
   rightHandConstraint: {fileID: 0}
   rigBuilder: {fileID: 0}
+--- !u!114 &2442931323457913997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2798094114429424454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306e3a22c1e14774849ad1d92a8eb2c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Npcs.Shared.ArmAnimationController
+  animator: {fileID: 6624510802662095135}
 --- !u!1 &2890560209552210782
 GameObject:
   m_ObjectHideFlags: 0
@@ -2422,6 +2435,11 @@ Transform:
 --- !u!4 &6422005684037802362 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -3198711360301752844, guid: 8e1762b5873c40545bcdd114e81456e5, type: 3}
+  m_PrefabInstance: {fileID: 757845896655914126}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &6624510802662095135 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 8e1762b5873c40545bcdd114e81456e5, type: 3}
   m_PrefabInstance: {fileID: 757845896655914126}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &6671721399329104631 stripped

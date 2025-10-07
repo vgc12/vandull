@@ -32,6 +32,7 @@ Material:
   - _EMISSION
   - _ENVIRONMENTREFLECTIONS_OFF
   - _NORMALMAP
+  - _USENORMALMAPINLIGHTCALCULATIONS_ON
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
@@ -131,7 +132,7 @@ Material:
     - _Bands: 4.11
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
-    - _BumpScale: 1.27
+    - _BumpScale: 0.28
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _ColorX: 1
@@ -144,13 +145,14 @@ Material:
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
+    - _DiffuseBands: 8
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EdgeDiffuse: 0
-    - _EdgeDistanceAttenuation: 0
-    - _EdgeRim: 0.74
-    - _EdgeShadowAttenuation: 0
-    - _EdgeSpecular: 0
+    - _EdgeDiffuse: 0.236
+    - _EdgeDistanceAttenuation: 0.109
+    - _EdgeRim: 0.682
+    - _EdgeShadowAttenuation: 0.055
+    - _EdgeSpecular: 0.018
     - _EnvironmentReflections: 0
     - _Fresnel: 0.5
     - _GlossMapScale: 1
@@ -161,7 +163,7 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _NormalReplacementValue: 0.999993
-    - _NormalThreshold: 0.9999
+    - _NormalThreshold: 0.918
     - _OcclusionStrength: 0
     - _OublineWidth: 0.3
     - _OutlineWidth: 0
@@ -171,9 +173,11 @@ Material:
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimAmount: 0.836
+    - _RimBands: 4
     - _RimStrength: 0.419
     - _RimThreshold: 0.1
     - _Roughness: 0.618
+    - _ShadowAttenuationBands: 9
     - _ShadowSoftness: 0.05
     - _ShadowThreshold: 0.163
     - _Shadow_Bands: 7
@@ -189,11 +193,12 @@ Material:
     - _UVSec: 0
     - _UseHighNormalMasking: 0
     - _UseNormalMap: 1
+    - _UseNormalMapInLightCalculations: 1
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _AmbientColor: {r: 0, g: 0, b: 0, a: 0}
+    - _AmbientColor: {r: 0.5377358, g: 0.5377358, b: 0.5377358, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Base_Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}

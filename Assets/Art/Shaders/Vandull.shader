@@ -5,6 +5,7 @@ Shader "Custom/Vandull"
         _BaseMap("Base Map", 2D) = "white"{}
         _BaseColor("Base Color", Color) = (1,1,1,1)
 
+        [Toggle] _UseNormalMapInLightCalculations("Use Normal Map In Light Calculations", Float) = 0
         _BumpMap ("Normal Map", 2D) = "bump"{}
         _BumpScale ("Normal Strength", Range(0, 2)) = 1.0
 
@@ -16,6 +17,11 @@ Shader "Custom/Vandull"
         _RimStrength("Rim Strength", Range(0, 1)) = 0.5
         _RimAmount("Rim Amount", Range(0, 1)) = 0.7
         _RimThreshold("Rim Threshold", Range(0, 1)) = 0.1
+
+        [Header(Bands)]
+        [IntRange] _DiffuseBands("Diffuse Bands", Range(1, 30)) =5
+        [IntRange] _ShadowAttenuationBands("Shadow Attenuation Bands", Range(1, 30) ) =5
+        [IntRange] _RimBands("Rim Bands", Range(1,30)) = 5
 
         [Header(Edge Softness)]
         _EdgeDiffuse("Edge Diffuse", Range(0, 1)) = 0.05
@@ -78,6 +84,13 @@ Shader "Custom/Vandull"
 
 
             CBUFFER_START(UnityPerMaterial)
+                bool _UseNormalMapInLightCalculations;
+
+                //Bands
+                int _DiffuseBands;
+                int _ShadowAttenuationBands;
+                int _RimBands;
+
                 float4 _BaseMap_ST;
                 float4 _BumpMap_ST;
                 float _BumpScale;
@@ -166,6 +179,8 @@ Shader "Custom/Vandull"
                     smoothstep(0.0f, s.ec.distanceAttenuation, l.distanceAttenuation) *
                     smoothstep(0.0f, s.ec.shadowAttenuation, l.shadowAttenuation);
 
+                attenuation = celBanding(attenuation, _ShadowAttenuationBands);
+
                 float diffuse = saturate(dot(s.normal, l.direction));
                 diffuse *= attenuation;
 
@@ -176,10 +191,11 @@ Shader "Custom/Vandull"
 
                 float rim = 1 - dot(s.view, s.normal);
                 rim *= pow(diffuse, s.rimThreshold);
-
+                diffuse = celBanding(diffuse, _DiffuseBands);
                 diffuse = smoothstep(0.0f, s.ec.diffuse, diffuse);
                 specular = s.roughness * smoothstep(0.005f,
                                                     0.005f + s.ec.specular * s.roughness, specular);
+                rim = celBanding(rim, _RimBands);
                 rim = s.rimStrength * smoothstep(
                     s.rimAmount - 0.5f * s.ec.rim,
                     s.rimAmount + 0.5f * s.ec.rim,
@@ -220,13 +236,15 @@ Shader "Custom/Vandull"
 
                 Light light = GetMainLight(shadowCoord);
                 Color = CalculateCelShading(light, s);
-
+                #ifdef _ADDITIONAL_LIGHTS
                 int pixelLightCount = GetAdditionalLightsCount();
                 for (int i = 0; i < pixelLightCount; i++)
                 {
                     light = GetAdditionalLight(i, Position);
                     Color += CalculateCelShading(light, s);
                 }
+                #endif
+
                 return Color;
             }
 
@@ -255,17 +273,21 @@ Shader "Custom/Vandull"
 
             half4 frag(Varyings input) : SV_Target
             {
-                // Sample and unpack normal map
-
                 float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
 
-                float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv) * _Roughness;
+                float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness;
+
 
                 half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, input.uv) * _BumpScale);
 
-                // Transform normal from tangent space to world space
-                float3 normalWS = TransformTangentToWorld(
-                    normalTS, half3x3(input.tangentWS, input.bitangentWS, input.normalWS));
+
+                float3 normalWS = input.normalWS;
+                if (_UseNormalMapInLightCalculations)
+                {
+                    normalWS = TransformTangentToWorld(
+                        normalTS, half3x3(input.tangentWS, input.bitangentWS, input.normalWS));
+                }
+
 
                 float3 viewDirWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
 
@@ -274,7 +296,7 @@ Shader "Custom/Vandull"
 
                 float3 color;
 
-                LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS, input.normalWS,
+                LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS, normalWS,
                                   viewDirWS, _EdgeDiffuse, _EdgeSpecular, _EdgeDistanceAttenuation,
                                   _EdgeShadowAttenuation, _EdgeRim, color);
                 color += ambient;
