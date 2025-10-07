@@ -27,17 +27,13 @@ Shader "Custom/Vandull"
         [Header(Ambient)]
         _AmbientColor("Ambient Color", Color) = (1,1,1,1)
         _AmbientMultiplier("Ambient Multiplier", Range(1, 10)) = 1
-        
-        [Header(Outline)]
-        _OutlineColor("Outline Color", Color) = (0,0,0,1)
-        _OutlineWidth("Outline Width", Range(0, 1)) = .03
-        
+
         [Header(Normal Effects)]
         _NormalThreshold("Normal Threshold", Range(0,1)) = .9999
         _NormalEffectsColor("Normal Effects Color", Color) = (0,0,0,1)
         [Toggle] _ColorX("Color X Direction", Float) = 1
-          [Toggle] _ColorY("Color Y Direction", Float) = 1
-          [Toggle] _ColorZ("Color Z Direction", Float) = 1
+        [Toggle] _ColorY("Color Y Direction", Float) = 1
+        [Toggle] _ColorZ("Color Z Direction", Float) = 1
     }
     SubShader
     {
@@ -47,51 +43,7 @@ Shader "Custom/Vandull"
             "RenderPipeline" = "UniversalPipeline"
             "Queue" = "Geometry"
         }
-    /*
-        Pass
-        {
-            Name "Outline"
-            Cull Front
 
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
-            CBUFFER_START(UnityPerMaterial)
-                float4 _OutlineColor;
-                float _OutlineWidth;
-            CBUFFER_END
-
-            struct Attributes
-            {
-                float4 positionOS : POSITION;
-                float3 normalOS : NORMAL;
-            };
-
-            struct Varyings
-            {
-                float4 positionCS : SV_POSITION;
-            };
-
-            Varyings vert(Attributes input)
-            {
-                Varyings output;
-                float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
-                float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
-                positionWS += normalWS * _OutlineWidth;
-                output.positionCS = TransformWorldToHClip(positionWS);
-                return output;
-            }
-
-            half4 frag(Varyings input) : SV_Target
-            {
-                return _OutlineColor;
-            }
-            ENDHLSL
-        }
-*/
         Pass
         {
             Name "ForwardLit"
@@ -101,6 +53,7 @@ Shader "Custom/Vandull"
             }
 
             Cull Off
+
 
 
             HLSLPROGRAM
@@ -237,10 +190,10 @@ Shader "Custom/Vandull"
             }
 
             float3 LightingCelShaded(float Roughness,
-                  float RimStrength, float RimAmount, float RimThreshold,
-                  float3 Position, float3 Normal, float3 View, float EdgeDiffuse,
-                  float EdgeSpecular, float EdgeDistanceAttenuation,
-                  float EdgeShadowAttenuation, float EdgeRim, out float3 Color)
+                                     float RimStrength, float RimAmount, float RimThreshold,
+                                     float3 Position, float3 Normal, float3 View, float EdgeDiffuse,
+                                     float EdgeSpecular, float EdgeDistanceAttenuation,
+                                     float EdgeShadowAttenuation, float EdgeRim, out float3 Color)
             {
                 Color = half3(0.5f, 0.5f, 0.5f);
 
@@ -294,10 +247,12 @@ Shader "Custom/Vandull"
 
                 return output;
             }
+
             bool cn(float normal)
             {
-                return abs(normal > _NormalThreshold );
+                return abs(normal > _NormalThreshold);
             }
+
             half4 frag(Varyings input) : SV_Target
             {
                 // Sample and unpack normal map
@@ -320,10 +275,12 @@ Shader "Custom/Vandull"
                 float3 color;
 
                 LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS, input.normalWS,
-                 viewDirWS, _EdgeDiffuse, _EdgeSpecular, _EdgeDistanceAttenuation,
-               _EdgeShadowAttenuation, _EdgeRim, color);
+                                  viewDirWS, _EdgeDiffuse, _EdgeSpecular, _EdgeDistanceAttenuation,
+                                  _EdgeShadowAttenuation, _EdgeRim, color);
                 color += ambient;
-                if((_ColorX && cn(normalTS.x)) || (_ColorY && cn(normalTS.y))|| (_ColorZ && cn(normalTS.z))) return _NormalEffectsColor;
+                if ((_ColorX && cn(normalTS.x)) || (_ColorY && cn(normalTS.y)) || (_ColorZ && cn(normalTS.z)))
+                    return
+                        _NormalEffectsColor;
                 return float4(color, 1) * texColor;
             }
             ENDHLSL

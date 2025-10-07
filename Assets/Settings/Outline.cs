@@ -1,24 +1,14 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
+using UnityEngine.Rendering.Universal;
 
 public class OutlineRenderFeature : ScriptableRendererFeature
 {
-    [System.Serializable]
-    public class Settings
-    {
-        public Material outlineMaterial;
-        public Color outlineColor = Color.black;
-        public float outlineThickness = 1f;
-        public float depthThreshold = 0.01f;
-        public float normalThreshold = 0.5f;
-        
-    }
-
-    public Settings settings = new Settings();
-    OutlinePass _outlinePass;
+    public Settings settings = new();
+    private OutlinePass _outlinePass;
 
     public override void Create()
     {
@@ -32,22 +22,33 @@ public class OutlineRenderFeature : ScriptableRendererFeature
         renderer.EnqueuePass(_outlinePass);
     }
 
-    class OutlinePass : ScriptableRenderPass
+    [Serializable]
+    public class Settings
     {
-        private readonly Settings _settings;
-        private readonly Material _material;
-        private RTHandle _tempTexture;
-        
+        public Material outlineMaterial;
+        public Color outlineColor = Color.black;
+        public float outlineThickness = 1f;
+        public float outlineThreshold = 0.01f;
+    }
+
+    private class OutlinePass : ScriptableRenderPass
+    {
         // Properties for shader
         private static readonly int OutlineColorID = Shader.PropertyToID("_OutlineColor");
         private static readonly int OutlineThicknessID = Shader.PropertyToID("_OutlineThickness");
-        private static readonly int DepthThresholdID = Shader.PropertyToID("_DepthThreshold");
-        private static readonly int NormalThresholdID = Shader.PropertyToID("_NormalThreshold");
+        private static readonly int OutlineThresholdID = Shader.PropertyToID("_OutlineThreshold");
+
+        //  private static readonly int NormalThresholdID = Shader.PropertyToID("_NormalThreshold");
+
+        //    private static readonly int DepthSensitivityID = Shader.PropertyToID("_DepthSensitivity");
+        private readonly Material _material;
+        private readonly Settings _settings;
+        private RTHandle _tempTexture;
 
         public OutlinePass(Settings settings)
         {
-            this._settings = settings;
-            this._material = settings.outlineMaterial;
+            _settings = settings;
+            _material = settings.outlineMaterial;
         }
 
         // RenderGraph API (New method - required for newer URP versions)
@@ -62,29 +63,31 @@ public class OutlineRenderFeature : ScriptableRendererFeature
             if (!resourceData.isActiveTargetBackBuffer)
             {
                 var source = resourceData.activeColorTexture;
-                
+
                 // Create temporary texture descriptor
                 var desc = renderGraph.GetTextureDesc(source);
                 desc.name = "_OutlineTempTexture";
                 desc.clearBuffer = false;
-                
-                TextureHandle destination = renderGraph.CreateTexture(desc);
+
+                var destination = renderGraph.CreateTexture(desc);
 
                 // Set shader properties
                 _material.SetColor(OutlineColorID, _settings.outlineColor);
                 _material.SetFloat(OutlineThicknessID, _settings.outlineThickness);
-                _material.SetFloat(DepthThresholdID, _settings.depthThreshold);
-                _material.SetFloat(NormalThresholdID, _settings.normalThreshold);
+                _material.SetFloat(OutlineThresholdID, _settings.outlineThreshold);
+                // _material.SetFloat(NormalThresholdID, _settings.normalThreshold);
+                // _material.SetFloat(DepthSensitivityID, _settings.depthSensitivity);
 
                 // Add blit pass
                 RenderGraphUtils.BlitMaterialParameters para = new(source, destination, _material, 0);
-                renderGraph.AddBlitPass(para, passName: "Outline Blit Pass");
-                
+                renderGraph.AddBlitPass(para, "Outline Blit Pass");
+
                 // Copy back
                 RenderGraphUtils.BlitMaterialParameters paraCopy = new(destination, source, _material, 0);
-                renderGraph.AddBlitPass(paraCopy, passName: "Outline Copy Pass");
+                renderGraph.AddBlitPass(paraCopy, "Outline Copy Pass");
             }
         }
+
 /*
         // Legacy API (for compatibility mode or older URP versions)
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
@@ -99,7 +102,7 @@ public class OutlineRenderFeature : ScriptableRendererFeature
             if (material == null) return;
 
             CommandBuffer cmd = CommandBufferPool.Get("Outline Pass");
-            
+
             // Set shader properties
             material.SetColor(OutlineColorID, settings.outlineColor);
             material.SetFloat(OutlineThicknessID, settings.outlineThickness);
@@ -118,7 +121,5 @@ public class OutlineRenderFeature : ScriptableRendererFeature
         {
             _tempTexture?.Release();
         }
-
-   
     }
 }

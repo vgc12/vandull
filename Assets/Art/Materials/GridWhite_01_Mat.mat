@@ -25,7 +25,13 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _COLORX_ON
+  - _COLORY_ON
+  - _COLORZ_ON
+  - _EMISSION
+  - _ENVIRONMENTREFLECTIONS_OFF
+  - _NORMALMAP
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
@@ -38,7 +44,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 06382439f4546aa4dbb5e087e0d7e4af, type: 3}
+        m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0.004, y: 0}
     - _Base_Texture:
@@ -66,7 +72,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 6344bf96fbda94141a525046d088fb23, type: 3}
+        m_Texture: {fileID: 2800000, guid: 06382439f4546aa4dbb5e087e0d7e4af, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0.004, y: 0}
     - _MetallicGlossMap:
@@ -125,7 +131,7 @@ Material:
     - _Bands: 4.11
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
-    - _BumpScale: 0.96
+    - _BumpScale: 1.27
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _ColorX: 1
@@ -144,7 +150,7 @@ Material:
     - _EdgeDistanceAttenuation: 0
     - _EdgeRim: 0.74
     - _EdgeShadowAttenuation: 0
-    - _EdgeSpecular: 0.843
+    - _EdgeSpecular: 0
     - _EnvironmentReflections: 0
     - _Fresnel: 0.5
     - _GlossMapScale: 1
@@ -165,7 +171,7 @@ Material:
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimAmount: 0.836
-    - _RimStrength: 0.464
+    - _RimStrength: 0.419
     - _RimThreshold: 0.1
     - _Roughness: 0.618
     - _ShadowSoftness: 0.05
