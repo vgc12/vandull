@@ -5,7 +5,8 @@ Shader "Hidden/OutlineBlit"
     {
         _OutlineThickness ("Outline Thickness", Float) = 1.0
         _OutlineColor ("Outline Color", Color) = (0,0,0,1)
-
+        [Toggle(POSTERIZE)] _Posterize("Posterize", Float) = 1
+        _PosterizationCount("Posterization Count", Float) = 99
     }
 
     SubShader
@@ -18,7 +19,7 @@ Shader "Hidden/OutlineBlit"
         Pass
         {
             Name "OutlinePass"
-            Cull Off
+
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment frag
@@ -31,6 +32,7 @@ Shader "Hidden/OutlineBlit"
                 float _OutlineThickness;
                 float4 _OutlineColor;
                 float _OutlineThreshold;
+                int _PosterizationCount;
             CBUFFER_END
 
 
@@ -72,9 +74,17 @@ Shader "Hidden/OutlineBlit"
                 //Get Sobel Factor
                 float s = pow(1 - saturate(sobel(input.texcoord)), 50);
                 // Sample Color from BlitTexture
+
+
                 half4 col = SAMPLE_TEXTURE2D(_BlitTexture, sampler_LinearClamp, input.texcoord);
 
-                return col * s;
+                col = pow(col, 0.4545);
+                float3 c = RgbToHsv(col);
+                c.z = round(c.z * _PosterizationCount) / _PosterizationCount;
+                col = float4(HsvToRgb(c), col.a);
+                col = pow(col, 2.2);
+
+                return col * float4(s.xxx, 1);
             }
             ENDHLSL
         }

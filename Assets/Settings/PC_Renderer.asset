@@ -16,8 +16,31 @@ MonoBehaviour:
   settings:
     outlineMaterial: {fileID: 2100000, guid: e0b02a40be3cae74eb1583cc5dbb0267, type: 2}
     outlineColor: {r: 0, g: 0, b: 0, a: 1}
-    outlineThickness: 0.002
-    outlineThreshold: -0.02
+    outlineThickness: 0.001
+    outlineThreshold: 0.01
+    posterize: 1
+    posterizationCount: 20.6
+--- !u!114 &-1113236920880719011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1614fc811f8f184697d9bee70ab9fe5, type: 3}
+  m_Name: DecalRendererFeature
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DecalRendererFeature
+  m_Active: 1
+  m_Settings:
+    technique: 2
+    maxDrawDistance: 1000
+    decalLayers: 0
+    dBufferSettings:
+      surfaceData: 2
+    screenSpaceSettings:
+      normalBlend: 2
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44,7 +67,8 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 7200000, guid: b9a23f869c4fd45f19c5ada54dd82176, type: 3}
   m_RendererFeatures:
   - {fileID: -6770589377199814495}
-  m_RendererFeatureMap: a1c8f863d5080aa2
+  - {fileID: -1113236920880719011}
+  m_RendererFeatureMap: a1c8f863d5080aa25d1b0e2cebfc8cf0
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}

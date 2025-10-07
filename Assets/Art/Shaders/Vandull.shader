@@ -59,9 +59,8 @@ Shader "Custom/Vandull"
             }
 
             Cull Off
-
-
-
+            ZWrite On
+            ZTest LEqual
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -190,7 +189,7 @@ Shader "Custom/Vandull"
                 specular *= diffuse;
 
                 float rim = 1 - dot(s.view, s.normal);
-                rim *= pow(diffuse, s.rimThreshold);
+                rim *= pow(abs(diffuse), s.rimThreshold);
                 diffuse = celBanding(diffuse, _DiffuseBands);
                 diffuse = smoothstep(0.0f, s.ec.diffuse, diffuse);
                 specular = s.roughness * smoothstep(0.005f,
@@ -291,7 +290,7 @@ Shader "Custom/Vandull"
 
                 float3 viewDirWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
 
-                half3 ambient = (SampleSH(normalWS) * _AmbientMultiplier) + _AmbientColor;
+                float3 ambient = (SampleSH(normalWS) * _AmbientMultiplier) + _AmbientColor;
 
 
                 float3 color;

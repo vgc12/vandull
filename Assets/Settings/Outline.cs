@@ -13,7 +13,7 @@ public class OutlineRenderFeature : ScriptableRendererFeature
     public override void Create()
     {
         _outlinePass = new OutlinePass(settings);
-        _outlinePass.renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+        _outlinePass.renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing;
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -29,18 +29,18 @@ public class OutlineRenderFeature : ScriptableRendererFeature
         public Color outlineColor = Color.black;
         public float outlineThickness = 1f;
         public float outlineThreshold = 0.01f;
+        public bool posterize = true;
+        public float posterizationCount = 8;
     }
 
     private class OutlinePass : ScriptableRenderPass
     {
-        // Properties for shader
         private static readonly int OutlineColorID = Shader.PropertyToID("_OutlineColor");
         private static readonly int OutlineThicknessID = Shader.PropertyToID("_OutlineThickness");
         private static readonly int OutlineThresholdID = Shader.PropertyToID("_OutlineThreshold");
+        private static readonly int PosterizeID = Shader.PropertyToID("_Posterize");
+        private static readonly int PosterizationCountID = Shader.PropertyToID("_PosterizationCount");
 
-        //  private static readonly int NormalThresholdID = Shader.PropertyToID("_NormalThreshold");
-
-        //    private static readonly int DepthSensitivityID = Shader.PropertyToID("_DepthSensitivity");
         private readonly Material _material;
         private readonly Settings _settings;
         private RTHandle _tempTexture;
@@ -51,7 +51,7 @@ public class OutlineRenderFeature : ScriptableRendererFeature
             _material = settings.outlineMaterial;
         }
 
-        // RenderGraph API (New method - required for newer URP versions)
+
         public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
             if (_material == null) return;
@@ -75,7 +75,10 @@ public class OutlineRenderFeature : ScriptableRendererFeature
                 _material.SetColor(OutlineColorID, _settings.outlineColor);
                 _material.SetFloat(OutlineThicknessID, _settings.outlineThickness);
                 _material.SetFloat(OutlineThresholdID, _settings.outlineThreshold);
+                _material.SetFloat(PosterizeID, _settings.posterize ? 1 : 0);
+                _material.SetFloat(PosterizationCountID, _settings.posterizationCount);
                 // _material.SetFloat(NormalThresholdID, _settings.normalThreshold);
+
                 // _material.SetFloat(DepthSensitivityID, _settings.depthSensitivity);
 
                 // Add blit pass
@@ -88,35 +91,7 @@ public class OutlineRenderFeature : ScriptableRendererFeature
             }
         }
 
-/*
-        // Legacy API (for compatibility mode or older URP versions)
-        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
-        {
-            var descriptor = renderingData.cameraData.cameraTargetDescriptor;
-            descriptor.depthBufferBits = 0;
-            RenderingUtils.ReAllocateIfNeeded(ref tempTexture, descriptor, FilterMode.Bilinear, TextureWrapMode.Clamp, name: "_OutlineTempTexture");
-        }
 
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-        {
-            if (material == null) return;
-
-            CommandBuffer cmd = CommandBufferPool.Get("Outline Pass");
-
-            // Set shader properties
-            material.SetColor(OutlineColorID, settings.outlineColor);
-            material.SetFloat(OutlineThicknessID, settings.outlineThickness);
-            material.SetFloat(DepthSensitivityID, settings.depthSensitivity);
-            material.SetFloat(NormalSensitivityID, settings.normalSensitivity);
-
-            RTHandle cameraTarget = renderingData.cameraData.renderer.cameraColorTargetHandle;
-            Blitter.BlitCameraTexture(cmd, cameraTarget, tempTexture, material, 0);
-            Blitter.BlitCameraTexture(cmd, tempTexture, cameraTarget);
-
-            context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
-        }
-*/
         public override void OnCameraCleanup(CommandBuffer cmd)
         {
             _tempTexture?.Release();
