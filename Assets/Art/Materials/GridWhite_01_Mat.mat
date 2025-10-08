@@ -24,7 +24,9 @@ Material:
   m_Shader: {fileID: 4800000, guid: f5838c87c1a04c24e95945fdeeb915fb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - OUTLINE_METHOD_NORMAL
+  - POSTERIZE
   m_InvalidKeywords:
   - _COLORX_ON
   - _COLORY_ON
@@ -32,7 +34,6 @@ Material:
   - _EMISSION
   - _ENVIRONMENTREFLECTIONS_OFF
   - _NORMALMAP
-  - _USENORMALMAPINLIGHTCALCULATIONS_ON
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
@@ -146,13 +147,14 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DiffuseBands: 8
+    - _DitherStrength: 0.3
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EdgeDiffuse: 0.236
+    - _EdgeDiffuse: 0
     - _EdgeDistanceAttenuation: 0.109
     - _EdgeRim: 0.682
     - _EdgeShadowAttenuation: 0.055
-    - _EdgeSpecular: 0.018
+    - _EdgeSpecular: 0.238
     - _EnvironmentReflections: 0
     - _Fresnel: 0.5
     - _GlossMapScale: 1
@@ -163,12 +165,15 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _NormalReplacementValue: 0.999993
-    - _NormalThreshold: 0.918
+    - _NormalThreshold: 1
     - _OcclusionStrength: 0
     - _OublineWidth: 0.3
-    - _OutlineWidth: 0
+    - _OutlineMethod: 1
+    - _OutlineWidth: 0.021
     - _Outline_Strength: 2.23
     - _Parallax: 0.02
+    - _PosterizationCount: 6.54
+    - _Posterize: 1
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
@@ -177,7 +182,7 @@ Material:
     - _RimStrength: 0.419
     - _RimThreshold: 0.1
     - _Roughness: 0.618
-    - _ShadowAttenuationBands: 9
+    - _ShadowAttenuationBands: 10
     - _ShadowSoftness: 0.05
     - _ShadowThreshold: 0.163
     - _Shadow_Bands: 7
@@ -191,14 +196,15 @@ Material:
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _UVSec: 0
+    - _UseCanny: 0
     - _UseHighNormalMasking: 0
     - _UseNormalMap: 1
-    - _UseNormalMapInLightCalculations: 1
+    - _UseNormalMapInLightCalculations: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _AmbientColor: {r: 0.5377358, g: 0.5377358, b: 0.5377358, a: 0}
+    - _AmbientColor: {r: 0.381132, g: 0.14598072, b: 0.14598072, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Base_Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}

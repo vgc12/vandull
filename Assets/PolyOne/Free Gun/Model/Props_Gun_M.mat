@@ -11,7 +11,9 @@ Material:
   m_Shader: {fileID: 4800000, guid: f5838c87c1a04c24e95945fdeeb915fb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - OUTLINE_METHOD_NORMAL
+  - POSTERIZE
   m_InvalidKeywords:
   - _COLORX_ON
   - _COLORY_ON
@@ -118,6 +120,7 @@ Material:
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
+    - _DiffuseBands: 5
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EdgeDiffuse: 0.14
@@ -136,15 +139,20 @@ Material:
     - _NormalReplacementValue: 1
     - _NormalThreshold: 0.9999
     - _OcclusionStrength: 1
-    - _OutlineWidth: 0
+    - _OutlineMethod: 1
+    - _OutlineWidth: 0.0024
     - _Parallax: 0.02
+    - _PosterizationCount: 99
+    - _Posterize: 1
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimAmount: 0
+    - _RimBands: 5
     - _RimStrength: 0.5
     - _RimThreshold: 0.266
     - _Roughness: 0.5
+    - _ShadowAttenuationBands: 5
     - _ShadowSoftness: 1
     - _ShadowThreshold: 0.208
     - _Shadow_Bands: 10
@@ -158,8 +166,10 @@ Material:
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _UVSec: 0
+    - _UseCanny: 0
     - _UseHighNormalMasking: 0
     - _UseNormalMap: 1
+    - _UseNormalMapInLightCalculations: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1

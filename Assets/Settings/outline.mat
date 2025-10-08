@@ -24,9 +24,9 @@ Material:
   m_Shader: {fileID: 4800000, guid: fe69b523dbb8a734d9f2680af782f672, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
+  m_ValidKeywords:
   - POSTERIZE
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -117,14 +117,16 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _HighThreshold: 0.3
+    - _LowThreshold: 0.1
     - _Metallic: 0
     - _NormalSensitivity: 1.99
     - _NormalThreshold: 0.14
     - _OcclusionStrength: 1
-    - _OutlineThickness: 0.001
-    - _OutlineThreshold: 0.01
+    - _OutlineThickness: 0
+    - _OutlineThreshold: 0
     - _Parallax: 0.005
-    - _PosterizationCount: 20.6
+    - _PosterizationCount: 3.27
     - _Posterize: 1
     - _QueueOffset: 0
     - _RawOutline: 1
@@ -135,6 +137,7 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
+    - _UseCanny: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
@@ -142,7 +145,7 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
