@@ -11,7 +11,7 @@ namespace Items.Guns
         public override GunSystems CreateGunSystems(Gun gun)
         {
             var builder = new Builder(gun);
-            return builder.WithRecoilSystem(() => new EnemyRecoilSystem())
+            return builder.WithRecoilSystem(() => new EnemyRecoilSystem(gun.gunConfig, gun.recoilTransform, gun))
                 .WithAimingSystem(() => new EnemyAimingSystem()).Build();
         }
     }

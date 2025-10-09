@@ -87,5 +87,12 @@ namespace Items.Guns
                 _decalPool.Release(decal);
             }
         }
+        
+        
+        private void OnDestroy()
+        {
+            EventBus<ShotHitEvent>.Deregister(_shotHitEventBinding);
+            _decalPool.Clear();
+        }
     }
 }

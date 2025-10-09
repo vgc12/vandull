@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1801d07546344ca8dd39e94933bd829, type: 3}
   m_Name: MP5-RecoilSettings-Enemy
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.RecoilSettings
-  verticalRecoil: 9.12
-  horizontalRecoil: 0
-  recoilSpeed: 0
-  returnSpeed: 0
+  verticalRecoil: 1
+  horizontalRecoil: 1
+  recoilSpeed: 1
+  returnSpeed: 0.96
   recoilPattern:
     serializedVersion: 2
     m_Curve:
@@ -40,12 +40,12 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  positionRecoil: {x: 0, y: 18.37, z: 0}
+  positionRecoil: {x: 0, y: 1, z: 0}
   rotationRecoil: {x: 0, y: 0, z: 0}
   physicalRecoilSpeed: 20
   physicalReturnSpeed: 14.89
-  useProgressiveRecoil: 1
+  useProgressiveRecoil: 0
   recoilMultiplierPerShot: 1.2
   maxRecoilMultiplier: 2
   recoilDecayRate: 2
-  recoilEffectMultiplier: 1.26
+  recoilEffectMultiplier: 5

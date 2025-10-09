@@ -57,6 +57,9 @@ namespace Npcs
 
             _rigHandler.SetLeftHandData(Gun.leftHandTarget, Gun.leftHandHint);
             _transform = NavMeshAgent.transform;
+
+            aimPoint.transform.localPosition = transform.forward * 3f;
+            gun.Equip();
         }
 
         protected override void SetUpTimers()
@@ -67,7 +70,7 @@ namespace Npcs
             _damagedTimer.OnTimerStop += () => _recentlyDamaged = false;
             Timers.Add(_damagedTimer);
         }
-
+        
         protected override void InitializeStateMachine()
         {
             var idleState = new NpcIdleState(this);
@@ -150,6 +153,7 @@ namespace Npcs
                 Quaternion.LookRotation(direction), Time.deltaTime * turnSpeed);
             _transform.rotation = Quaternion.Euler(0, _transform.rotation.eulerAngles.y, 0);
         }
+        
 
         public void FollowPoint(Transform t, Vector3 point, float speed)
         {
