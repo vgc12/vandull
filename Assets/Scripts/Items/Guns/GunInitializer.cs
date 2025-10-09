@@ -75,6 +75,7 @@ namespace Items.Guns
                 return this;
             }
 
+
             public IGunSystemsBuilder WithAmmoSystem(Func<IAmmoSystem> ammoSystemFactory)
             {
                 if (ammoSystemFactory != null)
@@ -176,7 +177,7 @@ namespace Items.Guns
                     _gun
                 );
 
-                _trailSystemFactory = () => new TrailSystem(_gun.gunConfig.trailConfig);
+                _trailSystemFactory = () => new TrailSystem(_gun.gunConfig.trailSettings);
             }
 
             private List<IFireSystem> CreateFireModes()

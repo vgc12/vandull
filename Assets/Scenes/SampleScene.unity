@@ -2466,10 +2466,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2874454654448357134, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: damageMultiplier
+      value: 1000
+      objectReference: {fileID: 0}
     - target: {fileID: 4455693538965940935, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: targetObject
       value: 
       objectReference: {fileID: 571391914}
+    - target: {fileID: 8024820811515040386, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: gunConfig.trailSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2709,10 +2717,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2874454654448357134, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: damageMultiplier
+      value: 1000
+      objectReference: {fileID: 0}
     - target: {fileID: 4455693538965940935, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: targetObject
       value: 
       objectReference: {fileID: 571391914}
+    - target: {fileID: 8024820811515040386, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: gunConfig.trailSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5773,10 +5789,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2874454654448357134, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: damageMultiplier
+      value: 1000
+      objectReference: {fileID: 0}
     - target: {fileID: 4455693538965940935, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: targetObject
       value: 
       objectReference: {fileID: 571391914}
+    - target: {fileID: 8024820811515040386, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: gunConfig.trailSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6677,66 +6701,6 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
---- !u!1 &633385305
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 633385307}
-  - component: {fileID: 633385306}
-  m_Layer: 0
-  m_Name: DecalProjector
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &633385306
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 633385305}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DecalProjector
-  m_Material: {fileID: 2100000, guid: 31d0dcc6f2dd4e4408d18036a2c93862, type: 2}
-  m_DrawDistance: 1000
-  m_FadeScale: 0.9
-  m_StartAngleFade: 180
-  m_EndAngleFade: 180
-  m_UVScale: {x: 1, y: 1}
-  m_UVBias: {x: 0, y: 0}
-  m_RenderingLayerMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_ScaleMode: 0
-  m_Offset: {x: 0, y: 0, z: 0.5}
-  m_Size: {x: 1, y: 1, z: 1}
-  m_FadeFactor: 1
-  version: 1
-  m_DecalLayerMask: 1
---- !u!4 &633385307
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 633385305}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.70585203, z: -0, w: -0.70835936}
-  m_LocalPosition: {x: 7.519, y: 2.18848, z: -0.797}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: -270.203, z: 0}
 --- !u!43 &638445325
 Mesh:
   m_ObjectHideFlags: 0
@@ -10118,6 +10082,62 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
   m_LocalPosition: {x: -2.792139, y: 12.326428, z: -10.700849}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1016862193
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1016862195}
+  - component: {fileID: 1016862194}
+  m_Layer: 0
+  m_Name: ImpactSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1016862194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1016862193}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46bcdc2f1a0a46598a39e90fae9f341d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ImpactSystem
+  decalMaterial: {fileID: 2100000, guid: 4186b3bf791bc344fb975a79092065bd, type: 2}
+  decalLayers:
+    serializedVersion: 2
+    m_Bits: 8177
+  decalSize: {x: 0.2, y: 0.2, z: 0.2}
+  fadeDuration: 5
+  offset: 0.01
+  decalTextures:
+  - {fileID: 2800000, guid: c4ffc8c78c8ebf742b5443ab9fe241f6, type: 3}
+  - {fileID: 2800000, guid: 94d11366c21d80f4dbd9085471dba456, type: 3}
+  - {fileID: 2800000, guid: 44a62e37bde64f641b43cdc445958e56, type: 3}
+  - {fileID: 2800000, guid: 38d1fd74812f3744883f2febb235b06a, type: 3}
+--- !u!4 &1016862195
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1016862193}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.066, y: 2.18848, z: -0.799}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -19748,10 +19768,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2874454654448357134, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: damageMultiplier
+      value: 1000
+      objectReference: {fileID: 0}
     - target: {fileID: 4455693538965940935, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: targetObject
       value: 
       objectReference: {fileID: 571391914}
+    - target: {fileID: 8024820811515040386, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: gunConfig.trailSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -55139,6 +55167,10 @@ PrefabInstance:
       propertyPath: recoilTransform
       value: 
       objectReference: {fileID: 928734509}
+    - target: {fileID: 5573261190871096340, guid: 55b1fd5f577255c4a8338b61385780ec, type: 3}
+      propertyPath: gunConfig.trailSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
     - target: {fileID: 5940154760952006394, guid: 55b1fd5f577255c4a8338b61385780ec, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.22900009
@@ -86124,4 +86156,4 @@ SceneRoots:
   - {fileID: 175865889}
   - {fileID: 772787065}
   - {fileID: 1510837761}
-  - {fileID: 633385307}
+  - {fileID: 1016862195}

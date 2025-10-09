@@ -24,7 +24,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: f5838c87c1a04c24e95945fdeeb915fb, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - POSTERIZE
   m_InvalidKeywords:
   - _COLORX_ON
   - _COLORY_ON
@@ -124,6 +125,8 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DiffuseBands: 4
+    - _Dither: 0
+    - _DitherStrength: 0.3
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EdgeDiffuse: 0.05
@@ -141,8 +144,11 @@ Material:
     - _Mode: 0
     - _NormalThreshold: 1
     - _OcclusionStrength: 1
+    - _OutlineMethod: 0
     - _OutlineWidth: 0.0079
     - _Parallax: 0.02
+    - _PosterizationCount: 7
+    - _Posterize: 1
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimAmount: 0.7

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using EventBus;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -6,12 +7,12 @@ namespace Items.Guns.Trail
 {
     public class TrailSystem : ITrailSystem
     {
-        private readonly TrailConfig _trailConfig;
         private readonly UnityEngine.Pool.ObjectPool<TrailRenderer> _trailPool;
+        private readonly TrailSettings _trailSettings;
 
-        public TrailSystem(TrailConfig trailConfig)
+        public TrailSystem(TrailSettings trailSettings)
         {
-            _trailConfig = trailConfig;
+            _trailSettings = trailSettings;
             _trailPool = new UnityEngine.Pool.ObjectPool<TrailRenderer>(CreateTrail);
         }
 
@@ -22,10 +23,10 @@ namespace Items.Guns.Trail
             instance.gameObject.SetActive(true);
             instance.Clear();
             instance.transform.position = startPoint;
-         
+
             yield return null;
             var originalGradient = CloneGradient(instance.colorGradient);
-            
+
             instance.emitting = true;
 
             var distance = Vector3.Distance(startPoint, endPoint);
@@ -33,37 +34,33 @@ namespace Items.Guns.Trail
 
             while (remainingDistance > 0)
             {
-                if (_trailConfig.fadeOut)
+                if (_trailSettings.fadeOut)
                 {
-                  
-                    float fadeFactor = Mathf.Clamp01(remainingDistance / distance);
-                  
-                    Gradient fadedGradient = ApplyAlphaToGradient(originalGradient, fadeFactor);
+                    var fadeFactor = Mathf.Clamp01(remainingDistance / distance);
+
+                    var fadedGradient = ApplyAlphaToGradient(originalGradient, fadeFactor);
                     instance.colorGradient = fadedGradient;
                 }
-                
+
                 instance.transform.position = Vector3.Lerp(
                     startPoint,
                     endPoint,
                     Mathf.Clamp01(1 - remainingDistance / distance)
                 );
 
-                remainingDistance -= _trailConfig.simulationSpeed * Time.deltaTime;
+                remainingDistance -= _trailSettings.simulationSpeed * Time.deltaTime;
 
                 yield return null;
             }
 
             instance.transform.position = endPoint;
 
-            if (hit.collider)
-            {
-                //HandleBulletImpact(distance, EndPoint, Hit.normal, Hit.collider, Iteration);
-            }
+            if (hit.collider) EventBus<ShotHitEvent>.Raise(new ShotHitEvent(hit));
 
-            yield return new WaitForSeconds(_trailConfig.duration);
+            yield return new WaitForSeconds(_trailSettings.duration);
             yield return null;
             instance.emitting = false;
-            instance.colorGradient = originalGradient; 
+            instance.colorGradient = originalGradient;
             instance.gameObject.SetActive(false);
             _trailPool.Release(instance);
         }
@@ -76,11 +73,11 @@ namespace Items.Guns.Trail
         {
             var instance = new GameObject("BulletTrail");
             var trail = instance.AddComponent<TrailRenderer>();
-            trail.colorGradient = _trailConfig.color;
-            trail.material = _trailConfig.material;
-            trail.widthCurve = _trailConfig.widthCurve;
-            trail.time = _trailConfig.duration;
-            trail.minVertexDistance = _trailConfig.minVertexDistance;
+            trail.colorGradient = _trailSettings.color;
+            trail.material = _trailSettings.material;
+            trail.widthCurve = _trailSettings.widthCurve;
+            trail.time = _trailSettings.duration;
+            trail.minVertexDistance = _trailSettings.minVertexDistance;
 
             trail.emitting = false;
             trail.shadowCastingMode = ShadowCastingMode.Off;
@@ -90,7 +87,7 @@ namespace Items.Guns.Trail
 
         private Gradient CloneGradient(Gradient original)
         {
-            Gradient cloned = new Gradient();
+            var cloned = new Gradient();
             cloned.SetKeys(original.colorKeys, original.alphaKeys);
             cloned.mode = original.mode;
             return cloned;
@@ -99,25 +96,23 @@ namespace Items.Guns.Trail
 
         private Gradient ApplyAlphaToGradient(Gradient original, float alphaMultiplier)
         {
-            Gradient modified = new Gradient();
-            
-   
-            GradientColorKey[] colorKeys = original.colorKeys;
-     
-            GradientAlphaKey[] alphaKeys = original.alphaKeys;
-            GradientAlphaKey[] newAlphaKeys = new GradientAlphaKey[alphaKeys.Length];
-            
-            for (int i = 0; i < alphaKeys.Length; i++)
-            {
+            var modified = new Gradient();
+
+
+            var colorKeys = original.colorKeys;
+
+            var alphaKeys = original.alphaKeys;
+            var newAlphaKeys = new GradientAlphaKey[alphaKeys.Length];
+
+            for (var i = 0; i < alphaKeys.Length; i++)
                 newAlphaKeys[i] = new GradientAlphaKey(
                     alphaKeys[i].alpha * alphaMultiplier,
                     alphaKeys[i].time
                 );
-            }
-            
+
             modified.SetKeys(colorKeys, newAlphaKeys);
             modified.mode = original.mode;
-            
+
             return modified;
         }
     }

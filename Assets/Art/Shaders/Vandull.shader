@@ -46,11 +46,8 @@ Shader "Custom/Vandull"
         [Toggle] _ColorY("Color Y Direction", Float) = 1
         [Toggle] _ColorZ("Color Z Direction", Float) = 1
 
-        [Header(Posterization)]
-        [Toggle(POSTERIZE)] _Posterize("Posterize", Float) = 1
-        _PosterizationCount("Posterization Count", Float) = 7
-        
         [Header(Dither)]
+        [Toggle(DITHER)] _Dither("Dither Enabled", Range(0,1)) = 0
         _DitherStrength("Dither Strength", Range(0, 1)) = 0.3
     }
     SubShader
@@ -169,6 +166,7 @@ Shader "Custom/Vandull"
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma shader_feature_local POSTERIZE
+            #pragma shader_feature_local DITHER
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -224,7 +222,7 @@ Shader "Custom/Vandull"
 
                 //Posterization
                 int _PosterizationCount;
-            
+
                 //Dither
                 float _DitherStrength;
             CBUFFER_END
@@ -310,10 +308,10 @@ Shader "Custom/Vandull"
             }
 
             float3 LightingCelShaded(float Roughness,
-                                     float RimStrength, float RimAmount, float RimThreshold,
-                                     float3 Position, float3 Normal, float3 View, float EdgeDiffuse,
-                                     float EdgeSpecular, float EdgeDistanceAttenuation,
-                                     float EdgeShadowAttenuation, float EdgeRim, out float3 Color)
+                                                   float RimStrength, float RimAmount, float RimThreshold,
+                                                   float3 Position, float3 Normal, float3 View, float EdgeDiffuse,
+                                                   float EdgeSpecular, float EdgeDistanceAttenuation,
+                                                   float EdgeShadowAttenuation, float EdgeRim, out float3 Color)
             {
                 Color = half3(0.5f, 0.5f, 0.5f);
 
@@ -352,6 +350,16 @@ Shader "Custom/Vandull"
                 return Color;
             }
 
+            float2 pixelateScreenSpace(float4 positionCS, float pixelSize)
+            {
+                // Get screen position in pixels
+                float2 screenPos = positionCS.xy;
+
+                // Quantize to pixel grid
+                float2 pixelatedPos = floor(screenPos / pixelSize) * pixelSize;
+
+                return pixelatedPos;
+            }
 
             Varyings vert(Attributes input)
             {
@@ -375,49 +383,10 @@ Shader "Custom/Vandull"
                 return abs(normal > _NormalThreshold);
             }
 
-            float bayer4x4(float2 pixelPos)
-            {
-                int x = int(pixelPos.x) % 4;
-                int y = int(pixelPos.y) % 4;
-
-                const float bayerMatrix[16] = {
-                    0.0 / 16.0, 8.0 / 16.0, 2.0 / 16.0, 10.0 / 16.0,
-                    12.0 / 16.0, 4.0 / 16.0, 14.0 / 16.0, 6.0 / 16.0,
-                    3.0 / 16.0, 11.0 / 16.0, 1.0 / 16.0, 9.0 / 16.0,
-                    15.0 / 16.0, 7.0 / 16.0, 13.0 / 16.0, 5.0 / 16.0
-                };
-
-                return bayerMatrix[y * 4 + x] - 0.5; // Center around 0
-            }
-
-            float hash(float2 p)
-            {
-                return frac(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);
-            }
 
             half4 frag(Varyings input) : SV_Target
             {
                 float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
-                
-                #ifdef POSTERIZE
-                texColor = pow(texColor, 0.4545);
-    
-                float greyscale = max(texColor.r, max(texColor.g, texColor.b));
-              
-                float lower     = floor(greyscale * _PosterizationCount) / _PosterizationCount;
-                float lowerDiff = abs(greyscale - lower);
-                
-                float upper     = ceil(greyscale * _PosterizationCount) / _PosterizationCount;
-                float upperDiff = abs(upper - greyscale);
-                
-                float level      = lowerDiff <= upperDiff ? lower : upper;
-                float adjustment = level / greyscale;
-                
-    texColor *= adjustment;
-    
-    // Convert back to linear space
-    texColor = pow(texColor, 2.2);
-                #endif
 
 
                 float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness;
@@ -439,15 +408,12 @@ Shader "Custom/Vandull"
                 float3 ambient = (SampleSH(normalWS) * _AmbientMultiplier) + _AmbientColor;
 
 
-                float dither = bayer4x4(input.positionCS.xy);
-
-                texColor.rgb += dither * _DitherStrength;
-                
                 float3 color;
 
                 LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS, normalWS,
-                       viewDirWS, _EdgeDiffuse, _EdgeSpecular, _EdgeDistanceAttenuation,
-                       _EdgeShadowAttenuation, _EdgeRim, color);
+           viewDirWS, _EdgeDiffuse, _EdgeSpecular,
+           _EdgeDistanceAttenuation,
+           _EdgeShadowAttenuation, _EdgeRim, color);
                 color += ambient;
                 if ((_ColorX && cn(normalTS.x)) || (_ColorY && cn(normalTS.y)) || (_ColorZ && cn(normalTS.z)))
                 {
@@ -455,7 +421,7 @@ Shader "Custom/Vandull"
                 }
 
 
-                return float4(color, 1) * texColor ;
+                return float4(color, 1) * texColor;
             }
             ENDHLSL
         }

@@ -14,9 +14,9 @@ namespace Items.Guns
 
 
         public static IGunSystemsBuilder WithCustomTrails(this IGunSystemsBuilder builder,
-            TrailConfig customTrailConfig)
+            TrailSettings customTrailSettings)
         {
-            return builder.WithTrailSystem(() => new TrailSystem(customTrailConfig));
+            return builder.WithTrailSystem(() => new TrailSystem(customTrailSettings));
         }
     }
 }
