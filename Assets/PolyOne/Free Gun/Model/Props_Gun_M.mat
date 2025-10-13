@@ -121,6 +121,8 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DiffuseBands: 5
+    - _Dither: 0
+    - _DitherStrength: 0.3
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EdgeDiffuse: 0.14
@@ -140,7 +142,7 @@ Material:
     - _NormalThreshold: 0.9999
     - _OcclusionStrength: 1
     - _OutlineMethod: 1
-    - _OutlineWidth: 0.0024
+    - _OutlineWidth: 0.0008
     - _Parallax: 0.02
     - _PosterizationCount: 99
     - _Posterize: 1

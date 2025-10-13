@@ -23,6 +23,7 @@ namespace Items.Guns.Ammo
 
         private readonly Transform _magazineSpawnPosition;
         private int _currentMagazineIndex;
+        private bool _weaponMustReload;
 
         public AmmoSystem(GunConfig config, Transform magazineSpawnPosition, MonoBehaviour behaviour)
         {
@@ -38,7 +39,7 @@ namespace Items.Guns.Ammo
         private Magazine CurrentMagazine { get; set; }
 
         private bool HasSpareAmmo => _magazines.Count > 1;
-        public bool CurrentMagazineEmpty => CurrentMagazine.IsEmpty;
+        public bool CurrentMagazineEmpty => CurrentMagazine.IsEmpty && _chamberedBullet <= 0;
         public bool IsReloading { get; private set; }
 
         public int CurrentAmmo => CurrentMagazine.CurrentAmmo;
@@ -48,6 +49,8 @@ namespace Items.Guns.Ammo
 
         public bool CanReload => !IsReloading && HasSpareAmmo;
 
+        private int _chamberedBullet = 1;
+        
         public void StartReload()
         {
             if (!CanReload) return;
@@ -69,6 +72,11 @@ namespace Items.Guns.Ammo
 
         public void ConsumeAmmo()
         {
+            if (_chamberedBullet > 0)
+            {
+                _chamberedBullet = 1;
+            }
+            
             if (!CurrentMagazineEmpty)
                 CurrentMagazine.SubtractOne();
             else
@@ -77,6 +85,9 @@ namespace Items.Guns.Ammo
 
         public void Update()
         {
+            if (!_weaponMustReload) return;
+            _weaponMustReload = false;
+            _behaviour.StartCoroutine(ReloadRoutine());
         }
 
         private Magazine CreateMagazine()
@@ -111,7 +122,7 @@ namespace Items.Guns.Ammo
             CurrentMagazine = _magazines[_currentMagazineIndex];
             CurrentMagazine.Equip();
         }
-
+        
         private IEnumerator ReloadRoutine()
         {
             DropMagazine();
@@ -123,10 +134,21 @@ namespace Items.Guns.Ammo
 
             VandullLogger.Log(this);
             EquipCurrentMagazine();
+            _chamberedBullet = 1;
+            CurrentMagazine.SubtractOne();
 
             OnReloadComplete?.Invoke(new ReloadEvent(CurrentMagazine));
         }
 
+        public void OnItemSwitched()
+        {
+            if (IsReloading)
+            {
+                _weaponMustReload = true;
+            }
+        }
+
+      
         public override string ToString()
         {
             return GetAllMagsStatus();
@@ -152,5 +174,7 @@ namespace Items.Guns.Ammo
 
             return $"{CurrentMagazine.CurrentAmmo}/{_config.ammoSettings.magazineSize} | Magazines: {_magazines.Count}";
         }
+        
+        
     }
 }

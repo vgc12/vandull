@@ -41,6 +41,7 @@ namespace Npcs
         private RigHandler _rigHandler;
         private Transform _transform;
 
+
         public Gun Gun => gun;
         public Transform AimPoint => aimPoint;
         public RaycastObjectSensor PlayerSensor => playerSensor;
@@ -50,17 +51,16 @@ namespace Npcs
 
         public float PointFollowSpeed => pointFollowSpeed;
 
-        protected override void Awake()
+
+        private void Start()
         {
-            base.Awake();
+            gun.Equip();
             _rigHandler = GetComponent<RigHandler>();
 
             _rigHandler.SetLeftHandData(Gun.leftHandTarget, Gun.leftHandHint);
             _transform = NavMeshAgent.transform;
-
-            aimPoint.transform.localPosition = transform.forward * 3f;
-            gun.Equip();
         }
+
 
         protected override void SetUpTimers()
         {
@@ -70,7 +70,7 @@ namespace Npcs
             _damagedTimer.OnTimerStop += () => _recentlyDamaged = false;
             Timers.Add(_damagedTimer);
         }
-        
+
         protected override void InitializeStateMachine()
         {
             var idleState = new NpcIdleState(this);
@@ -138,27 +138,20 @@ namespace Npcs
 
         public void LookAtDamageDirection()
         {
-            LookAtDirection(_lastDamageDirection, lookAtSpeed);
+            LookAtTarget(playerSensor.Target.position, lookAtSpeed);
         }
 
         public void LookAtTarget(Vector3 target, float turnSpeed)
         {
-            var direction = target - Gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
-            LookAtDirection(direction, turnSpeed);
-        }
-
-        public void LookAtDirection(Vector3 direction, float turnSpeed)
-        {
-            _transform.rotation = Quaternion.Slerp(_transform.rotation,
-                Quaternion.LookRotation(direction), Time.deltaTime * turnSpeed);
+            _transform.LookAt(target);
             _transform.rotation = Quaternion.Euler(0, _transform.rotation.eulerAngles.y, 0);
-        }
-        
 
-        public void FollowPoint(Transform t, Vector3 point, float speed)
-        {
-            t.position = Vector3.Lerp(t.position, point, Time.deltaTime * speed);
+
+/*
+            var direction = target - Gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
+     */
         }
+
 
         public override void TakeDamage(float amount, Vector3 direction)
         {

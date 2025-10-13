@@ -24,7 +24,7 @@ namespace Items.Guns
 
         public Transform recoilTransform;
 
-        public Transform adsTransform;
+        public Transform aimTransform;
 
         public Transform muzzleTransform;
 
@@ -132,7 +132,7 @@ namespace Items.Guns
         public override void Equip()
         {
             base.Equip();
-            transform.position = hipFireTransform.position;
+            AimingSystem.ResetPosition();
             if (AimingSystem != null) StopAiming();
 
             if (FireModeSystem != null) StopFiring();
@@ -140,7 +140,7 @@ namespace Items.Guns
 
         public override void UnEquip()
         {
-            transform.position = hipFireTransform.position;
+            AimingSystem.ResetPosition();
             if (AimingSystem != null) StopAiming();
 
             if (FireModeSystem != null) StopFiring();

@@ -40,6 +40,11 @@ namespace Items.Guns.Aiming
             EventBus<AimChangedEvent>.Raise(new AimChangedEvent(false, HipFirePoint));
         }
 
+        public void ResetPosition()
+        {
+            _transform.position = HipFirePoint.position;
+        }
+
         public void Update()
         {
             _transform.position = Vector3.Lerp(_transform.position,

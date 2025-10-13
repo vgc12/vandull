@@ -13,6 +13,8 @@ namespace Player
     {
         [SerializeField] private bool invulnerable;
 
+        [SerializeField] private float health;
+
 
         private GroundChecker _groundChecker;
         private StateMachine.StateMachine _stateMachine;
@@ -41,7 +43,7 @@ namespace Player
             PlayerLooking = GetComponent<PlayerLooking>();
 
 
-            Health = 100;
+            health = 100;
 
 
             InitializeStateMachine();
@@ -62,12 +64,12 @@ namespace Player
             if (Invulnerable) return;
 
             VandullLogger.Log($"Player took {amount} damage");
-            Health -= amount;
+            health -= amount;
             if (Health <= 0) Die();
         }
 
         public bool Invulnerable => invulnerable;
-        public float Health { get; set; }
+        public float Health => health;
 
         public void Die()
         {

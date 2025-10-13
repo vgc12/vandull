@@ -11,6 +11,7 @@ namespace Player.Movement
         [SerializeField] [Range(10, 100)] private float walkSpeed = 50f;
         [SerializeField] [Range(10, 200)] private float sprintSpeed = 75f;
         [SerializeField] [Range(1, 100)] private float movementMultiplier = 10f;
+        [SerializeField] [Range(1, 100)] private float slopeMultiplier;
 
         [Header("Jumping")] [SerializeField] [Range(1, 100)]
         private float jumpForce = 5f;
@@ -35,10 +36,14 @@ namespace Player.Movement
                                                             (1 << 5);
 
         [SerializeField] private Vector3 crouchCheckOffset = new(0f, 0f, 0f);
+
         public int CrouchWalkSpeed => crouchWalkSpeed;
         public float WalkSpeed => walkSpeed;
         public float SprintSpeed => sprintSpeed;
         public float MovementMultiplier => movementMultiplier;
+
+        public float SlopeMultiplier => slopeMultiplier;
+
         public float JumpForce => jumpForce;
         public float JumpMultiplier => jumpMultiplier;
         public float AirDrag => airDrag;
@@ -49,6 +54,7 @@ namespace Player.Movement
         public float InitialHeight => initialHeight;
 
         public float CrouchSpeed => crouchSpeed;
+
 
         public float CrouchCheckRadius => crouchCheckRadius;
         public int ExcludedLayers => excludedLayers;

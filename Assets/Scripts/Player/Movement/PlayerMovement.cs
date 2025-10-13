@@ -15,6 +15,7 @@ namespace Player.Movement
         [SerializeField] [Required] private Transform playerModel;
         [SerializeField] [Required] private Transform crouchPositionTransform;
         [SerializeField] [Required] private Transform headCheckTransform;
+        [SerializeField] private float maxSlopeAngle;
 
         [ScriptableObjectDropdown] public PlayerMovementConfig config;
 
@@ -29,6 +30,8 @@ namespace Player.Movement
 
 
         private Rigidbody _rigidbody;
+
+        private RaycastHit _slopeHit;
 
 
         public bool ObjectAbove { get; private set; }
@@ -148,6 +151,8 @@ namespace Player.Movement
             Gizmos.DrawLine(headCheckTransform.position,
                 headCheckTransform.position + Vector3.up *
                 (config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y));
+            //Gizmos.DrawRay(playerModel.transform.position, Vector3.down * (playerModel.localScale.y * 0.5f + 0.3f));
+            Gizmos.DrawRay(transform.position, slopeDir * 20f);
         }
 
         #endregion
@@ -179,19 +184,45 @@ namespace Player.Movement
 
         #region MovementFunctions
 
+        private Vector3 slopeDir;
+
         public void Move(float speed)
         {
-            var forwardMovement = orientation.forward * (MoveInput.y * speed * config.MovementMultiplier);
-            var rightMovement = orientation.right * (MoveInput.x * speed * config.MovementMultiplier);
+            var moveDirection = orientation.forward * MoveInput.y + orientation.right * MoveInput.x;
+            moveDirection.Normalize();
 
-            ApplyMovement(forwardMovement, rightMovement);
+
+            if (OnSlope())
+            {
+                var slopeMoveDirection = Vector3.ProjectOnPlane(moveDirection, _slopeHit.normal).normalized;
+                slopeDir = slopeMoveDirection;
+
+                ApplyMovement(slopeMoveDirection * (speed * config.SlopeMultiplier));
+
+
+                // if (_rigidbody.linearVelocity.y > 0) _rigidbody.AddForce(Vector3.down * 5f, ForceMode.Force);
+                return;
+            }
+
+            ApplyMovement(moveDirection * (speed * config.MovementMultiplier));
         }
 
-
-        public void ApplyMovement(Vector3 forwardMovement, Vector3 rightMovement)
+        private bool OnSlope()
         {
-            _rigidbody.AddForce(forwardMovement, ForceMode.Force);
-            _rigidbody.AddForce(rightMovement, ForceMode.Force);
+            if (Physics.Raycast(playerModel.position, Vector3.down, out _slopeHit,
+                    playerModel.localScale.y * 0.5f + 0.3f, ~LayerMask.GetMask("Player")))
+            {
+                var angle = Vector3.Angle(Vector3.up, _slopeHit.normal);
+
+                return angle < maxSlopeAngle && angle != 0;
+            }
+
+            return false;
+        }
+
+        public void ApplyMovement(Vector3 movement)
+        {
+            _rigidbody.AddForce(movement, ForceMode.Force);
         }
 
         public void ApplyDrag()
@@ -203,7 +234,7 @@ namespace Player.Movement
         public void Jump()
         {
             _rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
-            _rigidbody.AddForce(_rigidbody.linearVelocity/4 * (config.JumpForce * config.JumpMultiplier),
+            _rigidbody.AddForce(_rigidbody.linearVelocity / 4 * (config.JumpForce * config.JumpMultiplier),
                 ForceMode.Impulse);
         }
 

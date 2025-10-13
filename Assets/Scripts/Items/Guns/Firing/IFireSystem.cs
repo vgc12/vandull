@@ -14,7 +14,8 @@ namespace Items.Guns.Firing
     {
         public Transform MuzzleTransform { get; }
         bool CanFire { get; }
-        event Action<ShotFiredEvent> OnShotFired;
+
+        Action<ShotFiredEvent> OnShotFired { get; set; }
         void ExecuteFireCommand(FireCommand command);
         void Fire();
         void StopFire();

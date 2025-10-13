@@ -18,7 +18,6 @@ namespace Npcs.States.Enemy
         {
             base.Enter();
             _enemy.Gun.FireModeSystem.SetCurrentFireMode(FireType.Automatic);
-            
         }
 
         public override void Update()
@@ -29,7 +28,7 @@ namespace Npcs.States.Enemy
             var aimPoint = _enemy.AimPoint;
             var sensor = _enemy.PlayerSensor;
 
-         //   _enemy.FollowPoint(aimPoint, sensor.Target.transform.position, _enemy.PointFollowSpeed);
+            _enemy.Gun.StartAiming();
             _enemy.LookAtTarget(sensor.Target.transform.position, _enemy.LookAtSpeed);
 
             _enemy.HandleTacticalMovement();
@@ -39,6 +38,7 @@ namespace Npcs.States.Enemy
 
         public override void Exit()
         {
+            _gun.StopAiming();
             _gun.StopAutomaticFire();
         }
     }

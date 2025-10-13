@@ -33,7 +33,7 @@ namespace General
 
             return component;
         }
-        
+
         public static T GetOrAdd<T>(this Component component) where T : Component
         {
             return component.gameObject.GetOrAdd<T>();
@@ -120,6 +120,11 @@ namespace General
         {
             if (!layerMask.Contains(obj.gameObject.layer)) return null;
             return obj;
+        }
+
+        public static void FollowPoint<T>(this T t, Vector3 point, float speed) where T : Component
+        {
+            t.transform.position = Vector3.Lerp(t.transform.position, point, Time.deltaTime * speed);
         }
     }
 }

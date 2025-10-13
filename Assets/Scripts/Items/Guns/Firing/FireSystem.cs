@@ -37,7 +37,7 @@ namespace Items.Guns.Firing
 
         public virtual bool CanFire => Time.time > LastFireTime + Config.firingSettings.fireRate && !IsOutOfAmmo;
 
-        public event Action<ShotFiredEvent> OnShotFired;
+        public Action<ShotFiredEvent> OnShotFired { get; set; }
 
         public abstract void Fire();
 
@@ -66,7 +66,7 @@ namespace Items.Guns.Firing
             PerformRaycast();
         }
 
-        private void PerformRaycast()
+        protected virtual void PerformRaycast()
         {
             var startPoint = MuzzleTransform.position;
             var endPoint = startPoint + MuzzleTransform.forward * Config.damageSettings.range;
@@ -78,42 +78,29 @@ namespace Items.Guns.Firing
 
                 VandullLogger.Log("Hit: " + hit.collider.name);
 
-
-                if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable)) return;
-
-                if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
-                {
-                    damageable.TakeDamage(Config.damageSettings.damage * bodyPart.damageMultiplier,
-                        MuzzleTransform.forward);
-                    EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
-                        Config.damageSettings.damage));
-                }
-                else
-                {
-                    damageable.TakeDamage(Config.damageSettings.damage, MuzzleTransform.forward);
-                }
+                ApplyDamage(hit);
             }
             else
             {
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, endPoint, new RaycastHit()));
             }
+        }
 
-/*
-            var hitCount = Physics.RaycastNonAlloc(
-                startPoint,
-                MuzzleTransform.forward,
-                HitResults,
-                Config.damageSettings.range,
-                ~LayerMask.GetMask("Ignore Raycast"));
+        protected void ApplyDamage(RaycastHit hit)
+        {
+            if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable)) return;
 
-            if (hitCount <= 0)
+            if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
             {
-                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, endPoint, new RaycastHit()));
-                return;
+                damageable.TakeDamage(Config.damageSettings.damage * bodyPart.damageMultiplier,
+                    MuzzleTransform.forward);
+                EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
+                    Config.damageSettings.damage));
             }
-
-          //  ProcessHits(hitCount, startPoint);
-          */
+            else
+            {
+                damageable.TakeDamage(Config.damageSettings.damage, MuzzleTransform.forward);
+            }
         }
 
         private void ProcessHits(int hitCount, Vector3 startPoint)

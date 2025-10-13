@@ -33,10 +33,10 @@ namespace Items.Guns.Recoil
         private Vector3 _targetGunRecoil;
         private Vector3 _targetGunRotationRecoil;
         private Vector3 _targetRecoil;
-        private bool _enemy;
+
 
         public RecoilSystem(GunConfig config, Transform gunTransform, Transform recoilTransform,
-            MonoBehaviour behaviour, bool enemy = false)
+            MonoBehaviour behaviour)
         {
             _config = config;
             _recoilTransform = recoilTransform;
@@ -48,7 +48,6 @@ namespace Items.Guns.Recoil
 
             _originalGunPosition = _gunTransform.localPosition;
             _originalGunRotation = _gunTransform.localEulerAngles;
-            this._enemy = enemy;
         }
 
         public Vector3 CurrentRecoil => _currentRecoil * _config.recoilSettings.recoilEffectMultiplier;
@@ -125,7 +124,6 @@ namespace Items.Guns.Recoil
         private void OnAimChanged(AimChangedEvent obj)
         {
             _basePosition = obj.GunPosition.localPosition;
-            ;
         }
 
         private void UpdateProgressiveRecoil()
@@ -144,15 +142,10 @@ namespace Items.Guns.Recoil
             _currentRecoil = Vector3.Slerp(_currentRecoil, _targetRecoil,
                 Time.deltaTime * _config.recoilSettings.recoilSpeed);
 
-            if (_enemy)
-            {
-                Debug.Log("enemy shot");
-            }
 
             if (_recoilTransform)
                 _recoilTransform.localRotation =
                     Quaternion.Euler(_currentRecoil * _config.recoilSettings.recoilEffectMultiplier);
-            
 
 
             _targetRecoil = Vector3.Lerp(_targetRecoil, Vector3.zero,

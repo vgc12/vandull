@@ -7,5 +7,6 @@
         void StartAiming();
 
         void StopAiming();
+        void ResetPosition();
     }
 }

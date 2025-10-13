@@ -16,6 +16,7 @@ MonoBehaviour:
   walkSpeed: 30
   sprintSpeed: 50
   movementMultiplier: 52.2
+  slopeMultiplier: 68.4
   jumpForce: 9
   jumpMultiplier: 54.2
   airDrag: 1

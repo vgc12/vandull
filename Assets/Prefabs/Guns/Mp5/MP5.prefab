@@ -607,7 +607,7 @@ MonoBehaviour:
   magazinePosition: {fileID: 7382481405458349941}
   hipFireTransform: {fileID: 6622877999510213927}
   recoilTransform: {fileID: 0}
-  adsTransform: {fileID: 4648589758356261510}
+  aimTransform: {fileID: 4648589758356261510}
   muzzleTransform: {fileID: 5411058881839955612}
 --- !u!1 &6907953005192634631
 GameObject:
