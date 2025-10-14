@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 
 using Attributes;
-using General;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,12 +17,12 @@ namespace Editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            RequiredAttribute requiredAttribute = (RequiredAttribute)attribute;
-            
+            var requiredAttribute = (RequiredAttribute)attribute;
+
             EditorGUI.BeginProperty(position, label, property);
 
-            float currentY = position.y;
-            
+            var currentY = position.y;
+
             // Handle ScriptableObject expansion if applicable
             if (IsScriptableObjectProperty(property))
             {
@@ -35,7 +34,7 @@ namespace Editor
                 var objectRect = new Rect(position.x + 15, currentY, position.width - 15,
                     EditorGUIUtility.singleLineHeight);
                 EditorGUI.PropertyField(objectRect, property, label, false);
-                
+
                 currentY += EditorGUIUtility.singleLineHeight;
 
                 // Draw expanded ScriptableObject properties
@@ -45,12 +44,11 @@ namespace Editor
                     if (data)
                     {
                         EditorGUI.indentLevel++;
-                        SerializedObject serializedObject = new SerializedObject(data);
+                        var serializedObject = new SerializedObject(data);
                         serializedObject.Update();
 
-                        SerializedProperty prop = serializedObject.GetIterator();
+                        var prop = serializedObject.GetIterator();
                         if (prop.NextVisible(true))
-                        {
                             do
                             {
                                 if (prop.name == "m_Script") continue;
@@ -62,7 +60,6 @@ namespace Editor
                                 EditorGUI.PropertyField(propRect, prop, true);
                                 currentY += height + EditorGUIUtility.standardVerticalSpacing;
                             } while (prop.NextVisible(false));
-                        }
 
                         if (serializedObject.hasModifiedProperties)
                         {
@@ -77,7 +74,7 @@ namespace Editor
             else
             {
                 // Standard property field for non-ScriptableObject properties
-                Rect propertyRect = new Rect(position.x, currentY, position.width, EditorGUIUtility.singleLineHeight);
+                var propertyRect = new Rect(position.x, currentY, position.width, EditorGUIUtility.singleLineHeight);
                 EditorGUI.PropertyField(propertyRect, property, label);
                 currentY += EditorGUIUtility.singleLineHeight;
             }
@@ -87,20 +84,19 @@ namespace Editor
             // Show error below if property is null
             if (property.objectReferenceValue == null)
             {
-                VandullLogger.LogError($"{property.name} is required but not assigned in the inspector.");
-                Rect helpBoxRect = new Rect(
-                    position.x, 
+                var helpBoxRect = new Rect(
+                    position.x,
                     currentY + 2,
-                    position.width, 
+                    position.width,
                     EditorGUIUtility.singleLineHeight);
-                    
+
                 EditorGUI.HelpBox(helpBoxRect, requiredAttribute.ErrorMessage, MessageType.Error);
             }
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            float height = EditorGUIUtility.singleLineHeight; // Property field height
+            var height = EditorGUIUtility.singleLineHeight; // Property field height
 
             // Add height for ScriptableObject expansion
             if (IsScriptableObjectProperty(property) && property.isExpanded && property.objectReferenceValue != null)
@@ -108,26 +104,22 @@ namespace Editor
                 var data = property.objectReferenceValue as ScriptableObject;
                 if (data != null)
                 {
-                    SerializedObject serializedObject = new SerializedObject(data);
-                    SerializedProperty prop = serializedObject.GetIterator();
+                    var serializedObject = new SerializedObject(data);
+                    var prop = serializedObject.GetIterator();
 
                     if (prop.NextVisible(true))
-                    {
                         do
                         {
                             if (prop.name == "m_Script") continue;
                             var propHeight = EditorGUI.GetPropertyHeight(prop, null, true);
                             height += propHeight + EditorGUIUtility.standardVerticalSpacing;
                         } while (prop.NextVisible(false));
-                    }
                 }
             }
 
             // Add height for error message if property is null
             if (property.objectReferenceValue == null)
-            {
                 height += EditorGUIUtility.singleLineHeight + 2; // Error message height
-            }
 
             return height;
         }

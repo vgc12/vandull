@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EventBus;
+using General;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
@@ -8,8 +9,14 @@ using UnityEngine;
 namespace Player
 {
     [RequireComponent(typeof(GroundChecker), typeof(PlayerMovement), typeof(PlayerLooking))]
-    public class PlayerStateMachine : MonoBehaviour
+    public class PlayerStateMachine : MonoBehaviour, IKillable, IDamageable
     {
+        [SerializeField] private bool invulnerable;
+
+        [SerializeField] private float health;
+
+
+        private GroundChecker _groundChecker;
         private StateMachine.StateMachine _stateMachine;
 
 
@@ -17,42 +24,8 @@ namespace Player
 
         public PlayerLooking PlayerLooking { get; private set; }
 
-
-        private GroundChecker _groundChecker;
-
-        private class MovementStates
-        {
-            public IdleState IdleState { get; private init; }
-            public WalkState WalkState { get; private init; }
-            public SprintState SprintState { get; private init; }
-            public JumpState JumpState { get; private init; }
-            public CrouchState CrouchState { get; private init; }
-            public IState CrouchWalkState { get; private init; }
-
-            public static MovementStates Create(PlayerStateMachine sm) => new()
-            {
-                IdleState = new IdleState(sm),
-                WalkState = new WalkState(sm),
-                SprintState = new SprintState(sm),
-                JumpState = new JumpState(sm),
-                CrouchState = new CrouchState(sm),
-                CrouchWalkState = new CrouchWalkState(sm)
-            };
-        }
-
-
-        private void InitializeStateMachine()
-        {
-            var movementStates = MovementStates.Create(this);
-
-            _stateMachine = new StateMachine.StateMachine();
-
-            CreateAnyTransitions(movementStates);
-            _stateMachine.SetState(movementStates.IdleState);
-        }
-
         private bool IsGroundedAndNotCrouching =>
-            _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed && IsAtNormalHeight;
+            _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed;
 
         private bool IsGroundedAndCrouching =>
             _groundChecker.IsGrounded && (PlayerMovement.CrouchPressed || !IsAtNormalHeight);
@@ -63,7 +36,58 @@ namespace Player
             Mathf.Approximately(PlayerMovement.config.InitialHeight,
                 PlayerMovement.PlayerModel.localScale.y);
 
-        private void CreateAnyTransitions(MovementStates states)
+        private void Awake()
+        {
+            _groundChecker = GetComponent<GroundChecker>();
+            PlayerMovement = GetComponent<PlayerMovement>();
+            PlayerLooking = GetComponent<PlayerLooking>();
+
+
+            health = 100;
+
+
+            InitializeStateMachine();
+        }
+
+        private void Update()
+        {
+            _stateMachine.Update();
+        }
+
+        private void FixedUpdate()
+        {
+            _stateMachine.FixedUpdate();
+        }
+
+        public void TakeDamage(float amount, Vector3 direction)
+        {
+            if (Invulnerable) return;
+
+            VandullLogger.Log($"Player took {amount} damage");
+            health -= amount;
+            if (Health <= 0) Die();
+        }
+
+        public bool Invulnerable => invulnerable;
+        public float Health => health;
+
+        public void Die()
+        {
+            EventBus<PlayerDeathEvent>.Raise(new PlayerDeathEvent());
+        }
+
+
+        private void InitializeStateMachine()
+        {
+            var movementStates = Factory.Create(this);
+
+            _stateMachine = new StateMachine.StateMachine();
+
+            CreateAnyTransitions(movementStates);
+            _stateMachine.SetState(movementStates.IdleState);
+        }
+
+        private void CreateAnyTransitions(Factory states)
         {
             _stateMachine.AddAnyTransition(states.JumpState,
                 new FuncPredicate(() =>
@@ -85,24 +109,28 @@ namespace Player
                 new FuncPredicate(() => IsGroundedAndCrouching && IsMoving));
         }
 
-        private void Awake()
-        {
-            _groundChecker = GetComponent<GroundChecker>();
-            PlayerMovement = GetComponent<PlayerMovement>();
-            PlayerLooking = GetComponent<PlayerLooking>();
-            
 
-            InitializeStateMachine();
-        }
-
-        private void Update()
+        private class Factory
         {
-            _stateMachine.Update();
-        }
+            public IdleState IdleState { get; private init; }
+            public WalkState WalkState { get; private init; }
+            public SprintState SprintState { get; private init; }
+            public JumpState JumpState { get; private init; }
+            public CrouchState CrouchState { get; private init; }
+            public IState CrouchWalkState { get; private init; }
 
-        private void FixedUpdate()
-        {
-            _stateMachine.FixedUpdate();
+            public static Factory Create(PlayerStateMachine sm)
+            {
+                return new Factory
+                {
+                    IdleState = new IdleState(sm),
+                    WalkState = new WalkState(sm),
+                    SprintState = new SprintState(sm),
+                    JumpState = new JumpState(sm),
+                    CrouchState = new CrouchState(sm),
+                    CrouchWalkState = new CrouchWalkState(sm)
+                };
+            }
         }
     }
 }

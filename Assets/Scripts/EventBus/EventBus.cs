@@ -5,7 +5,7 @@ namespace EventBus
     public static class EventBus<T> where T : IEvent
     {
         public static readonly List<IEventBinding<T>> Bindings = new();
-        
+
 
         public static void Register(IEventBinding<T> binding)
         {
@@ -27,6 +27,4 @@ namespace EventBus
             }
         }
     }
-
-
 }

@@ -2,96 +2,101 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Attributes;
+using EventBus;
 using General;
 using Items.Guns;
+using Npcs.Shared;
 using Player;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Items
 {
+    [Serializable]
     public class ItemHandler : MonoBehaviour
     {
-        public static ItemHandler Instance { get; private set; }
-        private Item _equippedItem;
-        public Item EquippedItem => _equippedItem;
-       [SerializeField, Required] private List<Item> inventory = new();
-        private InputManager _inputManager;
+        [SerializeField] public List<Gun> gunObjects = new();
 
-        private void Awake()
+        [SerializeField] [Required] private ArmAnimationController armAnimationController;
+
+        [SerializeField] [Required] private RigHandler rigHandler;
+
+        private List<Item> _inventory = new();
+
+        public Item EquippedItem { get; private set; }
+
+        public List<Item> Inventory
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(this);
-            }
-            else
-            {
-                Instance = this;
-            }
+            get => _inventory;
+            private set => _inventory = value;
         }
 
-        private void Start()
+
+        // Call this from Awake() or Start() in your MonoBehaviour
+        public void Start()
         {
-            LogInventory();
+            gunObjects ??= new List<Gun>();
+
+            _inventory ??= new List<Item>();
+
+
             SetUpItems();
-            _equippedItem = inventory.FirstOrDefault();
-            _equippedItem?.Equip();
-            _inputManager = GetComponentInParent<InputManager>();
-            _inputManager.InputActions.Player.SwitchItem.performed += OnItemSwitched;
-     
+            LogPrefabs();
+
+
+            EquipItem(Inventory.FirstOrDefault());
+
+            EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(EquippedItem));
+        }
+
+
+        private void LogPrefabs()
+        {
+            Debug.Log("Current Prefabs:");
+            foreach (var prefab in gunObjects) VandullLogger.Log(prefab.name);
         }
 
         private void LogInventory()
         {
             Debug.Log("Current Inventory:");
-            foreach (var item in inventory)
-            {
-               VandullLogger.Log(item.name + (item == _equippedItem ? " (Equipped)" : ""));
-            }
+            foreach (var item in _inventory) VandullLogger.Log(item.name + (item == EquippedItem ? " (Equipped)" : ""));
         }
-        
+
         public void SetUpItems()
         {
-            foreach (var i in inventory)
+            gunObjects = GetComponentsInChildren<Gun>().ToList();
+            foreach (var i in gunObjects)
             {
-                InitializeItem(i);
-                if(i == _equippedItem)
-                   continue;
+                _inventory.Add(i);
                 i.UnEquip();
             }
         }
 
         public void InitializeItem(Item item)
         {
-            item.Spawn(this);
         }
-  
 
-        private void OnItemSwitched(InputAction.CallbackContext obj)
+        public void SwitchItem(int direction)
         {
-            var direction = obj.ReadValue<float>();
-            if (inventory.Count == 0) return;
-            int currentIndex = inventory.IndexOf(_equippedItem);
-            int nextIndex = Math.Abs((currentIndex + (int)direction) % inventory.Count);
-            EquipItem(inventory[nextIndex]);
+            if (_inventory.Count == 0) return;
+            var currentIndex = _inventory.IndexOf(EquippedItem);
+            var nextIndex = Math.Abs((currentIndex + direction) % gunObjects.Count);
+            EquipItem(_inventory[nextIndex]);
         }
-        
+
+
         private void EquipItem(Item item)
         {
-            if (_equippedItem != null)
-                _equippedItem.UnEquip();
-            _equippedItem = item;
-            _equippedItem.Equip();
-        }
+            if (EquippedItem != null) EquippedItem.UnEquip();
 
-        private void Update()
-        {
-            _equippedItem.Update();
-        }
 
-        private void OnDrawGizmos()
-        {
-            (_equippedItem as Gun)?.OnDrawGizmos();
+            EquippedItem = item;
+            EquippedItem.Equip();
+
+            rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
+            rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
+//            animator.SetLayerWeight((int)EquippedItem.gripType, 1);
+
+            armAnimationController.PlayAnimation(EquippedItem.gripType);
         }
     }
 }

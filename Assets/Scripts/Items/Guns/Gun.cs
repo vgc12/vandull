@@ -1,237 +1,176 @@
 using System.Collections.Generic;
 using Attributes;
+using EventBus;
 using General;
+using Items.Guns.Aiming;
+using Items.Guns.Ammo;
+using Items.Guns.Firing;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
-using Player;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.InputSystem;
 
 namespace Items.Guns
 {
-  
-    [CreateAssetMenu( fileName = "New Gun", menuName = "Items/Gun")]
-    public class Gun : Item
+    public sealed class Gun : Item
     {
-        [Header("Gun Components")]
-      
-        private Transform _recoilTransform;
-        [SerializeField] private GunConfig gunConfig;
-        [SerializeField, ScriptableObjectDropdown] private TrailConfig trailConfig;
-        [SerializeField, Required] private GameObject magazinePrefab;
-        
-        [Header("Events")]
-        public UnityEvent<Vector3, float> onFired;
-        public UnityEvent onReloadStarted;
-        public UnityEvent onReloadCompleted;
-        public UnityEvent onAmmoChanged;
+        [Header("Gun Components")] public GunConfig gunConfig;
 
-        private Transform _muzzleTransform;
-        
+        [SerializeField] [Required] private GunInitializer initializer;
 
-        private bool _firePressed;
-        private bool _aimToggled;
-      
+        public Transform magazinePosition;
 
-        #region Unity Lifecycle
+        public Transform hipFireTransform;
 
-        protected override void Use(InputAction.CallbackContext context)
-        {
-            if(!IsEquipped ) return;
-            
-            FireSystem.Fire(context);
-            
-        }
+        public Transform recoilTransform;
+
+        public Transform aimTransform;
+
+        public Transform muzzleTransform;
 
 
-        public override void Spawn(MonoBehaviour monoBehaviour)
-        {
-            base.Spawn(monoBehaviour);
-            InitializeSystems();
-        }
+        public IAimingSystem AimingSystem { get; private set; }
+        public IAmmoSystem AmmoSystem { get; private set; }
+        public IRecoilSystem RecoilSystem { get; private set; }
+        public ITrailSystem TrailSystem { get; private set; }
 
-         protected override void OnUpdate()
-        {
-            RecoilSystem.Update();
-            AimingSystem.Update();
-            FireSystem.Update();
- 
-        }
+        public IFireModeSystem FireModeSystem { get; private set; }
 
 
-        public void OnDrawGizmos()
-        {
-            DrawDebugGizmos();
-        }
-
-        #endregion
-
-        #region Initialization
-
-
-        private void InitializeSystems()
-        {
-            _recoilTransform = GameObject.FindWithTag("RecoilTransform").transform;
-            
-            _muzzleTransform = new GameObject("Muzzle").transform;
-            _muzzleTransform.SetParent(ItemInstance.transform);
-            _muzzleTransform.localPosition = gunConfig.aimSettings.muzzlePoint;
-            _muzzleTransform.localRotation = Quaternion.identity;
-            
-            
-            TrailSystem = new TrailSystem(trailConfig);
-            AmmoSystem = new AmmoSystem(gunConfig, MonoBehaviour, ItemInstance.transform, magazinePrefab);
-            AimingSystem = new AimingSystem( gunConfig, ItemInstance.transform);
-            RecoilSystem = new RecoilSystem(gunConfig, AimingSystem, _recoilTransform,  ItemInstance.transform, MonoBehaviour);
-            FireSystem = new FireSystem(ItemInstance.transform, gunConfig, _muzzleTransform, MonoBehaviour,RecoilSystem, AmmoSystem, TrailSystem);
-          
-          
-            FireSystem.OnFired += HandleFired;
-            AmmoSystem.OnAmmoChanged += () => onAmmoChanged?.Invoke();
-            AmmoSystem.OnReloadStarted += () => onReloadStarted?.Invoke();
-            AmmoSystem.OnReloadCompleted += () => onReloadCompleted?.Invoke();
-   
-            
-            InputManager = ItemInstance.GetComponentInParent<InputManager>();
-            InputManager.InputActions.Player.Aim.started += OnAim;
-            InputManager.InputActions.Player.Aim.performed += OnAim;
-            InputManager.InputActions.Player.Aim.canceled += OnAim;
-            InputManager.InputActions.Player.Reload.started += OnReload;
-
-            InputManager.InputActions.Player.SwitchFireMode.started += OnFireModeSwitch;
-         
-            StartAiming();
-            StopAiming();
-            
-            ItemInstance.transform.localPosition = gunConfig.aimSettings.hipFirePoint;
-            
-           
-        }
-        
-
-        #endregion
-       
-
-        #region Input Handling
-
-  
-
-        public void OnAim(InputAction.CallbackContext context)
-        {
-            if(!IsEquipped) return;
-            if (context.started)
-            {
-                _aimToggled = !_aimToggled;
-            }
-
-            if (_aimToggled && !IsReloading)
-            {
-                StartAiming();
-            }
-            else if (!_aimToggled)
-            {
-                StopAiming();
-            }
-        }
-
-        public void OnReload(InputAction.CallbackContext context)
-        {
-            if(!IsEquipped) return;
-            if (context.started)
-                StartReload();
-        }
-
-        #endregion
-
-        #region Public Interface
-        
-        public bool CanFire=> FireSystem.CanFire && !AmmoSystem.IsCurrentMagazineEmpty;
         public bool IsAiming => AimingSystem.IsAiming;
         public bool IsReloading => AmmoSystem.IsReloading;
-        public RecoilSystem RecoilSystem { get; private set; }
 
-        public AmmoSystem AmmoSystem { get; private set; }
+        private void Awake()
+        {
+            var systems = initializer.CreateGunSystems(this);
 
-        [field: Header("Systems")]
-        public FireSystem FireSystem { get; private set; }
+            RecoilSystem = systems.RecoilSystem;
+            AmmoSystem = systems.AmmoSystem;
+            AimingSystem = systems.AimingSystem;
+            RecoilSystem = systems.RecoilSystem;
+            TrailSystem = systems.TrailSystem;
+            FireModeSystem = systems.FireModeSystem;
 
-        public AimingSystem AimingSystem { get; private set; }
+            AimingSystem.StartAiming();
+            AimingSystem.StopAiming();
+        }
 
-        public TrailSystem TrailSystem { get; private set; }
 
+        protected override void OnUpdate()
+        {
+            RecoilSystem?.Update();
+            AimingSystem?.Update();
+            FireModeSystem?.Update();
+            AmmoSystem?.Update();
+            TrailSystem?.Update();
+        }
 
         public void StartReload()
         {
             AmmoSystem.StartReload();
-         
         }
 
-        public void StartAiming() => AimingSystem.StartAiming();
-        public void StopAiming() => AimingSystem.StopAiming();
-
-        #endregion
-
-        #region Event Handlers
-
-        private void HandleFired(Vector3 position, float damage)
+        public void StartAiming()
         {
-            onFired?.Invoke(position, damage);
+            if (IsReloading || !IsEquipped) return;
+            AimingSystem.StartAiming();
         }
 
-        #endregion
-
-        #region Debug
-
-        private void DrawDebugGizmos()
+        public void StopAiming()
         {
-            
-            Gizmos.color = Color.red;
-            Gizmos.DrawRay(_muzzleTransform.position, _muzzleTransform.transform.forward * gunConfig.damageSettings.range);
-            
-            Gizmos.color = Color.green;
-            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint(gunConfig.aimSettings.adsPosition), 0.01f);
-            
-            Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(ItemInstance.transform.parent.TransformPoint( gunConfig.aimSettings.hipFirePoint), 0.01f);
-            
-            Gizmos.color = Color.azure; 
-            Gizmos.DrawSphere(ItemInstance.transform.TransformPoint( gunConfig.ammoSettings.magazinePosition), 0.01f);
-            
+            if (!IsEquipped) return;
+            AimingSystem.StopAiming();
         }
 
-        #endregion
-
-        
-
-
-        public void OnFireModeSwitch(InputAction.CallbackContext context)
-        {
-            if (context.started )
-            {
-                FireSystem?.CycleFireMode();
-            }
-        }
-        
-        public FireType GetCurrentFireMode()
-        {
-            return FireSystem?.CurrentFireType ?? FireType.SemiAutomatic;
-        }
-
-        public void SetFireMode(FireType fireType)
-        {
-            FireSystem?.SetFireMode(fireType);
-        }
-
-        public void CycleFireMode()
-        {
-            FireSystem.CycleFireMode();
-        }
 
         public IReadOnlyList<FireType> GetAvailableFireModes()
         {
             return gunConfig.fireModeSettings.availableFireModes;
         }
+
+
+        public void ExecuteSingleShot()
+        {
+            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.SingleShot);
+        }
+
+        public void StartAutomaticFire()
+        {
+            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StartAutomaticFire);
+        }
+
+        public void StopAutomaticFire()
+        {
+            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StopAutomaticFire);
+        }
+
+
+        public void CycleFireMode()
+        {
+            FireModeSystem.CycleFireMode();
+        }
+
+
+        public void Drop()
+        {
+            transform.GetOrAdd<Rigidbody>();
+
+            var colliderCount = transform.GetComponentsInChildren<Collider>();
+            if (colliderCount.Length == 0)
+                transform.GetOrAdd<BoxCollider>();
+
+            transform.SetParent(null);
+
+            AmmoSystem.DropMagazine();
+        }
+
+        public void StopFiring()
+        {
+            FireModeSystem.CurrentFireSystem.StopFire();
+        }
+
+        public override void Equip()
+        {
+            base.Equip();
+            AimingSystem.ResetPosition();
+            if (AimingSystem != null) StopAiming();
+
+            if (FireModeSystem != null) StopFiring();
+        }
+
+        public override void UnEquip()
+        {
+            AimingSystem.ResetPosition();
+            if (AimingSystem != null) StopAiming();
+
+            if (FireModeSystem != null) StopFiring();
+
+
+            base.UnEquip();
+        }
     }
-    
+
+    public class ShotHitEvent : IEvent
+    {
+        public RaycastHit Hit;
+
+        public ShotHitEvent(RaycastHit hit)
+        {
+            Hit = hit;
+        }
+    }
+
+    public interface IImpactSystem : IGunSystem
+    {
+    }
+
+
+    public interface IFireModeSystem : IGunSystem
+    {
+        IFireSystem CurrentFireSystem { get; }
+        IReadOnlyList<IFireSystem> AvailableFireModes { get; }
+
+        void SetCurrentFireMode(FireType fireType);
+
+        void CycleFireMode();
+    }
 }

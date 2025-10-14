@@ -1,36 +1,37 @@
-using System;
 using System.Collections;
-using System.Linq;
 using Attributes;
 using General;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 
 namespace Player.Movement
 {
     [RequireComponent(typeof(Rigidbody), typeof(InputManager), typeof(GroundChecker))]
     public class PlayerMovement : MonoBehaviour
     {
-        [Header("Transforms")] [SerializeField, Required]
+        [Header("Transforms")] [SerializeField] [Required]
         private Transform orientation;
 
-        [SerializeField, Required] private Transform playerModel;
-        [SerializeField, Required] private Transform crouchPositionTransform;
-        [SerializeField, Required] private Transform headCheckTransform;
+        [SerializeField] [Required] private Transform playerModel;
+        [SerializeField] [Required] private Transform crouchPositionTransform;
+        [SerializeField] [Required] private Transform headCheckTransform;
+        [SerializeField] private float maxSlopeAngle;
 
         [ScriptableObjectDropdown] public PlayerMovementConfig config;
 
+        private readonly RaycastHit[] _crouchCheckHits = new RaycastHit[1];
 
-        private Rigidbody _rigidbody;
+        private Coroutine _crouchCoroutine;
 
 
         private GroundChecker _groundChecker;
 
         private InputManager _inputManager;
 
-        private Coroutine _crouchCoroutine;
+
+        private Rigidbody _rigidbody;
+
+        private RaycastHit _slopeHit;
 
 
         public bool ObjectAbove { get; private set; }
@@ -45,7 +46,58 @@ namespace Player.Movement
 
         public Transform PlayerModel => playerModel;
 
-        private readonly RaycastHit[] _crouchCheckHits = new RaycastHit[1];
+
+        public void Crouch()
+        {
+            if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
+
+            _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.CrouchHeight, config.CrouchCameraPosition));
+        }
+
+        public void UnCrouch()
+        {
+            if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
+            _crouchCoroutine =
+                StartCoroutine(SetPlayerHeight(config.InitialHeight, config.InitialCrouchCameraPosition));
+        }
+
+
+        private IEnumerator SetPlayerHeight(float height, float position)
+        {
+            float t = 0;
+            var currentHeight = PlayerModel.localScale.y;
+            var crouchPosition = crouchPositionTransform.localPosition.y;
+
+            while (t < 1)
+            {
+                var size = Physics.SphereCastNonAlloc(config.CrouchCheckOffset + headCheckTransform.position,
+                    config.CrouchCheckRadius, Vector3.up, _crouchCheckHits,
+                    config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y,
+                    ~config.ExcludedLayers);
+
+                if (size > 0)
+                {
+                    VandullLogger.Log(_crouchCheckHits[0].collider.name);
+                    ObjectAbove = true;
+                    yield return null;
+                    continue;
+                }
+
+                ObjectAbove = false;
+
+                t += Time.deltaTime / config.CrouchSpeed;
+
+                var newHeight = Mathf.SmoothStep(currentHeight, height, t);
+                var newPosition = Mathf.SmoothStep(crouchPosition, position, t);
+                PlayerModel.localScale = new Vector3(1, newHeight, 1);
+                crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
+                    newPosition,
+                    crouchPositionTransform.localPosition.z);
+                yield return null;
+            }
+
+            _crouchCoroutine = null;
+        }
 
         #region UnityFunctions
 
@@ -68,7 +120,7 @@ namespace Player.Movement
 
             _inputManager.InputActions.Player.Crouch.performed += OnCrouchInput;
             _inputManager.InputActions.Player.Crouch.canceled += OnCrouchInput;
-            
+
             playerModel.localScale = new Vector3(1, config.InitialHeight, 1);
             crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
                 config.InitialCrouchCameraPosition,
@@ -97,7 +149,10 @@ namespace Player.Movement
             Gizmos.DrawWireSphere(config.CrouchCheckOffset + headCheckTransform.position, config.CrouchCheckRadius);
             Gizmos.color = Color.green;
             Gizmos.DrawLine(headCheckTransform.position,
-                headCheckTransform.position + Vector3.up * (config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y));
+                headCheckTransform.position + Vector3.up *
+                (config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y));
+            //Gizmos.DrawRay(playerModel.transform.position, Vector3.down * (playerModel.localScale.y * 0.5f + 0.3f));
+            Gizmos.DrawRay(transform.position, slopeDir * 20f);
         }
 
         #endregion
@@ -129,19 +184,45 @@ namespace Player.Movement
 
         #region MovementFunctions
 
+        private Vector3 slopeDir;
+
         public void Move(float speed)
         {
-            var forwardMovement = orientation.forward * (MoveInput.y * speed * config.MovementMultiplier);
-            var rightMovement = orientation.right * (MoveInput.x * speed * config.MovementMultiplier);
+            var moveDirection = orientation.forward * MoveInput.y + orientation.right * MoveInput.x;
+            moveDirection.Normalize();
 
-            ApplyMovement(forwardMovement, rightMovement);
+
+            if (OnSlope())
+            {
+                var slopeMoveDirection = Vector3.ProjectOnPlane(moveDirection, _slopeHit.normal).normalized;
+                slopeDir = slopeMoveDirection;
+
+                ApplyMovement(slopeMoveDirection * (speed * config.SlopeMultiplier));
+
+
+                // if (_rigidbody.linearVelocity.y > 0) _rigidbody.AddForce(Vector3.down * 5f, ForceMode.Force);
+                return;
+            }
+
+            ApplyMovement(moveDirection * (speed * config.MovementMultiplier));
         }
 
-
-        public void ApplyMovement(Vector3 forwardMovement, Vector3 rightMovement)
+        private bool OnSlope()
         {
-            _rigidbody.AddForce(forwardMovement, ForceMode.Force);
-            _rigidbody.AddForce(rightMovement, ForceMode.Force);
+            if (Physics.Raycast(playerModel.position, Vector3.down, out _slopeHit,
+                    playerModel.localScale.y * 0.5f + 0.3f, ~LayerMask.GetMask("Player")))
+            {
+                var angle = Vector3.Angle(Vector3.up, _slopeHit.normal);
+
+                return angle < maxSlopeAngle && angle != 0;
+            }
+
+            return false;
+        }
+
+        public void ApplyMovement(Vector3 movement)
+        {
+            _rigidbody.AddForce(movement, ForceMode.Force);
         }
 
         public void ApplyDrag()
@@ -153,67 +234,10 @@ namespace Player.Movement
         public void Jump()
         {
             _rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
-            _rigidbody.AddForce(_rigidbody.linearVelocity * (config.JumpForce / 4f * config.JumpMultiplier),
+            _rigidbody.AddForce(_rigidbody.linearVelocity / 4 * (config.JumpForce * config.JumpMultiplier),
                 ForceMode.Impulse);
         }
 
         #endregion
-
-
-        public void Crouch()
-        {
-            if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
-
-            _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.CrouchHeight, config.CrouchCameraPosition));
-        }
-
-        public void UnCrouch()
-        {
-            if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
-            _crouchCoroutine =
-                StartCoroutine(SetPlayerHeight(config.InitialHeight, config.InitialCrouchCameraPosition));
-        }
-
-
-        private IEnumerator SetPlayerHeight(float height, float position)
-        {
-            float t = 0;
-            var currentHeight = PlayerModel.localScale.y;
-            var crouchPosition = crouchPositionTransform.localPosition.y;
-
-            while (t < 1)
-            {
-                var size = Physics.SphereCastNonAlloc(config.CrouchCheckOffset + headCheckTransform.position,
-                    config.CrouchCheckRadius, Vector3.up, _crouchCheckHits,
-                    config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y,
-                    ~config.ExcludedLayers);
-                /*
-                var size = Physics.OverlapSphereNonAlloc(config.CrouchCheckOffset + headCheckTransform.position,
-                    config.CrouchCheckRadius, _crouchCheckCollider, ~config.ExcludedLayers);
-*/
-
-                if (size > 0)
-                {
-                    VandullLogger.Log(_crouchCheckHits[0].collider.name);
-                    ObjectAbove = true;
-                    yield return null;
-                    continue;
-                }
-
-                ObjectAbove = false;
-
-                t += Time.deltaTime / config.CrouchSpeed;
-
-                var newHeight = Mathf.SmoothStep(currentHeight, height, t);
-                var newPosition = Mathf.SmoothStep(crouchPosition, position, t);
-                PlayerModel.localScale = new Vector3(1, newHeight, 1);
-                crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
-                    newPosition,
-                    crouchPositionTransform.localPosition.z);
-                yield return null;
-            }
-
-            _crouchCoroutine = null;
-        }
     }
 }

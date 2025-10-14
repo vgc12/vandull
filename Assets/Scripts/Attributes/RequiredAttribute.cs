@@ -4,12 +4,11 @@ namespace Attributes
 {
     public class RequiredAttribute : PropertyAttribute
     {
-        public string ErrorMessage { get; }
         public RequiredAttribute()
         {
-          
-            ErrorMessage =  "This field must be assigned!";
+            ErrorMessage = "This field must be assigned!";
         }
-        
+
+        public string ErrorMessage { get; }
     }
 }

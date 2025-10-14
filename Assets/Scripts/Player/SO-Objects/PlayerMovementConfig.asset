@@ -16,6 +16,7 @@ MonoBehaviour:
   walkSpeed: 30
   sprintSpeed: 50
   movementMultiplier: 52.2
+  slopeMultiplier: 68.4
   jumpForce: 9
   jumpMultiplier: 54.2
   airDrag: 1
@@ -25,8 +26,8 @@ MonoBehaviour:
   initialHeight: 1
   initialCrouchCameraPosition: 1.62
   crouchSpeed: 0.15
-  crouchCheckRadius: 0.41
+  crouchCheckRadius: 0.31
   excludedLayers:
     serializedVersion: 2
-    m_Bits: 118
+    m_Bits: 7798
   crouchCheckOffset: {x: 0, y: 0, z: -0.12}
