@@ -33,7 +33,7 @@ namespace Npcs.States.Enemy
 
             _enemy.HandleTacticalMovement();
 
-            if (_gun.AmmoSystem.CurrentMagazineEmpty) _gun.AmmoSystem.StartReload();
+            if (_gun.AmmoSystem.OutOfAmmo) _gun.AmmoSystem.StartReload();
         }
 
         public override void Exit()

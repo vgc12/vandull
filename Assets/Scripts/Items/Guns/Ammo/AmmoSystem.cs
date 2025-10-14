@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using EventBus;
 using General;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -23,7 +24,10 @@ namespace Items.Guns.Ammo
 
         private readonly Transform _magazineSpawnPosition;
         private int _currentMagazineIndex;
+
         private bool _weaponMustReload;
+        
+        private readonly EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
 
         public AmmoSystem(GunConfig config, Transform magazineSpawnPosition, MonoBehaviour behaviour)
         {
@@ -33,23 +37,27 @@ namespace Items.Guns.Ammo
             _magazinePrefab = config.ammoSettings.magazinePrefab;
             _magazinePool = new ObjectPool<Magazine>(CreateMagazine);
             _magazineSpawnPosition = magazineSpawnPosition;
+            _bulletInChamber = true;
+            _itemSwitchedEventBinding = new EventBinding<ItemSwitchedEvent>(OnItemSwitched);
+            EventBus<ItemSwitchedEvent>.Register(_itemSwitchedEventBinding);
             InitializeMagazines();
         }
 
         private Magazine CurrentMagazine { get; set; }
 
         private bool HasSpareAmmo => _magazines.Count > 1;
-        public bool CurrentMagazineEmpty => CurrentMagazine.IsEmpty && _chamberedBullet <= 0;
+        public bool CurrentMagazineEmpty => CurrentMagazine.IsEmpty;
         public bool IsReloading { get; private set; }
 
         public int CurrentAmmo => CurrentMagazine.CurrentAmmo;
         public int TotalAmmo => _magazines.Count * _config.ammoSettings.magazineSize;
+        public bool OutOfAmmo => CurrentMagazine.IsEmpty && !_bulletInChamber;
         public event Action<ReloadEvent> OnReloadComplete;
         public event Action OnOutOfAmmo;
 
         public bool CanReload => !IsReloading && HasSpareAmmo;
 
-        private int _chamberedBullet = 1;
+        private bool _bulletInChamber;
         
         public void StartReload()
         {
@@ -72,13 +80,11 @@ namespace Items.Guns.Ammo
 
         public void ConsumeAmmo()
         {
-            if (_chamberedBullet > 0)
-            {
-                _chamberedBullet = 1;
-            }
-            
+        
             if (!CurrentMagazineEmpty)
                 CurrentMagazine.SubtractOne();
+            else if (_bulletInChamber)
+                _bulletInChamber = false;
             else
                 OnOutOfAmmo?.Invoke();
         }
@@ -93,10 +99,11 @@ namespace Items.Guns.Ammo
         private Magazine CreateMagazine()
         {
             var magObject = Object.Instantiate(_magazinePrefab);
-
+            
             magObject.GetOrAdd<Rigidbody>();
             magObject.GetOrAdd<BoxCollider>();
             magObject.GetOrAdd<MeshRenderer>();
+            
             var magazine = magObject.GetOrAdd<Magazine>();
             magazine.MagazinePosition = _magazineSpawnPosition;
             magazine.AmmoSettings = _config.ammoSettings;
@@ -125,7 +132,10 @@ namespace Items.Guns.Ammo
         
         private IEnumerator ReloadRoutine()
         {
-            DropMagazine();
+            if (!CurrentMagazine.IsDropped)
+            {
+                DropMagazine();
+            }
 
             yield return new WaitForSeconds(_config.ammoSettings.reloadTime);
 
@@ -134,18 +144,26 @@ namespace Items.Guns.Ammo
 
             VandullLogger.Log(this);
             EquipCurrentMagazine();
-            _chamberedBullet = 1;
-            CurrentMagazine.SubtractOne();
+
+            if (!_bulletInChamber)
+            {
+                _bulletInChamber = true;
+                CurrentMagazine.SubtractOne();
+            }
 
             OnReloadComplete?.Invoke(new ReloadEvent(CurrentMagazine));
         }
 
-        public void OnItemSwitched()
+        public void OnItemSwitched(ItemSwitchedEvent evt)
         {
-            if (IsReloading)
+            
+            if (IsReloading && evt.NewItem.transform.root.gameObject.layer == LayerMask.NameToLayer("Player"))
             {
+                IsReloading = false;
+                _behaviour.StopAllCoroutines();
                 _weaponMustReload = true;
             }
+        
         }
 
       

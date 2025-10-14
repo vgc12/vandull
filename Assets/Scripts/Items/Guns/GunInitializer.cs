@@ -133,6 +133,7 @@ namespace Items.Guns
                 {
                     foreach (var fireMode in systems.FireModeSystem.AvailableFireModes)
                         fireMode.OnOutOfAmmo();
+                    
                 };
 
                 systems.AmmoSystem.OnReloadComplete += _ =>

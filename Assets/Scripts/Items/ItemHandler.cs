@@ -10,17 +10,17 @@ using UnityEngine;
 
 namespace Items
 {
-    [RequireComponent(typeof(ArmAnimationController))]
+  
     [Serializable]
     public class ItemHandler : MonoBehaviour
     {
         [SerializeField] public List<Gun> gunObjects = new();
 
-        private ArmAnimationController _armAnimationController;
+        [SerializeField, Required] private ArmAnimationController armAnimationController;
 
         private List<Item> _inventory = new();
 
-        [Required] private RigHandler _rigHandler;
+        [SerializeField,Required] private RigHandler rigHandler;
 
         public Item EquippedItem { get; private set; }
 
@@ -34,13 +34,12 @@ namespace Items
         // Call this from Awake() or Start() in your MonoBehaviour
         public void Start()
         {
-            _armAnimationController = GetComponent<ArmAnimationController>();
+        
 
             gunObjects ??= new List<Gun>();
 
             _inventory ??= new List<Item>();
-
-            _rigHandler = GetComponent<RigHandler>();
+            
 
             SetUpItems();
             LogPrefabs();
@@ -95,11 +94,11 @@ namespace Items
             EquippedItem = item;
             EquippedItem.Equip();
 
-            _rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
-            _rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
+            rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
+            rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
 //            animator.SetLayerWeight((int)EquippedItem.gripType, 1);
 
-            _armAnimationController.PlayAnimation(EquippedItem.gripType);
+            armAnimationController.PlayAnimation(EquippedItem.gripType);
         }
     }
 }

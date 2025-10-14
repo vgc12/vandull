@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 717a505ddf034049b262ae353b958c0d, type: 3}
   m_Name: FiveSeven-Damage Settings
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.DamageSettings
-  damage: 15
+  damage: 25
   range: 100
