@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Attributes;
 using EventBus;
 using General;
-using Items.Guns;
 using Items.Guns.Aiming;
 using Items.Guns.Ammo;
 using Items.Guns.Firing;
@@ -149,25 +148,22 @@ namespace Items.Guns
             base.UnEquip();
         }
     }
-}
 
-public class ShotHitEvent : IEvent
-{
-    public RaycastHit Hit;
-
-    public ShotHitEvent(RaycastHit hit)
+    public class ShotHitEvent : IEvent
     {
-        Hit = hit;
+        public RaycastHit Hit;
+
+        public ShotHitEvent(RaycastHit hit)
+        {
+            Hit = hit;
+        }
     }
-}
 
-public interface IImpactSystem : IGunSystem
-{
-}
+    public interface IImpactSystem : IGunSystem
+    {
+    }
 
 
-namespace Items.Guns
-{
     public interface IFireModeSystem : IGunSystem
     {
         IFireSystem CurrentFireSystem { get; }

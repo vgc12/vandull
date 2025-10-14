@@ -6,21 +6,21 @@ using EventBus;
 using General;
 using Items.Guns;
 using Npcs.Shared;
+using Player;
 using UnityEngine;
 
 namespace Items
 {
-  
     [Serializable]
     public class ItemHandler : MonoBehaviour
     {
         [SerializeField] public List<Gun> gunObjects = new();
 
-        [SerializeField, Required] private ArmAnimationController armAnimationController;
+        [SerializeField] [Required] private ArmAnimationController armAnimationController;
+
+        [SerializeField] [Required] private RigHandler rigHandler;
 
         private List<Item> _inventory = new();
-
-        [SerializeField,Required] private RigHandler rigHandler;
 
         public Item EquippedItem { get; private set; }
 
@@ -34,12 +34,10 @@ namespace Items
         // Call this from Awake() or Start() in your MonoBehaviour
         public void Start()
         {
-        
-
             gunObjects ??= new List<Gun>();
 
             _inventory ??= new List<Item>();
-            
+
 
             SetUpItems();
             LogPrefabs();

@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/InGame.uss?fileID=7433441132597879392&amp;guid=f8f18d4a4890d52488c445ea361f98f8&amp;type=3#InGame" />
+    <ui:VisualElement name="InGameRoot" style="flex-grow: 1; flex-direction: row; display: flex;">
+        <ui:ProgressBar value="100" name="HealthBar" class="health-bar" style="width: 23%; flex-direction: column-reverse; -unity-background-image-tint-color: rgb(255, 255, 255);" />
+    </ui:VisualElement>
+</ui:UXML>

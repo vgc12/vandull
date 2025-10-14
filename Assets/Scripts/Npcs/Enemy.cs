@@ -6,6 +6,7 @@ using Npcs.Sensors;
 using Npcs.Shared;
 using Npcs.States;
 using Npcs.States.Enemy;
+using Player;
 using UnityEngine;
 using Random = UnityEngine.Random;
 

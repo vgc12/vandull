@@ -25,7 +25,5 @@ namespace Player.States
             _sm.PlayerLooking.Look();
             _sm.PlayerMovement.ApplyDrag();
         }
-
-    
     }
 }
