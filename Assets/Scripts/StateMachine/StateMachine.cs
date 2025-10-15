@@ -49,6 +49,7 @@ namespace StateMachine
         public void SetState(IState state)
         {
             _currentState = _nodes[state.GetType()];
+            
         }
 
 

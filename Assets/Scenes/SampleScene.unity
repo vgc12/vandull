@@ -3110,8 +3110,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a23cc7206c8e06c488c73f383e428eb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::General.GameManager
-  loseScreen: {fileID: 546251918}
-  winScreen: {fileID: 2104554102}
 --- !u!4 &287740588
 Transform:
   m_ObjectHideFlags: 0
