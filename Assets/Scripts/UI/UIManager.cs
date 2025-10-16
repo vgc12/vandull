@@ -1,5 +1,6 @@
 using EventBus;
 using General.Game;
+using StateMachine;
 using UI.States;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,13 +10,17 @@ namespace UI
     [RequireComponent(typeof(UIDocument))]
     public class UIManager : MonoBehaviour
     {
-        private GameState _currentGameState;
-
         private UIState _currentMenuState;
         private UIDocument _document;
 
         private EventBinding<GameStateChangedEvent> _gameStateChanged;
+
+        private IState _inGameState;
+        private IState _levelSelectState;
+        private IState _mainMenuState;
+        private IState _pausedState;
         private VisualElement _root;
+        private IState _settingsState;
         private StateMachine.StateMachine _stateMachine;
 
 
@@ -24,7 +29,6 @@ namespace UI
             _document = GetComponent<UIDocument>();
             _root = _document.rootVisualElement;
 
-            _gameStateChanged = new EventBinding<GameStateChangedEvent>(OnGameStateChanged);
             EventBus<GameStateChangedEvent>.Register(_gameStateChanged);
 
             InitializeStateMachine();
@@ -40,10 +44,6 @@ namespace UI
             _stateMachine.FixedUpdate();
         }
 
-        private void OnGameStateChanged(GameStateChangedEvent obj)
-        {
-            _currentGameState = obj.NewGameState;
-        }
 
         public void EnableSettingsMenu()
         {
@@ -67,20 +67,27 @@ namespace UI
 
         public void InitializeStateMachine()
         {
-            var inGameState = new InGameUIState(_root.Q<VisualElement>("InGameRoot"));
-            var pausedState = new PausedUIState(_root.Q<VisualElement>("PausedRoot"));
-            var settingsState = new SettingsUIState(_root.Q<VisualElement>("SettingsRoot"));
-
             _stateMachine = new StateMachine.StateMachine();
-            _stateMachine.AddTransition(inGameState, pausedState,
-                () => _currentMenuState is UIState.GamePaused);
-            _stateMachine.AddTransition(pausedState, settingsState,
-                () => _currentMenuState is UIState.Settings);
-            _stateMachine.AddTransition(settingsState, pausedState,
-                () => _currentMenuState is UIState.GamePaused);
-            _stateMachine.AddTransition(pausedState, inGameState,
-                () => _currentMenuState is UIState.InGame);
-            _stateMachine.SetState(inGameState);
+
+            _inGameState = new InGameUIState(_root.Q<VisualElement>("InGameRoot"));
+            _pausedState = new PausedUIState(_root.Q<VisualElement>("PausedRoot"), ResumeButtonClicked,
+                SettingsButtonClicked);
+            _settingsState = new SettingsUIState(_root.Q<VisualElement>("SettingsRoot"));
+            _mainMenuState = new MainMenuUIState(_root.Q<VisualElement>("MainMenuRoot"));
+            _levelSelectState = new LevelSelectUIState(_root.Q<VisualElement>("LevelSelectRoot"));
+
+
+            _stateMachine.SetState(_inGameState);
+        }
+
+        private void SettingsButtonClicked()
+        {
+            _stateMachine.SetState(_settingsState);
+        }
+
+        private void ResumeButtonClicked()
+        {
+            _stateMachine.SetState(_inGameState);
         }
 
         private enum UIState
@@ -88,7 +95,22 @@ namespace UI
             InGame,
             GamePaused,
             Settings,
+            LevelSelect,
             MainMenu
+        }
+    }
+
+    public class LevelSelectUIState : UIBaseState
+    {
+        public LevelSelectUIState(VisualElement rootElement) : base(rootElement)
+        {
+        }
+    }
+
+    public class MainMenuUIState : UIBaseState
+    {
+        public MainMenuUIState(VisualElement rootElement) : base(rootElement)
+        {
         }
     }
 }
