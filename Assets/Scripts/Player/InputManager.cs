@@ -1,26 +1,17 @@
-using UnityEngine;
+using Singletons;
 
 namespace Player
 {
-    public class InputManager : MonoBehaviour
+    public class InputManager : PersistentSingleton<InputManager>
     {
         public PlayerInputActions InputActions { get; private set; }
 
-        public static InputManager Instance { get; private set; }
-        
-        
-        private void Awake()
+
+        protected override void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(this);
-                return;
-            }
-      
-            Instance = this;
+            base.Awake();
             InputActions = new PlayerInputActions();
             InputActions.Player.Enable();
-        
         }
 
 
@@ -28,8 +19,5 @@ namespace Player
         {
             InputActions.Player.Disable();
         }
-        
-        
-        
     }
 }

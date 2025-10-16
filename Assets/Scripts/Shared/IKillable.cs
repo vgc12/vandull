@@ -1,4 +1,4 @@
-﻿namespace General
+﻿namespace Shared
 {
     public interface IKillable
     {

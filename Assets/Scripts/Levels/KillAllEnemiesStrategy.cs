@@ -1,42 +1,70 @@
 ﻿using EventBus;
+using General.Game;
+using Levels.Strategies;
 using Npcs;
 using Player;
-using UnityEngine;
 
 namespace Levels
 {
+    [MissionType("Eliminate All Hostiles", "Neutralize all enemy combatants")]
     public class KillAllEnemiesStrategy : IMissionStrategy
     {
-        private int _remainingEnemies;
+        private LevelConfig _config;
+
+        private EventBinding<EnemyKilledEvent> _enemyKilledEventBinding;
         private bool _playerDead;
-        public KillAllEnemiesStrategy()
+        private EventBinding<PlayerDeathEvent> _playerDeathEventBinding;
+        private int _remainingEnemies;
+
+
+        public string MissionName { get; private set; }
+
+        public void Initialize(LevelConfig config)
         {
-            var enemyKilledEventBinding = new EventBinding<EnemyKilledEvent>(OnEnemyKilled);
-            var playerDeathEventBinding = new EventBinding<PlayerDeathEvent>(OnPlayerKilled);
-            
-            EventBus<EnemyKilledEvent>.Register(enemyKilledEventBinding);
-            EventBus<PlayerDeathEvent>.Register(playerDeathEventBinding);
-            
-            var totalEnemies = Object.FindObjectsByType<Enemy>(findObjectsInactive: FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length;
-            _remainingEnemies = totalEnemies;
+            _enemyKilledEventBinding = new EventBinding<EnemyKilledEvent>(OnEnemyKilled);
+            _playerDeathEventBinding = new EventBinding<PlayerDeathEvent>(OnPlayerKilled);
+
+            EventBus<EnemyKilledEvent>.Register(_enemyKilledEventBinding);
+            EventBus<PlayerDeathEvent>.Register(_playerDeathEventBinding);
+            _config = config;
+            Reset();
         }
 
-        private void OnPlayerKilled(PlayerDeathEvent obj)
-        {
-            _playerDead = true; 
-        }
-
-        private void OnEnemyKilled(EnemyKilledEvent obj)
+        public void OnEnemyKilled()
         {
             _remainingEnemies--;
+
+            if (_remainingEnemies <= 0)
+                EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(GameState.MissionComplete));
         }
 
-        public bool IsMissionComplete()
+        public void OnHostageRescued()
         {
-            return _remainingEnemies <= 0;
         }
 
-        public bool IsMissionFailed() => _playerDead;
-  
+        public void OnBombDefused()
+        {
+        }
+
+        public void Reset()
+        {
+            if (!_config) return;
+            var totalEnemies = _config.enemyCount;
+            _remainingEnemies = totalEnemies;
+
+            MissionName = _config.name;
+        }
+
+        public void Cleanup()
+        {
+            EventBus<EnemyKilledEvent>.Deregister(_enemyKilledEventBinding);
+            EventBus<PlayerDeathEvent>.Deregister(_playerDeathEventBinding);
+        }
+
+
+        public void OnPlayerKilled()
+        {
+            EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(GameState.MissionFailed));
+        }
     }
 }

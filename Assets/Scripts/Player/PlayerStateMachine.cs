@@ -3,6 +3,7 @@ using General;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
+using Shared;
 using StateMachine;
 using UnityEngine;
 
@@ -79,7 +80,7 @@ namespace Player
 
         private void InitializeStateMachine()
         {
-            var movementStates = Factory.Create(this);
+            var movementStates = new Factory(this).Create();
 
             _stateMachine = new StateMachine.StateMachine();
 
@@ -87,7 +88,7 @@ namespace Player
             _stateMachine.SetState(movementStates.IdleState);
         }
 
-        private void CreateAnyTransitions(Factory states)
+        private void CreateAnyTransitions(PlayerStates states)
         {
             _stateMachine.AddAnyTransition(states.JumpState,
                 new FuncPredicate(() =>
@@ -110,25 +111,35 @@ namespace Player
         }
 
 
-        private class Factory
+        private class PlayerStates
         {
-            public IdleState IdleState { get; private init; }
-            public WalkState WalkState { get; private init; }
-            public SprintState SprintState { get; private init; }
-            public JumpState JumpState { get; private init; }
-            public CrouchState CrouchState { get; private init; }
-            public IState CrouchWalkState { get; private init; }
+            public IdleState IdleState { get; init; }
+            public WalkState WalkState { get; init; }
+            public SprintState SprintState { get; init; }
+            public JumpState JumpState { get; init; }
+            public CrouchState CrouchState { get; init; }
+            public IState CrouchWalkState { get; init; }
+        }
 
-            public static Factory Create(PlayerStateMachine sm)
+        private class Factory : IFactory<PlayerStates>
+        {
+            private readonly PlayerStateMachine _sm;
+
+            public Factory(PlayerStateMachine sm)
             {
-                return new Factory
+                _sm = sm;
+            }
+
+            public PlayerStates Create()
+            {
+                return new PlayerStates
                 {
-                    IdleState = new IdleState(sm),
-                    WalkState = new WalkState(sm),
-                    SprintState = new SprintState(sm),
-                    JumpState = new JumpState(sm),
-                    CrouchState = new CrouchState(sm),
-                    CrouchWalkState = new CrouchWalkState(sm)
+                    IdleState = new IdleState(_sm),
+                    WalkState = new WalkState(_sm),
+                    SprintState = new SprintState(_sm),
+                    JumpState = new JumpState(_sm),
+                    CrouchState = new CrouchState(_sm),
+                    CrouchWalkState = new CrouchWalkState(_sm)
                 };
             }
         }

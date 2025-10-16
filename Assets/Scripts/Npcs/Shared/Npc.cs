@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Attributes;
 using General;
+using Shared;
 using UnityEngine;
 using UnityEngine.AI;
 
