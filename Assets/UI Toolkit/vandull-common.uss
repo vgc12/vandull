@@ -1,0 +1,11 @@
+.title {
+    font-size: 406%;
+    -unity-font: resource('Assets/Fonts/RubikBurned-Regular.ttf');
+    -unity-font-definition: url("project://database/Assets/Art/Fonts/MajorMonoDisplay-Regular.ttf?fileID=12800000&guid=fcb4be7ffe3bb764c8ae708cabacea77&type=3#MajorMonoDisplay-Regular");
+}
+
+.description {
+    -unity-font-definition: url("project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&guid=83ac249aaefaf3b42a3de0b92f763dee&type=3#BungeeHairline-Regular");
+    font-size: 40px;
+    -unity-font-style: bold;
+}

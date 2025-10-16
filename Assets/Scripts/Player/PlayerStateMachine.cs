@@ -1,5 +1,6 @@
 ﻿using EventBus;
 using General;
+using Levels;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
@@ -74,7 +75,7 @@ namespace Player
 
         public void Die()
         {
-            EventBus<PlayerDeathEvent>.Raise(new PlayerDeathEvent());
+            EventBus<LevelEvent>.Raise(new (LevelEventType.LevelLost));
         }
 
 

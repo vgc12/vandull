@@ -2,7 +2,7 @@ using Singletons;
 
 namespace Player
 {
-    public class InputManager : PersistentSingleton<InputManager>
+    public class InputManager : Singleton<InputManager>
     {
         public PlayerInputActions InputActions { get; private set; }
 
@@ -15,9 +15,9 @@ namespace Player
         }
 
 
-        private void OnDestroy()
+        private void OnDisable()
         {
-            InputActions.Player.Disable();
+            InputActions?.Player.Disable();
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using EventBus;
-using General.Game;
+
 using Levels.Strategies;
 using Npcs;
 using Player;
@@ -12,8 +12,7 @@ namespace Levels
         private LevelConfig _config;
 
         private EventBinding<EnemyKilledEvent> _enemyKilledEventBinding;
-        private bool _playerDead;
-        private EventBinding<PlayerDeathEvent> _playerDeathEventBinding;
+
         private int _remainingEnemies;
 
 
@@ -22,10 +21,9 @@ namespace Levels
         public void Initialize(LevelConfig config)
         {
             _enemyKilledEventBinding = new EventBinding<EnemyKilledEvent>(OnEnemyKilled);
-            _playerDeathEventBinding = new EventBinding<PlayerDeathEvent>(OnPlayerKilled);
+
 
             EventBus<EnemyKilledEvent>.Register(_enemyKilledEventBinding);
-            EventBus<PlayerDeathEvent>.Register(_playerDeathEventBinding);
             _config = config;
             Reset();
         }
@@ -33,9 +31,10 @@ namespace Levels
         public void OnEnemyKilled()
         {
             _remainingEnemies--;
-
+            EventBus<LevelEvent>.Raise(new LevelEvent(LevelEventType.EnemyKilled, _remainingEnemies));
             if (_remainingEnemies <= 0)
-                EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(GameState.MissionComplete));
+                EventBus<LevelEvent>.Raise(new LevelEvent(LevelEventType.LevelWon));
+            
         }
 
         public void OnHostageRescued()
@@ -58,13 +57,23 @@ namespace Levels
         public void Cleanup()
         {
             EventBus<EnemyKilledEvent>.Deregister(_enemyKilledEventBinding);
-            EventBus<PlayerDeathEvent>.Deregister(_playerDeathEventBinding);
+   
         }
 
 
         public void OnPlayerKilled()
         {
-            EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(GameState.MissionFailed));
+            EventBus<LevelEvent>.Raise(new LevelEvent(LevelEventType.LevelLost));   
         }
+    }
+
+    public enum LevelEventType
+    {
+        EnemyKilled,
+        HostageRescued,
+        BombDefused,
+        ObjectiveCompleted,
+        LevelWon,
+        LevelLost
     }
 }

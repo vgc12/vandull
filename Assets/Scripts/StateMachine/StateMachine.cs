@@ -17,11 +17,11 @@ namespace StateMachine
             _currentState.State?.Update();
         }
 
-        private void ChangeState(IState to)
+        public void ChangeState(IState to)
         {
-            if (_currentState.State == to)
+            if (_currentState != null && _currentState.State == to)
                 return;
-            var previousState = _currentState.State;
+            var previousState = _currentState?.State;
             var nextState = _nodes[to.GetType()].State;
             previousState?.Exit();
             nextState?.Enter();
@@ -49,10 +49,14 @@ namespace StateMachine
         public void SetState(IState state)
         {
             _currentState = _nodes[state.GetType()];
-            
+         
         }
 
-
+        public void AddState(IState state)
+        {
+            GetOrAddNode(state);
+        }
+        
         public void AddTransition(IState from, IState to, IPredicate condition)
         {
             GetOrAddNode(from).AddTransition(GetOrAddNode(to).State, condition);

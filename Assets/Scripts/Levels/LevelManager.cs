@@ -25,7 +25,7 @@ namespace Levels
         }
 
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             EventBus<LevelLoadEvent>.Deregister(_levelSelectedEventBinding);
         }
@@ -34,7 +34,6 @@ namespace Levels
         private void OnLevelShouldLoad(LevelLoadEvent obj)
         {
             _missionStrategy?.Cleanup();
-
             _currentLevel = obj.LevelConfig;
             _missionStrategy = obj.LevelConfig.CreateMissionStrategy();
         }

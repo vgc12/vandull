@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 
 namespace Player.Movement
 {
-    [RequireComponent(typeof(Rigidbody), typeof(InputManager), typeof(GroundChecker))]
+    [RequireComponent(typeof(Rigidbody), typeof(GroundChecker))]
     public class PlayerMovement : MonoBehaviour
     {
         [Header("Transforms")] [SerializeField] [Required]
@@ -107,7 +107,7 @@ namespace Player.Movement
 
             _rigidbody = GetComponent<Rigidbody>();
 
-            _inputManager = GetComponent<InputManager>();
+            _inputManager = InputManager.Instance;
 
             _inputManager.InputActions.Player.Move.performed += OnMoveInput;
             _inputManager.InputActions.Player.Move.canceled += OnMoveInput;

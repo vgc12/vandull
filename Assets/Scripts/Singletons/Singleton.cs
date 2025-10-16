@@ -24,7 +24,7 @@ namespace Singletons
             }
         }
 
-        protected void Awake()
+        protected virtual void Awake()
         {
             InitializeSingleton();
         }
