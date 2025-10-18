@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1801d07546344ca8dd39e94933bd829, type: 3}
   m_Name: MP5-RecoilSettings-Enemy
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.RecoilSettings
-  verticalRecoil: 2
-  horizontalRecoil: 2
+  verticalRecoil: 3
+  horizontalRecoil: 3
   recoilSpeed: 1
   returnSpeed: 0.96
   recoilPattern:

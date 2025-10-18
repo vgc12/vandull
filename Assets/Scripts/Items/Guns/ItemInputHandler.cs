@@ -11,7 +11,7 @@ namespace Items.Guns
         private bool _aimToggled;
         private Gun _currentGun;
         private Item _currentItem;
-        private InputManager _inputManager;
+
         private EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
 
         private void Awake()
@@ -23,34 +23,33 @@ namespace Items.Guns
 
         public void Start()
         {
-            _inputManager = InputManager.Instance;
-            _inputManager.InputActions.Player.Aim.started += OnAim;
-            _inputManager.InputActions.Player.Aim.canceled += OnAim;
-            _inputManager.InputActions.Player.Reload.started += OnReload;
-            _inputManager.InputActions.Player.Reload.canceled += OnReload;
+            InputManager.Instance.InputActions.Player.Aim.started += OnAim;
+            InputManager.Instance.InputActions.Player.Aim.canceled += OnAim;
+            InputManager.Instance.InputActions.Player.Reload.started += OnReload;
+            InputManager.Instance.InputActions.Player.Reload.canceled += OnReload;
 
-            _inputManager.InputActions.Player.Attack.started += Use;
-            _inputManager.InputActions.Player.Attack.performed += Use;
-            _inputManager.InputActions.Player.Attack.canceled += Use;
+            InputManager.Instance.InputActions.Player.Attack.started += Use;
+            InputManager.Instance.InputActions.Player.Attack.performed += Use;
+            InputManager.Instance.InputActions.Player.Attack.canceled += Use;
 
-            _inputManager.InputActions.Player.SwitchFireMode.started += OnFireModeSwitched;
-            _inputManager.InputActions.Player.SwitchFireMode.canceled += OnFireModeSwitched;
+            InputManager.Instance.InputActions.Player.SwitchFireMode.started += OnFireModeSwitched;
+            InputManager.Instance.InputActions.Player.SwitchFireMode.canceled += OnFireModeSwitched;
 
-            _inputManager.InputActions.Player.Restart.performed += OnRestart;
+            InputManager.Instance.InputActions.Player.Restart.performed += OnRestart;
         }
 
         private void OnDestroy()
         {
-            _inputManager.InputActions.Player.Aim.started -= OnAim;
-            _inputManager.InputActions.Player.Aim.canceled -= OnAim;
-            _inputManager.InputActions.Player.Reload.started -= OnReload;
-            _inputManager.InputActions.Player.Reload.canceled -= OnReload;
-            _inputManager.InputActions.Player.Attack.started -= Use;
-            _inputManager.InputActions.Player.Attack.performed -= Use;
-            _inputManager.InputActions.Player.Attack.canceled -= Use;
-            _inputManager.InputActions.Player.SwitchFireMode.started -= OnFireModeSwitched;
-            _inputManager.InputActions.Player.SwitchFireMode.canceled -= OnFireModeSwitched;
-            _inputManager.InputActions.Player.Restart.performed -= OnRestart;
+            InputManager.Instance.InputActions.Player.Aim.started -= OnAim;
+            InputManager.Instance.InputActions.Player.Aim.canceled -= OnAim;
+            InputManager.Instance.InputActions.Player.Reload.started -= OnReload;
+            InputManager.Instance.InputActions.Player.Reload.canceled -= OnReload;
+            InputManager.Instance.InputActions.Player.Attack.started -= Use;
+            InputManager.Instance.InputActions.Player.Attack.performed -= Use;
+            InputManager.Instance.InputActions.Player.Attack.canceled -= Use;
+            InputManager.Instance.InputActions.Player.SwitchFireMode.started -= OnFireModeSwitched;
+            InputManager.Instance.InputActions.Player.SwitchFireMode.canceled -= OnFireModeSwitched;
+            InputManager.Instance.InputActions.Player.Restart.performed -= OnRestart;
 
             EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedEventBinding);
         }
@@ -111,5 +110,4 @@ namespace Items.Guns
                 _currentGun.StartReload();
         }
     }
-    
 }

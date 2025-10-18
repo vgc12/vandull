@@ -156,6 +156,7 @@ namespace Npcs
 
         public override void TakeDamage(float amount, Vector3 direction)
         {
+            if (IsDead) return;
             base.TakeDamage(amount, direction);
             _lastDamageDirection = -direction;
             _damagedTimer.Start();

@@ -28,6 +28,7 @@ Material:
   - OUTLINE_METHOD_NORMAL
   - POSTERIZE
   m_InvalidKeywords:
+  - GLITCH_EFFECT
   - _COLORX_ON
   - _COLORY_ON
   - _COLORZ_ON
@@ -41,7 +42,7 @@ Material:
   stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
-  m_LockedProperties: 
+  m_LockedProperties: _ColorY
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -148,7 +149,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DiffuseBands: 8
     - _Dither: 0
-    - _DitherStrength: 0.664
+    - _DitherStrength: 0
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EdgeDiffuse: 0
@@ -156,13 +157,21 @@ Material:
     - _EdgeRim: 0.682
     - _EdgeShadowAttenuation: 0.055
     - _EdgeSpecular: 0.238
+    - _EntityId: 5
     - _EnvironmentReflections: 0
     - _Fresnel: 0.5
+    - _GlitchEffectStrength: 61.08
+    - _GlitchEnabled: 1
+    - _GlitchFlicker: 8.19
+    - _GlitchFlickerSpeed: 10000
+    - _GlitchSpeed: 9000
+    - _GlitchStrength: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.477
     - _GlossyReflections: 0
     - _HighNormalSoftness: 0.1
     - _HighNormalThreshold: 0.7
+    - _LSDEffect: 0
     - _Metallic: 0
     - _Mode: 0
     - _NormalReplacementValue: 0.999993

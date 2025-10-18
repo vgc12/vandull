@@ -1,6 +1,6 @@
 using EventBus;
 using Levels;
-using Player;
+using Levels.Strategies;
 using StateMachine;
 using UI.States;
 using UnityEngine;
@@ -14,10 +14,10 @@ namespace UI
         private UIState _currentMenuState;
         private UIDocument _document;
 
-        private EventBinding<LevelEvent> _gameStateChangedEvent;
-
         private IState _inGameState;
         private IState _levelSelectState;
+
+        private EventBinding<LevelEvent> _levelStateChangedEvent;
         private IState _mainMenuState;
         private IState _missionLostState;
         private IState _missionWonState;
@@ -34,27 +34,12 @@ namespace UI
             _document = GetComponent<UIDocument>();
             _root = _document.rootVisualElement;
 
-            _gameStateChangedEvent = new EventBinding<LevelEvent>(OnLevelEvent);
-            
-            
+            _levelStateChangedEvent = new EventBinding<LevelEvent>(OnLevelEvent);
+            EventBus<LevelEvent>.Register(_levelStateChangedEvent);
+
             InitializeStateMachine();
         }
 
-        private void OnLevelEvent(LevelEvent obj)
-        {
-            if (obj.EventType == LevelEventType.LevelWon)
-            {
-                _stateMachine.ChangeState(_missionWonState);
-            }
-
-            else if (obj.EventType == LevelEventType.LevelLost)
-            {
-                _stateMachine.ChangeState(_missionLostState);
-            }
-
-
-        }
-        
 
         private void Update()
         {
@@ -66,36 +51,46 @@ namespace UI
             _stateMachine.FixedUpdate();
         }
 
+        private void OnLevelEvent(LevelEvent obj)
+        {
+            if (obj.EventType == LevelEventType.LevelWon)
+                _stateMachine.ChangeState(_missionWonState);
+
+            else if (obj.EventType == LevelEventType.LevelLost) _stateMachine.ChangeState(_missionLostState);
+        }
+
 
         public void InitializeStateMachine()
         {
             _stateMachine = new StateMachine.StateMachine();
 
-            _inGameState = new InGameUIState(_root.Q<VisualElement>("InGameRoot"));
-          /*  _pausedState = new PausedUIState(_root.Q<VisualElement>("PausedRoot"), ResumeButtonClicked,
-                SettingsButtonClicked, QuitButtonClicked);
-            _settingsState = new SettingsUIState(_root.Q<VisualElement>("SettingsRoot"));
-            _mainMenuState = new MainMenuUIState(_root.Q<VisualElement>("MainMenuRoot"));
-            _levelSelectState = new LevelSelectUIState(_root.Q<VisualElement>("LevelSelectRoot"));
-            _quitMenuState =
-                new QuitUIState(_root.Q<VisualElement>("QuitRoot"), QuitButtonClicked, ResumeButtonClicked);
-            */
+            _inGameState = new InGameUIState(_root.Q<VisualElement>("InGame"));
+            /*  _pausedState = new PausedUIState(_root.Q<VisualElement>("PausedRoot"), ResumeButtonClicked,
+                  SettingsButtonClicked, QuitButtonClicked);
+              _settingsState = new SettingsUIState(_root.Q<VisualElement>("SettingsRoot"));
+              _mainMenuState = new MainMenuUIState(_root.Q<VisualElement>("MainMenuRoot"));
+              _levelSelectState = new LevelSelectUIState(_root.Q<VisualElement>("LevelSelectRoot"));
+              _quitMenuState =
+                  new QuitUIState(_root.Q<VisualElement>("QuitRoot"), QuitButtonClicked, ResumeButtonClicked);
+              */
             var builder = new MissionOverUIState.Data.Builder();
             var missionWonData = builder
                 .WithStatusLabelText("Mission Accomplished")
                 .WithDescriptionLabelText("All objectives completed successfully.")
                 .WithStatusLabelColor(Color.green)
                 .WithDescriptionLabelColor(Color.white);
-            
-            _missionWonState = new MissionOverUIState(_root.Q<VisualElement>("MissionOverRoot"), missionWonData.Build());
-            
+
+            _missionWonState = new MissionSuccessUIState(_root.Q<VisualElement>("MissionOver"), missionWonData.Build());
+
+            builder = new MissionOverUIState.Data.Builder();
             var missionLostData = builder
                 .WithStatusLabelText("Mission Failed")
                 .WithDescriptionLabelText("You have been defeated.")
                 .WithStatusLabelColor(Color.red)
                 .WithDescriptionLabelColor(Color.white);
-            
-            _missionLostState = new MissionOverUIState(_root.Q<VisualElement>("MissionOverRoot"), missionLostData.Build());
+
+            _missionLostState =
+                new MissionFailedUIState(_root.Q<VisualElement>("MissionOver"), missionLostData.Build());
 
             _stateMachine.AddState(_inGameState);
             /*

@@ -1,6 +1,7 @@
 ﻿using EventBus;
 using General;
 using Levels;
+using Levels.Strategies;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
@@ -63,19 +64,23 @@ namespace Player
 
         public void TakeDamage(float amount, Vector3 direction)
         {
-            if (Invulnerable) return;
+            if (Invulnerable || IsDead) return;
 
             VandullLogger.Log($"Player took {amount} damage");
             health -= amount;
+            EventBus<PlayerHitEvent>.Raise(new PlayerHitEvent(health));
             if (Health <= 0) Die();
         }
 
         public bool Invulnerable => invulnerable;
         public float Health => health;
 
+        public bool IsDead { get; private set; }
+
         public void Die()
         {
-            EventBus<LevelEvent>.Raise(new (LevelEventType.LevelLost));
+            IsDead = true;
+            EventBus<LevelEvent>.Raise(new LevelEvent(LevelEventType.LevelLost));
         }
 
 

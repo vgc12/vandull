@@ -49,6 +49,9 @@ Shader "Custom/Vandull"
         [Header(Dither)]
         [Toggle(DITHER)] _Dither("Dither Enabled", Range(0,1)) = 0
         _DitherStrength("Dither Strength", Range(0, 1)) = 0.3
+
+        [Header(Glitch)]
+        [Toggle(LSDEFFECT)]_LSDEffect("LSD Effect", Range(0,1)) = 0
     }
     SubShader
     {
@@ -95,7 +98,7 @@ Shader "Custom/Vandull"
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
-                float fogCoord : TEXCOORD0;
+
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -129,7 +132,7 @@ Shader "Custom/Vandull"
 
                 VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
                 output.positionCS = vertexInput.positionCS;
-                output.fogCoord = ComputeFogFactor(vertexInput.positionCS.z);
+
 
                 return output;
             }
@@ -140,7 +143,7 @@ Shader "Custom/Vandull"
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
                 half4 color = _OutlineColor;
-                color.rgb = MixFog(color.rgb, input.fogCoord);
+
                 return color;
             }
             ENDHLSL
@@ -167,6 +170,7 @@ Shader "Custom/Vandull"
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma shader_feature_local POSTERIZE
             #pragma shader_feature_local DITHER
+            #pragma shader_feature_local LSDEFFECT
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -225,14 +229,18 @@ Shader "Custom/Vandull"
 
                 //Dither
                 float _DitherStrength;
+
+                //Glitch Effect
+
+
             CBUFFER_END
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
-                float3 normalOS : NORMAL;
                 float4 tangentOS : TANGENT;
                 float2 uv : TEXCOORD0;
+                float3 normalOS : NORMAL;
             };
 
             struct Varyings
@@ -308,10 +316,10 @@ Shader "Custom/Vandull"
             }
 
             float3 LightingCelShaded(float Roughness,
-                                                   float RimStrength, float RimAmount, float RimThreshold,
-                                                   float3 Position, float3 Normal, float3 View, float EdgeDiffuse,
-                                                   float EdgeSpecular, float EdgeDistanceAttenuation,
-                                                   float EdgeShadowAttenuation, float EdgeRim, out float3 Color)
+                                     float RimStrength, float RimAmount, float RimThreshold,
+                                     float3 Position, float3 Normal, float3 View, float EdgeDiffuse,
+                                     float EdgeSpecular, float EdgeDistanceAttenuation,
+                                     float EdgeShadowAttenuation, float EdgeRim, out float3 Color)
             {
                 Color = half3(0.5f, 0.5f, 0.5f);
 
@@ -359,6 +367,48 @@ Shader "Custom/Vandull"
                 float2 pixelatedPos = floor(screenPos / pixelSize) * pixelSize;
 
                 return pixelatedPos;
+            }
+
+            static const float3 vn1 = float3(0.0, 0.0, 1.0);
+            static const float3 vn2 = float3(0.0, 1.0, 0.0);
+            static const float3 vn3 = float3(0.0, 1.0, 1.0);
+            static const float3 vn4 = float3(1.0, 0.0, 0.0);
+            static const float3 vn5 = float3(1.0, 0.0, 1.0);
+            static const float3 vn6 = float3(1.0, 1.0, 0.0);
+            static const float3 vn7 = float3(1.0, 1.0, 1.0);
+
+            float3 ghash(float3 p)
+            {
+                float3 o;
+                // these constants are the matrix m
+                // individual components multiplied, because the whole matrix multiplication produces float rounding differences from C# equivalent code (Bell pepper)
+                o.x = 127.1 * p.x + 311.7 * p.y + 74.7 * p.z;
+                o.y = 269.5 * p.x + 183.3 * p.y + 246.1 * p.z;
+                o.z = 113.5 * p.x + 271.9 * p.y + 124.6 * p.z;
+                float3 q = ((o * 0.025) + 8.0) * o;
+                // the constants 4.25 and 8.0 found empirically to give similar noise distribution to the sin approach
+                return -1.0 + 2.0 * frac(fmod(q, 289.0) * (1.0 / 41.0));
+            }
+
+            float gnoise(float3 p)
+            {
+                float3 i = floor(p);
+                float3 f = p - i;
+
+                float3 u = f * f * (3.0 - 2.0 * f);
+                float4 a = float4(dot(ghash(i), f),
+                                    dot(ghash(i + vn1), f - vn1),
+                                    dot(ghash(i + vn2), f - vn2),
+                                    dot(ghash(i + vn3), f - vn3));
+                float4 b = float4(dot(ghash(i + vn4), f - vn4),
+                              dot(ghash(i + vn5), f - vn5),
+                              dot(ghash(i + vn6), f - vn6),
+                              dot(ghash(i + vn7), f - vn7));
+
+                float4 c = lerp(a, b, u.x);
+                float2 rg = lerp(c.xy, c.zw, u.y);
+                // Added 1.2 here because our old noise was stronger
+                return 1.2 * lerp(rg.x, rg.y, u.z);
             }
 
             Varyings vert(Attributes input)
@@ -410,10 +460,11 @@ Shader "Custom/Vandull"
 
                 float3 color;
 
-                LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS, normalWS,
-           viewDirWS, _EdgeDiffuse, _EdgeSpecular,
-           _EdgeDistanceAttenuation,
-           _EdgeShadowAttenuation, _EdgeRim, color);
+                LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS,
+                                          normalWS,
+                                          viewDirWS, _EdgeDiffuse, _EdgeSpecular,
+                                          _EdgeDistanceAttenuation,
+                                          _EdgeShadowAttenuation, _EdgeRim, color);
                 color += ambient;
                 if ((_ColorX && cn(normalTS.x)) || (_ColorY && cn(normalTS.y)) || (_ColorZ && cn(normalTS.z)))
                 {
@@ -421,7 +472,14 @@ Shader "Custom/Vandull"
                 }
 
 
-                return float4(color, 1) * texColor;
+                // color.r += sin(_Time) * .2 + sin(input.positionWS.z * .5 - _Time * 6);
+                float4 finalColor = float4(color, 1) * texColor;
+                #ifdef LSDEFFECT
+                    finalColor *= abs(sin(_Time * Hash(3214))); 
+                #endif
+
+
+                return finalColor;
             }
             ENDHLSL
         }

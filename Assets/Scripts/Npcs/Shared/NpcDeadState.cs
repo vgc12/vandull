@@ -15,7 +15,6 @@ namespace Npcs.Shared
         {
             _enemy.Gun.StopFiring();
             _enemy.Gun.Drop();
-            _enemy.Die();
         }
     }
 }

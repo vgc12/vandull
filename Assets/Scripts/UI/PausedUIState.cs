@@ -4,17 +4,17 @@ using UnityEngine.UIElements;
 
 public class PausedUIState : UIBaseState
 {
-    private readonly Action _resumeButtonClicked;
-    private readonly Action _settingsButtonClicked;
+    private readonly Button _quitButton;
     private readonly Action _quitButtonClicked;
 
     private readonly Button _resumeButton;
+    private readonly Action _resumeButtonClicked;
     private readonly Button _settingsButton;
-    private readonly Button _quitButton;
+    private readonly Action _settingsButtonClicked;
 
-    public PausedUIState(VisualElement rootElement, 
+    public PausedUIState(VisualElement rootElement,
         Action resumeButtonClicked = null,
-        Action settingsButtonClicked = null, 
+        Action settingsButtonClicked = null,
         Action quitButtonClicked = null) : base(rootElement)
     {
         _resumeButtonClicked = resumeButtonClicked;
@@ -29,7 +29,7 @@ public class PausedUIState : UIBaseState
     public override void Enter()
     {
         base.Enter();
-        
+
         if (_resumeButton != null) _resumeButton.clicked += _resumeButtonClicked;
         if (_settingsButton != null) _settingsButton.clicked += _settingsButtonClicked;
         if (_quitButton != null) _quitButton.clicked += _quitButtonClicked;
@@ -40,7 +40,7 @@ public class PausedUIState : UIBaseState
         if (_resumeButton != null) _resumeButton.clicked -= _resumeButtonClicked;
         if (_settingsButton != null) _settingsButton.clicked -= _settingsButtonClicked;
         if (_quitButton != null) _quitButton.clicked -= _quitButtonClicked;
-        
+
         base.Exit();
     }
 }

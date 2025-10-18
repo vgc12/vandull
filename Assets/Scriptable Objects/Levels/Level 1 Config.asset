@@ -15,7 +15,7 @@ MonoBehaviour:
   levelName: Level 1
   missionStrategy:
     strategyTypeName: 0
-  enemyCount: 5
+  enemyCount: 4
   hostageCount: 2
   bombCount: 3
   levelDescription: 

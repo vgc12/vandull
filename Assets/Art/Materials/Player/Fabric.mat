@@ -27,6 +27,7 @@ Material:
   m_ValidKeywords:
   - POSTERIZE
   m_InvalidKeywords:
+  - GLITCH_EFFECT
   - _COLORY_ON
   - _COLORZ_ON
   m_LightmapFlags: 4
@@ -143,7 +144,14 @@ Material:
     - _EdgeShadowAttenuation: 0.05
     - _EdgeSpecular: 0.1
     - _EmissionIntensity: 1
+    - _EntityId: 0.64
     - _EnvironmentReflections: 1
+    - _GlitchEffectStrength: 5
+    - _GlitchEnabled: 1
+    - _GlitchFlicker: 5
+    - _GlitchFlickerSpeed: 58.6
+    - _GlitchSpeed: 48.5
+    - _GlitchStrength: 0.826
     - _GlossMapScale: 0
     - _Glossiness: 0.008
     - _GlossyReflections: 0

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Singletons
 {
@@ -15,7 +16,15 @@ namespace Singletons
             {
                 if (instance != null) return instance;
 
-                instance = FindAnyObjectByType<T>();
+                try
+                {
+                    instance = FindAnyObjectByType<T>() ?? null;
+                }
+                catch (Exception e)
+                {
+                    // ignored
+                }
+
 
                 if (instance != null) return instance;
 

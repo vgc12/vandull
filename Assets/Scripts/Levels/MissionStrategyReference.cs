@@ -1,4 +1,5 @@
 ﻿using System;
+using General;
 using Levels.Strategies;
 using UnityEngine;
 
@@ -11,7 +12,9 @@ namespace Levels
 
         public Type StrategyType
         {
-            get => string.IsNullOrEmpty(strategyTypeName.ToString()) ? null : Type.GetType(strategyTypeName.ToString());
+            get => string.IsNullOrEmpty(strategyTypeName.ToString())
+                ? null
+                : Type.GetType(typeof(IMissionStrategy).Namespace + '.' + strategyTypeName);
             set
             {
                 strategyTypeName = MissionType.KillAllEnemiesStrategy;
@@ -21,6 +24,7 @@ namespace Levels
 
         public IMissionStrategy CreateInstance()
         {
+            VandullLogger.Log(strategyTypeName.ToString());
             if (StrategyType == null) return null;
             return (IMissionStrategy)Activator.CreateInstance(StrategyType);
         }

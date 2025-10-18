@@ -1,29 +1,36 @@
-﻿using UnityEngine;
+﻿using EventBus;
+using Player;
 using UnityEngine.UIElements;
-using Cursor = UnityEngine.Cursor;
-
 
 namespace UI.States
 {
     public class InGameUIState : UIBaseState
     {
+        private readonly ProgressBar _healthBar;
+        private readonly EventBinding<PlayerHitEvent> _playerHitEventBinding;
+
         public InGameUIState(VisualElement rootElement) : base(rootElement)
         {
-            
+            _playerHitEventBinding = new EventBinding<PlayerHitEvent>(OnPlayerHit);
+            EventBus<PlayerHitEvent>.Register(_playerHitEventBinding);
+            _healthBar = rootElement.Q<ProgressBar>("HealthBar");
+            _healthBar.value = 100;
         }
 
-        public override void Enter()
+        private void OnPlayerHit(PlayerHitEvent obj)
         {
-            base.Enter();
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            _healthBar.value = obj.NewHealth;
         }
 
-        public override void Exit()
+
+        protected override void ChangeMouseState()
         {
-            base.Exit();
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            LockCursorAndHideMouse();
+        }
+
+        ~InGameUIState()
+        {
+            EventBus<PlayerHitEvent>.Deregister(_playerHitEventBinding);
         }
     }
 }

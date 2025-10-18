@@ -15,7 +15,7 @@ namespace Player
         }
 
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             InputActions?.Player.Disable();
         }

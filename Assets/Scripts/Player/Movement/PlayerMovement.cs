@@ -26,8 +26,6 @@ namespace Player.Movement
 
         private GroundChecker _groundChecker;
 
-        private InputManager _inputManager;
-
 
         private Rigidbody _rigidbody;
 
@@ -107,19 +105,18 @@ namespace Player.Movement
 
             _rigidbody = GetComponent<Rigidbody>();
 
-            _inputManager = InputManager.Instance;
 
-            _inputManager.InputActions.Player.Move.performed += OnMoveInput;
-            _inputManager.InputActions.Player.Move.canceled += OnMoveInput;
+            InputManager.Instance.InputActions.Player.Move.performed += OnMoveInput;
+            InputManager.Instance.InputActions.Player.Move.canceled += OnMoveInput;
 
-            _inputManager.InputActions.Player.Jump.performed += OnJumpInput;
-            _inputManager.InputActions.Player.Jump.canceled += OnJumpInput;
+            InputManager.Instance.InputActions.Player.Jump.performed += OnJumpInput;
+            InputManager.Instance.InputActions.Player.Jump.canceled += OnJumpInput;
 
-            _inputManager.InputActions.Player.Sprint.performed += OnSprintInput;
-            _inputManager.InputActions.Player.Sprint.canceled += OnSprintInput;
+            InputManager.Instance.InputActions.Player.Sprint.performed += OnSprintInput;
+            InputManager.Instance.InputActions.Player.Sprint.canceled += OnSprintInput;
 
-            _inputManager.InputActions.Player.Crouch.performed += OnCrouchInput;
-            _inputManager.InputActions.Player.Crouch.canceled += OnCrouchInput;
+            InputManager.Instance.InputActions.Player.Crouch.performed += OnCrouchInput;
+            InputManager.Instance.InputActions.Player.Crouch.canceled += OnCrouchInput;
 
             playerModel.localScale = new Vector3(1, config.InitialHeight, 1);
             crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
@@ -128,19 +125,19 @@ namespace Player.Movement
         }
 
 
-        private void OnDestroy()
+        private void OnDisable()
         {
-            _inputManager.InputActions.Player.Move.performed -= OnMoveInput;
-            _inputManager.InputActions.Player.Move.canceled -= OnMoveInput;
+            InputManager.Instance.InputActions.Player.Move.performed -= OnMoveInput;
+            InputManager.Instance.InputActions.Player.Move.canceled -= OnMoveInput;
 
-            _inputManager.InputActions.Player.Jump.performed -= OnJumpInput;
-            _inputManager.InputActions.Player.Jump.canceled -= OnJumpInput;
+            InputManager.Instance.InputActions.Player.Jump.performed -= OnJumpInput;
+            InputManager.Instance.InputActions.Player.Jump.canceled -= OnJumpInput;
 
-            _inputManager.InputActions.Player.Sprint.performed -= OnSprintInput;
-            _inputManager.InputActions.Player.Sprint.canceled -= OnSprintInput;
+            InputManager.Instance.InputActions.Player.Sprint.performed -= OnSprintInput;
+            InputManager.Instance.InputActions.Player.Sprint.canceled -= OnSprintInput;
 
-            _inputManager.InputActions.Player.Crouch.performed -= OnCrouchInput;
-            _inputManager.InputActions.Player.Crouch.canceled -= OnCrouchInput;
+            InputManager.Instance.InputActions.Player.Crouch.performed -= OnCrouchInput;
+            InputManager.Instance.InputActions.Player.Crouch.canceled -= OnCrouchInput;
         }
 
         private void OnDrawGizmos()
@@ -234,7 +231,7 @@ namespace Player.Movement
         public void Jump()
         {
             _rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
-            _rigidbody.AddForce(_rigidbody.linearVelocity / 4 * (config.JumpForce * config.JumpMultiplier),
+            _rigidbody.AddForce(_rigidbody.linearVelocity / 3 * (config.JumpForce * config.JumpMultiplier),
                 ForceMode.Impulse);
         }
 

@@ -98,8 +98,9 @@ namespace Npcs.Shared
 
         public virtual void TakeDamage(float amount, Vector3 direction)
         {
-            if (invulnerable) return;
+            if (invulnerable || IsDead) return;
             health -= amount;
+            if (IsDead) Die();
         }
 
         public virtual void Die()

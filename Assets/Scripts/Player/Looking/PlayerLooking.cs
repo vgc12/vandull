@@ -18,8 +18,6 @@ namespace Player.Looking
 
         [Required] public ObjectSwayer objectSwayer;
 
-        private InputManager _input;
-
         private Vector2 _mouseDelta;
 
         private LeanDirection _leanDirection = LeanDirection.None;
@@ -44,14 +42,11 @@ namespace Player.Looking
 
         [SerializeField] [Required] private Transform leanPoint;
 
-        [Header("Configuration")] 
-        [Required] public CameraBobConfig cameraBobConfig;
-        
+        [Header("Configuration")] [Required] public CameraBobConfig cameraBobConfig;
+
         #endregion
 
         #region UnityFunctions
-
-  
 
         private void Start()
         {
@@ -62,11 +57,10 @@ namespace Player.Looking
 
         private void OnDestroy()
         {
-            
-            _input.InputActions.Player.Look.performed -= OnMouseMove;
-            _input.InputActions.Player.Look.canceled -= OnMouseMove;
-            _input.InputActions.Player.Lean.started -= OnLeaning;
-            _input.InputActions.Player.Lean.canceled -= OnLeaning;
+            InputManager.Instance.InputActions.Player.Look.performed -= OnMouseMove;
+            InputManager.Instance.InputActions.Player.Look.canceled -= OnMouseMove;
+            InputManager.Instance.InputActions.Player.Lean.started -= OnLeaning;
+            InputManager.Instance.InputActions.Player.Lean.canceled -= OnLeaning;
         }
 
         #endregion
@@ -76,14 +70,12 @@ namespace Player.Looking
 
         private void InitializeControls()
         {
-         
-            _input = InputManager.Instance;
-            _input.InputActions.Player.Look.performed += OnMouseMove;
-            _input.InputActions.Player.Look.canceled += OnMouseMove;
+            InputManager.Instance.InputActions.Player.Look.performed += OnMouseMove;
+            InputManager.Instance.InputActions.Player.Look.canceled += OnMouseMove;
 
 
-            _input.InputActions.Player.Lean.started += OnLeaning;
-            _input.InputActions.Player.Lean.canceled += OnLeaning;
+            InputManager.Instance.InputActions.Player.Lean.started += OnLeaning;
+            InputManager.Instance.InputActions.Player.Lean.canceled += OnLeaning;
         }
 
 

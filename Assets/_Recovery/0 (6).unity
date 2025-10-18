@@ -9773,6 +9773,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e33141798cc49358cec42740d38d2cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Levels.LevelManager
+  AutoUnparentOnAwake: 1
   levels:
   - {fileID: 11400000, guid: ce4b03dd280fed84ca8e32c220dda400, type: 2}
 --- !u!4 &931777182

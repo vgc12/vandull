@@ -31,7 +31,7 @@ namespace Items.Guns.Recoil
 
         public void ApplyRecoil()
         {
-            if (_config.recoilSettings.useProgressiveRecoil)
+            /*if (_config.recoilSettings.useProgressiveRecoil)
                 UpdateProgressiveSpread();
 
             // Calculate random spread with current multiplier
@@ -46,7 +46,7 @@ namespace Items.Guns.Recoil
             _targetSpreadOffset = new Vector3(randomX, randomY, randomZ);
 
             _lastShotTime = Time.time;
-            _consecutiveShots++;
+            _consecutiveShots++;*/
         }
 
         public void Update()
@@ -77,18 +77,18 @@ namespace Items.Guns.Recoil
 
         private void UpdateProgressiveSpread()
         {
-            var timeSinceLastShot = Time.time - _lastShotTime;
+            /*var timeSinceLastShot = Time.time - _lastShotTime;
 
             if (timeSinceLastShot < 0.3f) // Within burst window
                 _currentSpreadMultiplier = Mathf.Min(
                     _currentSpreadMultiplier * _config.recoilSettings.recoilMultiplierPerShot,
                     _config.recoilSettings.maxRecoilMultiplier
-                );
+                );*/
         }
 
         private void ApplySpread()
         {
-            // Smoothly interpolate to the target spread offset
+            /*// Smoothly interpolate to the target spread offset
             CurrentRecoil = Vector3.Lerp(CurrentRecoil, _targetSpreadOffset,
                 Time.deltaTime * _config.recoilSettings.physicalRecoilSpeed);
 
@@ -97,7 +97,7 @@ namespace Items.Guns.Recoil
 
             // Gradually return spread to zero
             _targetSpreadOffset = Vector3.Lerp(_targetSpreadOffset, Vector3.zero,
-                Time.deltaTime * _config.recoilSettings.physicalReturnSpeed);
+                Time.deltaTime * _config.recoilSettings.physicalReturnSpeed);*/
         }
     }
 }
