@@ -12,12 +12,15 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - ENABLE_MANDELBROT
   - OUTLINE_METHOD_NORMAL
-  - POSTERIZE
+  - _MANDELBROTMODE_UV
   m_InvalidKeywords:
+  - POSTERIZE
   - _COLORX_ON
   - _COLORY_ON
   - _COLORZ_ON
+  - _MANDELBROTINFINITEZOOM_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -130,12 +133,23 @@ Material:
     - _EdgeRim: 0.34
     - _EdgeShadowAttenuation: 0.27
     - _EdgeSpecular: 0.36
+    - _EnableMandelbrot: 1
     - _EnvironmentReflections: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.153
     - _GlossyReflections: 1
     - _HighNormalSoftness: 0.1
     - _HighNormalThreshold: 0.678
+    - _MandelbrotInfiniteZoom: 1
+    - _MandelbrotIterations: 100
+    - _MandelbrotMode: 0
+    - _MandelbrotOffsetX: -0.5
+    - _MandelbrotOffsetY: 0
+    - _MandelbrotScale: 3
+    - _MandelbrotStrength: 1
+    - _MandelbrotZoomCenterX: -0.5
+    - _MandelbrotZoomCenterY: 0
+    - _MandelbrotZoomSpeed: 0.5
     - _Metallic: 0
     - _Mode: 0
     - _NormalReplacementValue: 1
@@ -182,6 +196,9 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _HighNormalColor: {r: 0, g: 0, b: 0, a: 1}
+    - _MandelbrotColor1: {r: 0, g: 0, b: 0.19999996, a: 1}
+    - _MandelbrotColor2: {r: 0, g: 0.5, b: 1, a: 1}
+    - _MandelbrotColor3: {r: 1, g: 1, b: 1, a: 1}
     - _NormalEffectsColor: {r: 0, g: 0, b: 0, a: 1}
     - _NormalReplacementColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}

@@ -25,11 +25,15 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - POSTERIZE
+  - ENABLE_MANDELBROT
+  - _MANDELBROTMODE_UV
   m_InvalidKeywords:
+  - ENABLE_HOLOGRAPHIC
   - GLITCH_EFFECT
+  - POSTERIZE
   - _COLORY_ON
   - _COLORZ_ON
+  - _MANDELBROTINFINITEZOOM_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -67,6 +71,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 2800000, guid: 919e5d0d15ba60f4a9d59b1808e4a287, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FoilMask:
+        m_Texture: {fileID: 2800000, guid: d7a19280540fb564abbf06efce92bac3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoloGradient:
+        m_Texture: {fileID: 2800000, guid: f55f5f23ed651b144bc15f7a58bae2bd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoloNoise:
+        m_Texture: {fileID: 2800000, guid: e3db5bf60762f964980d6a05639ccbe2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -144,6 +160,8 @@ Material:
     - _EdgeShadowAttenuation: 0.05
     - _EdgeSpecular: 0.1
     - _EmissionIntensity: 1
+    - _EnableHolographic: 1
+    - _EnableMandelbrot: 1
     - _EntityId: 0.64
     - _EnvironmentReflections: 1
     - _GlitchEffectStrength: 5
@@ -157,6 +175,23 @@ Material:
     - _GlossyReflections: 0
     - _HighNormalSoftness: 0
     - _HighNormalThreshold: 0.972
+    - _HoloDirection: 0.539
+    - _HoloFuzziness: 0.243
+    - _HoloPeriod: 1.51
+    - _HoloScroll: 1.86
+    - _HoloStrength: 0.522
+    - _HoloThreshold: 0.96
+    - _LSDEffect: 0
+    - _MandelbrotInfiniteZoom: 1
+    - _MandelbrotIterations: 100
+    - _MandelbrotMode: 0
+    - _MandelbrotOffsetX: -0.5
+    - _MandelbrotOffsetY: 0
+    - _MandelbrotScale: 3
+    - _MandelbrotStrength: 1
+    - _MandelbrotZoomCenterX: -0.5
+    - _MandelbrotZoomCenterY: 0
+    - _MandelbrotZoomSpeed: 0.5
     - _Metallic: 0
     - _NormalReplacementValue: 0.9997
     - _NormalThreshold: 0.941
@@ -202,7 +237,11 @@ Material:
     - _Base_Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 0.30188674, g: 0.23495904, b: 0.23495904, a: 1}
     - _EmissionColor: {r: 1, g: 0, b: 0, a: 1}
+    - _FoilColor: {r: 1, g: 0, b: 0, a: 1}
     - _HighNormalColor: {r: 0, g: 0, b: 0, a: 1}
+    - _MandelbrotColor1: {r: 0, g: 0, b: 0.19999996, a: 1}
+    - _MandelbrotColor2: {r: 0, g: 0.5, b: 1, a: 1}
+    - _MandelbrotColor3: {r: 1, g: 1, b: 1, a: 1}
     - _NormalEffectsColor: {r: 0, g: 0, b: 0, a: 1}
     - _NormalReplacementColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}

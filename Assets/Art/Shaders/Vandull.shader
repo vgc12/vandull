@@ -1,10 +1,12 @@
-Shader "Custom/Vandull"
+Shader "Custom/VandullWithMandelbrot"
 {
     Properties
     {
+        // Base Properties
         _BaseMap("Base Map", 2D) = "white"{}
         _BaseColor("Base Color", Color) = (1,1,1,1)
 
+        // Normal Map
         [Toggle] _UseNormalMapInLightCalculations("Use Normal Map In Light Calculations", Float) = 0
         _BumpMap ("Normal Map", 2D) = "bump"{}
         _BumpScale ("Normal Strength", Range(0, 2)) = 1.0
@@ -19,9 +21,9 @@ Shader "Custom/Vandull"
         _RimThreshold("Rim Threshold", Range(0, 1)) = 0.1
 
         [Header(Bands)]
-        [IntRange] _DiffuseBands("Diffuse Bands", Range(1, 30)) =5
-        [IntRange] _ShadowAttenuationBands("Shadow Attenuation Bands", Range(1, 30) ) =5
-        [IntRange] _RimBands("Rim Bands", Range(1,30)) = 5
+        [IntRange] _DiffuseBands("Diffuse Bands", Range(1, 30)) = 5
+        [IntRange] _ShadowAttenuationBands("Shadow Attenuation Bands", Range(1, 30)) = 5
+        [IntRange] _RimBands("Rim Bands", Range(1, 30)) = 5
 
         [Header(Edge Softness)]
         _EdgeDiffuse("Edge Diffuse", Range(0, 1)) = 0.05
@@ -40,19 +42,29 @@ Shader "Custom/Vandull"
         [Toggle(OUTLINE_METHOD_NORMAL)] _OutlineMethod("Extrude Outlines From Normals", Float) = 0
 
         [Header(Normal Effects)]
-        _NormalThreshold("Normal Threshold", Range(0,1)) = .9999
+        _NormalThreshold("Normal Threshold", Range(0, 1)) = 0.9999
         _NormalEffectsColor("Normal Effects Color", Color) = (0,0,0,1)
         [Toggle] _ColorX("Color X Direction", Float) = 1
         [Toggle] _ColorY("Color Y Direction", Float) = 1
         [Toggle] _ColorZ("Color Z Direction", Float) = 1
 
-        [Header(Dither)]
-        [Toggle(DITHER)] _Dither("Dither Enabled", Range(0,1)) = 0
-        _DitherStrength("Dither Strength", Range(0, 1)) = 0.3
-
-        [Header(Glitch)]
-        [Toggle(LSDEFFECT)]_LSDEffect("LSD Effect", Range(0,1)) = 0
+        [Header(Mandelbrot)]
+        [Toggle(ENABLE_MANDELBROT)] _EnableMandelbrot("Enable Mandelbrot", Float) = 1
+        [KeywordEnum(UV, WorldSpace, ScreenSpace)] _MandelbrotMode("Mandelbrot Mode", Float) = 0
+        [Toggle] _MandelbrotInfiniteZoom("Infinite Zoom", Float) = 1
+        _MandelbrotZoomSpeed("Zoom Speed", Range(0.01, 2)) = 0.5
+        _MandelbrotZoomCenterX("Zoom Center X", Range(-2, 2)) = -0.5
+        _MandelbrotZoomCenterY("Zoom Center Y", Range(-2, 2)) = 0.0
+        _MandelbrotScale("Manual Scale (when zoom off)", Range(0.1, 10)) = 3.0
+        _MandelbrotOffsetX("Manual Offset X (when zoom off)", Range(-2, 2)) = -0.5
+        _MandelbrotOffsetY("Manual Offset Y (when zoom off)", Range(-2, 2)) = 0.0
+        [IntRange] _MandelbrotIterations("Mandelbrot Iterations", Range(10, 200)) = 100
+        _MandelbrotColor1("Mandelbrot Color 1", Color) = (0,0,0.2,1)
+        _MandelbrotColor2("Mandelbrot Color 2", Color) = (0,0.5,1,1)
+        _MandelbrotColor3("Mandelbrot Color 3", Color) = (1,1,1,1)
+        _MandelbrotStrength("Mandelbrot Strength", Range(0, 1)) = 1.0
     }
+
     SubShader
     {
         Tags
@@ -62,21 +74,16 @@ Shader "Custom/Vandull"
             "Queue" = "Geometry"
         }
 
-        Tags
-        {
-            "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline"
-        }
-
-        // PASS 1: Outline Pass (rendered first, behind the object)
+        // ========================================================================
+        // PASS 1: OUTLINE
+        // ========================================================================
         Pass
         {
             Name "Outline"
             Tags
             {
-                "LightMode"="SRPDefaultUnlit"
+                "LightMode" = "SRPDefaultUnlit"
             }
-
-            // Render only back faces
             Cull Front
             ZWrite On
 
@@ -98,7 +105,6 @@ Shader "Custom/Vandull"
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
-
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -106,7 +112,6 @@ Shader "Custom/Vandull"
             CBUFFER_START(UnityPerMaterial)
                 float4 _OutlineColor;
                 float _OutlineWidth;
-                float _OutlineMethod;
             CBUFFER_END
 
             Varyings OutlineVert(Attributes input)
@@ -116,24 +121,17 @@ Shader "Custom/Vandull"
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
+                float3 normalOS = normalize(input.normalOS);
 
                 #ifdef OUTLINE_METHOD_NORMAL
-                    // Expand along normals
-                    float3 normalOS = normalize(input.normalOS);
                     input.positionOS.xyz += normalOS * _OutlineWidth;
                 #else
-
-                float3 normalOS = normalize(input.normalOS);
                 input.positionOS.xyz += normalOS * _OutlineWidth;
-
                 input.positionOS.xyz *= (1.0 + _OutlineWidth);
                 #endif
 
-
                 VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
                 output.positionCS = vertexInput.positionCS;
-
-
                 return output;
             }
 
@@ -141,13 +139,14 @@ Shader "Custom/Vandull"
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-
-                half4 color = _OutlineColor;
-
-                return color;
+                return _OutlineColor;
             }
             ENDHLSL
         }
+
+        // ========================================================================
+        // PASS 2: FORWARD LIT WITH MANDELBROT
+        // ========================================================================
         Pass
         {
             Name "ForwardLit"
@@ -155,26 +154,31 @@ Shader "Custom/Vandull"
             {
                 "LightMode" = "UniversalForward"
             }
-
             Cull Off
             ZWrite On
             ZTest LEqual
+
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
 
+            // Multi-compile variants
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _SHADOWS_SOFT
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
-            #pragma shader_feature_local POSTERIZE
-            #pragma shader_feature_local DITHER
-            #pragma shader_feature_local LSDEFFECT
 
+            // Shader features
+            #pragma shader_feature_local ENABLE_MANDELBROT
+            #pragma multi_compile _MANDELBROTMODE_UV _MANDELBROTMODE_WORLDSPACE _MANDELBROTMODE_SCREENSPACE
+
+            // Includes
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "VandullFunctions.hlsl"
 
+            // Texture declarations
             TEXTURE2D(_BaseMap);
             SAMPLER(sampler_BaseMap);
             TEXTURE2D(_BumpMap);
@@ -182,57 +186,62 @@ Shader "Custom/Vandull"
             TEXTURE2D(_RoughnessMap);
             SAMPLER(sampler_RoughnessMap);
 
-
+            // Material properties
             CBUFFER_START(UnityPerMaterial)
-                bool _UseNormalMapInLightCalculations;
-
-                //Bands
-                int _DiffuseBands;
-                int _ShadowAttenuationBands;
-                int _RimBands;
-
+                // Base properties
                 float4 _BaseMap_ST;
-                float4 _BumpMap_ST;
-                float _BumpScale;
                 float4 _BaseColor;
 
-                // Surface
-                float _Roughness;
-                float4 _RoughnessMap_ST;
+                // Normal map
+                float _UseNormalMapInLightCalculations;
+                float4 _BumpMap_ST;
+                float _BumpScale;
 
-                // Rim Lighting
+                // Surface
+                float4 _RoughnessMap_ST;
+                float _Roughness;
+
+                // Rim lighting
                 float _RimStrength;
                 float _RimAmount;
                 float _RimThreshold;
 
-                // Edge Softness
+                // Bands
+                int _DiffuseBands;
+                int _ShadowAttenuationBands;
+                int _RimBands;
+
+                // Edge softness
                 float _EdgeDiffuse;
-                float _SpecularMap_ST;
                 float _EdgeSpecular;
                 float _EdgeDistanceAttenuation;
                 float _EdgeShadowAttenuation;
                 float _EdgeRim;
 
-                //Ambient
+                // Ambient
                 float4 _AmbientColor;
                 float _AmbientMultiplier;
 
-                //Normal Effects
+                // Normal effects
                 float _NormalThreshold;
                 float4 _NormalEffectsColor;
-                bool _ColorX;
-                bool _ColorY;
-                bool _ColorZ;
+                float _ColorX;
+                float _ColorY;
+                float _ColorZ;
 
-                //Posterization
-                int _PosterizationCount;
-
-                //Dither
-                float _DitherStrength;
-
-                //Glitch Effect
-
-
+                // Mandelbrot properties
+                float _MandelbrotInfiniteZoom;
+                float _MandelbrotZoomSpeed;
+                float _MandelbrotZoomCenterX;
+                float _MandelbrotZoomCenterY;
+                float _MandelbrotScale;
+                float _MandelbrotOffsetX;
+                float _MandelbrotOffsetY;
+                int _MandelbrotIterations;
+                float4 _MandelbrotColor1;
+                float4 _MandelbrotColor2;
+                float4 _MandelbrotColor3;
+                float _MandelbrotStrength;
             CBUFFER_END
 
             struct Attributes
@@ -251,166 +260,10 @@ Shader "Custom/Vandull"
                 float3 positionWS : TEXCOORD2;
                 float3 tangentWS : TEXCOORD3;
                 float3 bitangentWS : TEXCOORD4;
+                float4 screenPos : TEXCOORD5;
             };
 
-            struct EdgeConstants
-            {
-                float diffuse;
-                float specular;
-                float rim;
-                float distanceAttenuation;
-                float shadowAttenuation;
-            };
-
-            struct SurfaceVariables
-            {
-                float roughness;
-                float shininess;
-
-                float rimStrength;
-                float rimAmount;
-                float rimThreshold;
-
-                float3 normal;
-                float3 view;
-
-                EdgeConstants ec;
-            };
-
-
-            float celBanding(float value, float bands)
-            {
-                return floor(value * bands) / bands;
-            }
-
-            float3 CalculateCelShading(Light l, SurfaceVariables s)
-            {
-                float attenuation =
-                    smoothstep(0.0f, s.ec.distanceAttenuation, l.distanceAttenuation) *
-                    smoothstep(0.0f, s.ec.shadowAttenuation, l.shadowAttenuation);
-
-                attenuation = celBanding(attenuation, _ShadowAttenuationBands);
-
-                float diffuse = saturate(dot(s.normal, l.direction));
-                diffuse *= attenuation;
-
-                float3 h = SafeNormalize(l.direction + s.view);
-                float specular = saturate(dot(s.normal, h));
-                specular = pow(specular, s.shininess);
-                specular *= diffuse;
-
-                float rim = 1 - dot(s.view, s.normal);
-                rim *= pow(abs(diffuse), s.rimThreshold);
-                diffuse = celBanding(diffuse, _DiffuseBands);
-                diffuse = smoothstep(0.0f, s.ec.diffuse, diffuse);
-                specular = s.roughness * smoothstep(0.005f,
-                                                    0.005f + s.ec.specular * s.roughness, specular);
-                rim = celBanding(rim, _RimBands);
-                rim = s.rimStrength * smoothstep(
-                    s.rimAmount - 0.5f * s.ec.rim,
-                    s.rimAmount + 0.5f * s.ec.rim,
-                    rim
-                );
-
-                return l.color * (diffuse + max(specular, rim));
-            }
-
-            float3 LightingCelShaded(float Roughness,
-                                     float RimStrength, float RimAmount, float RimThreshold,
-                                     float3 Position, float3 Normal, float3 View, float EdgeDiffuse,
-                                     float EdgeSpecular, float EdgeDistanceAttenuation,
-                                     float EdgeShadowAttenuation, float EdgeRim, out float3 Color)
-            {
-                Color = half3(0.5f, 0.5f, 0.5f);
-
-                SurfaceVariables s;
-                s.roughness = Roughness;
-                s.shininess = exp2(10 * Roughness + 1);
-                s.rimStrength = RimStrength;
-                s.rimAmount = RimAmount;
-                s.rimThreshold = RimThreshold;
-                s.normal = normalize(Normal);
-                s.view = SafeNormalize(View);
-                s.ec.diffuse = EdgeDiffuse;
-                s.ec.specular = EdgeSpecular;
-                s.ec.distanceAttenuation = EdgeDistanceAttenuation;
-                s.ec.shadowAttenuation = EdgeShadowAttenuation;
-                s.ec.rim = EdgeRim;
-
-                #if SHADOWS_SCREEN
-                       float4 clipPos = TransformWorldToHClip(Position);
-                       float4 shadowCoord = ComputeScreenPos(clipPos);
-                #else
-                float4 shadowCoord = TransformWorldToShadowCoord(Position);
-                #endif
-
-                Light light = GetMainLight(shadowCoord);
-                Color = CalculateCelShading(light, s);
-                #ifdef _ADDITIONAL_LIGHTS
-                int pixelLightCount = GetAdditionalLightsCount();
-                for (int i = 0; i < pixelLightCount; i++)
-                {
-                    light = GetAdditionalLight(i, Position);
-                    Color += CalculateCelShading(light, s);
-                }
-                #endif
-
-                return Color;
-            }
-
-            float2 pixelateScreenSpace(float4 positionCS, float pixelSize)
-            {
-                // Get screen position in pixels
-                float2 screenPos = positionCS.xy;
-
-                // Quantize to pixel grid
-                float2 pixelatedPos = floor(screenPos / pixelSize) * pixelSize;
-
-                return pixelatedPos;
-            }
-
-            static const float3 vn1 = float3(0.0, 0.0, 1.0);
-            static const float3 vn2 = float3(0.0, 1.0, 0.0);
-            static const float3 vn3 = float3(0.0, 1.0, 1.0);
-            static const float3 vn4 = float3(1.0, 0.0, 0.0);
-            static const float3 vn5 = float3(1.0, 0.0, 1.0);
-            static const float3 vn6 = float3(1.0, 1.0, 0.0);
-            static const float3 vn7 = float3(1.0, 1.0, 1.0);
-
-            float3 ghash(float3 p)
-            {
-                float3 o;
-                // these constants are the matrix m
-                // individual components multiplied, because the whole matrix multiplication produces float rounding differences from C# equivalent code (Bell pepper)
-                o.x = 127.1 * p.x + 311.7 * p.y + 74.7 * p.z;
-                o.y = 269.5 * p.x + 183.3 * p.y + 246.1 * p.z;
-                o.z = 113.5 * p.x + 271.9 * p.y + 124.6 * p.z;
-                float3 q = ((o * 0.025) + 8.0) * o;
-                // the constants 4.25 and 8.0 found empirically to give similar noise distribution to the sin approach
-                return -1.0 + 2.0 * frac(fmod(q, 289.0) * (1.0 / 41.0));
-            }
-
-            float gnoise(float3 p)
-            {
-                float3 i = floor(p);
-                float3 f = p - i;
-
-                float3 u = f * f * (3.0 - 2.0 * f);
-                float4 a = float4(dot(ghash(i), f),
-                                    dot(ghash(i + vn1), f - vn1),
-                                    dot(ghash(i + vn2), f - vn2),
-                                    dot(ghash(i + vn3), f - vn3));
-                float4 b = float4(dot(ghash(i + vn4), f - vn4),
-                              dot(ghash(i + vn5), f - vn5),
-                              dot(ghash(i + vn6), f - vn6),
-                              dot(ghash(i + vn7), f - vn7));
-
-                float4 c = lerp(a, b, u.x);
-                float2 rg = lerp(c.xy, c.zw, u.y);
-                // Added 1.2 here because our old noise was stronger
-                return 1.2 * lerp(rg.x, rg.y, u.z);
-            }
-
+            // Vertex shader
             Varyings vert(Attributes input)
             {
                 Varyings output;
@@ -424,66 +277,116 @@ Shader "Custom/Vandull"
                 output.tangentWS = normalInputs.tangentWS;
                 output.bitangentWS = normalInputs.bitangentWS;
                 output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
+                output.screenPos = ComputeScreenPos(output.positionCS);
 
                 return output;
             }
 
-            bool cn(float normal)
+
+            float3 kaliSetPattern(float2 st)
             {
-                return abs(normal > _NormalThreshold);
+                float2 uv = st;
+                //uv.x = _ScreenParams.x / _ScreenParams.y;
+                float2 c = float2(-abs(sin(_Time.y * 0.4)) * .7, -abs(cos(_Time.y * 0.25)) * 0.6);
+
+                float2 z = uv;
+                float iterations = 0.0;
+                int maxIterations = 228;
+                const float escapeRadius = 8.0;
+
+                for (int i = 0; i < maxIterations; i++)
+                {
+                    z = abs(z) / dot(z, z) + c;
+                    if (dot(z, z) > Sq(escapeRadius))
+                    {
+                        break;
+                    }
+                    iterations++;
+                }
+
+                float3 color = float3(0, 0, 0);
+
+                if (iterations >= maxIterations - 1)
+                {
+                    color = float3(0.0, 0.0, 0.0); // Black for the set itself
+                }
+                else
+                {
+                    float smoothIter = iterations + 1.0 - log(log(length(z))) / log(2.0);
+
+                    // Use logarithmic mapping to compress the range
+                    float hue = frac(smoothIter / 5.0); // Repeating bands
+                    float3 paletteFrequency = float3(0.0, 0.33, 0.67);
+                    color = 0.5 + 0.5 * cos(2.0 * PI * (hue + paletteFrequency));
+
+                    // Subtle animated modulation (reduce intensity)
+                    color *= 0.8 + 0.2 * cos(_Time.y * 0.5 + uv.xyx + float3(0, 2, 4));
+                }
+                return color;
             }
 
-
+            // Fragment shader
             half4 frag(Varyings input) : SV_Target
             {
+                // Sample base textures
                 float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
-
-
                 float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness;
+                half3 normalTS = UnpackNormalScale(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, input.uv), _BumpScale);
 
-
-                half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, input.uv) * _BumpScale);
-
-
+                // Calculate world space normal
                 float3 normalWS = input.normalWS;
-                if (_UseNormalMapInLightCalculations)
+                if (_UseNormalMapInLightCalculations > 0.5)
                 {
                     normalWS = TransformTangentToWorld(
                         normalTS, half3x3(input.tangentWS, input.bitangentWS, input.normalWS));
+                    normalWS = normalize(normalWS);
                 }
 
-
+                // Calculate lighting
                 float3 viewDirWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
-
-                float3 ambient = (SampleSH(normalWS) * _AmbientMultiplier) + _AmbientColor;
-
+                float3 ambient = (SampleSH(normalWS) * _AmbientMultiplier) + _AmbientColor.rgb;
 
                 float3 color;
+                LightingCelShaded(
+                    roughness,
+                    _RimStrength,
+                    _RimAmount,
+                    _RimThreshold,
+                    input.positionWS,
+                    normalWS,
+                    viewDirWS,
+                    _EdgeDiffuse,
+                    _EdgeSpecular,
+                    _EdgeDistanceAttenuation,
+                    _EdgeShadowAttenuation,
+                    _EdgeRim,
+                    _ShadowAttenuationBands,
+                    _DiffuseBands,
+                    _RimBands,
+                    color
+                );
 
-                LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS,
-                                          normalWS,
-                                          viewDirWS, _EdgeDiffuse, _EdgeSpecular,
-                                          _EdgeDistanceAttenuation,
-                                          _EdgeShadowAttenuation, _EdgeRim, color);
                 color += ambient;
-                if ((_ColorX && cn(normalTS.x)) || (_ColorY && cn(normalTS.y)) || (_ColorZ && cn(normalTS.z)))
+
+                // Check normal threshold effects
+                if ((_ColorX > 0.5 && checkNormalThreshold(normalTS.x, _NormalThreshold)) ||
+                    (_ColorY > 0.5 && checkNormalThreshold(normalTS.y, _NormalThreshold)) ||
+                    (_ColorZ > 0.5 && checkNormalThreshold(normalTS.z, _NormalThreshold)))
                 {
                     return _NormalEffectsColor;
                 }
 
-
-                // color.r += sin(_Time) * .2 + sin(input.positionWS.z * .5 - _Time * 6);
+                // Combine lighting with texture
                 float4 finalColor = float4(color, 1) * texColor;
-                #ifdef LSDEFFECT
-                    finalColor *= abs(sin(_Time * Hash(3214))); 
-                #endif
 
+                float2 c = input.screenPos.xy / input.screenPos.w;
+                c -= .5f;
+                c.x *= _ScreenParams.x / _ScreenParams.y;
+                float4 k = float4(kaliSetPattern(input.uv), 1);
 
-                return finalColor;
+                return finalColor * k;
             }
             ENDHLSL
         }
-
-
     }
 }
