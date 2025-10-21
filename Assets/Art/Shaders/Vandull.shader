@@ -285,9 +285,9 @@ Shader "Custom/VandullWithMandelbrot"
 
             float3 kaliSetPattern(float2 st)
             {
-                float2 uv = st;
+                float2 uv = st * 2.5;
                 //uv.x = _ScreenParams.x / _ScreenParams.y;
-                float2 c = float2(-abs(sin(_Time.y * 0.4)) * .7, -abs(cos(_Time.y * 0.25)) * 0.6);
+                float2 c = float2(-abs(sin(_Time.y * 0.4)) * .2, -abs(cos(_Time.y * 0.25)) * .2);
 
                 float2 z = uv;
                 float iterations = 0.0;
@@ -382,7 +382,7 @@ Shader "Custom/VandullWithMandelbrot"
                 float2 c = input.screenPos.xy / input.screenPos.w;
                 c -= .5f;
                 c.x *= _ScreenParams.x / _ScreenParams.y;
-                float4 k = float4(kaliSetPattern(input.uv), 1);
+                float4 k = float4(kaliSetPattern(c), 1);
 
                 return finalColor * k;
             }
