@@ -1,0 +1,115 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/vandull-common.uss?fileID=7433441132597879392&amp;guid=a39a13c2966cff748b648d6b872b5878&amp;type=3#vandull-common" />
+    <Style src="project://database/Assets/UI%20Toolkit/Settings.uss?fileID=7433441132597879392&amp;guid=ec9430bf6f4d1a94dafe6ea75e7f0a90&amp;type=3#Settings" />
+    <ui:VisualElement name="SettingsRoot" style="flex-grow: 1; padding: 20px; -unity-font-definition: url(&quot;project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&amp;guid=83ac249aaefaf3b42a3de0b92f763dee&amp;type=3#BungeeHairline-Regular&quot;); font-size: 17px; -unity-font-style: bold;">
+        <ui:VisualElement style="flex-grow: 1; flex-shrink: 0; height: 100%; align-items: center; align-content: flex-end; align-self: center; justify-content: center;">
+            <ui:TabView name="settings-tabs" style="flex-grow: 1; align-items: center; height: auto; max-height: 80%; flex-shrink: 0;">
+                <ui:Tab label="Controls" name="controls-tab" style="flex-grow: 0; width: 100%; min-width: auto; flex-direction: column; align-items: center; align-content: flex-start; align-self: stretch; flex-shrink: 0; max-height: 100%;">
+                    <ui:ScrollView mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="AlwaysVisible" style="flex-grow: 0; flex-shrink: 1; flex-direction: row-reverse; flex-wrap: nowrap; max-height: none; height: 100%; width: 520px;">
+                        <ui:Label text="Controls" name="Label" class="description" style="font-size: 24px; -unity-font-style: bold; margin-bottom: 15px;" />
+                        <ui:VisualElement name="VisualElement" style="flex-direction: row; margin-bottom: 5px;">
+                            <ui:Label text="Sensitivity" name="SensitivityLabel" class="settings-label" style="width: 150px;" />
+                            <ui:Slider name="mouse-sensitivity-slider" high-value="10" low-value="0.1" value="5" show-input-field="true" style="width: 114px; align-content: flex-start; align-self: flex-end;" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Toggle name="invert-y-toggle" label="Invert Y-Axis" class="settings-label" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Toggle name="invert-x-toggle" label="Invert X-Axis" class="settings-label" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-top: 20px; align-items: stretch;">
+                            <ui:Label text="Key Bindings" class="settings-label" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 10px;" />
+                            <ui:VisualElement style="flex-direction: row; margin-bottom: 5px;">
+                                <ui:Label text="Move Forward:" class="settings-label" style="width: 150px;" />
+                                <ui:Button name="forward-key-button" text="W" class="button-red" style="width: 50%;" />
+                            </ui:VisualElement>
+                            <ui:VisualElement style="flex-direction: row; margin-bottom: 5px;">
+                                <ui:Label text="Move Backwards" class="settings-label" style="flex-grow: 0; width: 150px;" />
+                                <ui:Button name="backward-key-button" text="S" class="button-red" style="width: 50%;" />
+                            </ui:VisualElement>
+                            <ui:VisualElement style="flex-direction: row; margin-bottom: 5px;">
+                                <ui:Label text="Move Left:" class="settings-label" style="width: 150px;" />
+                                <ui:Button name="left-key-button" text="A" class="button-red" style="width: 50%;" />
+                            </ui:VisualElement>
+                            <ui:VisualElement style="flex-direction: row; margin-bottom: 5px;">
+                                <ui:Label text="Move Right:" style="width: 150px;" />
+                                <ui:Button name="right-key-button" text="D" class="button-red" style="width: 50%;" />
+                            </ui:VisualElement>
+                            <ui:VisualElement style="flex-direction: row; margin-bottom: 5px;">
+                                <ui:Label text="Jump:" style="width: 150px;" />
+                                <ui:Button name="jump-key-button" text="Space" class="button-red" style="width: 50%;" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:ScrollView>
+                </ui:Tab>
+                <ui:Tab label="Graphics" name="graphics-tab">
+                    <ui:VisualElement style="padding: 20px;">
+                        <ui:Label text="Graphics" style="font-size: 24px; -unity-font-style: bold; margin-bottom: 15px;" />
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Label text="Quality Preset" style="margin-bottom: 5px;" />
+                            <ui:DropdownField name="quality-dropdown" choices="Low,Medium,High,Ultra" index="2" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Label text="Resolution" style="margin-bottom: 5px;" />
+                            <ui:DropdownField name="resolution-dropdown" choices="1920x1080,2560x1440,3840x2160" index="0" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Toggle name="fullscreen-toggle" label="Fullscreen" value="true" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Toggle name="vsync-toggle" label="V-Sync" value="true" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Label text="Frame Rate Limit" style="margin-bottom: 5px;" />
+                            <ui:SliderInt name="framerate-slider" high-value="240" low-value="30" value="60" show-input-field="true" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Label text="Anti-Aliasing" style="margin-bottom: 5px;" />
+                            <ui:DropdownField name="antialiasing-dropdown" choices="Off,2x,4x,8x" index="1" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Toggle name="shadows-toggle" label="Shadows" value="true" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Label text="Texture Quality" style="margin-bottom: 5px;" />
+                            <ui:DropdownField name="texture-quality-dropdown" choices="Low,Medium,High" index="2" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:Tab>
+                <ui:Tab label="Audio" name="audio-tab">
+                    <ui:VisualElement style="padding: 20px;">
+                        <ui:Label text="Audio" style="font-size: 24px; -unity-font-style: bold; margin-bottom: 15px;" />
+                        <ui:VisualElement style="margin-bottom: 15px;">
+                            <ui:Label text="Master Volume" style="margin-bottom: 5px;" />
+                            <ui:Slider name="master-volume-slider" high-value="1" low-value="0" value="1" show-input-field="true" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 15px;">
+                            <ui:Label text="Music Volume" style="margin-bottom: 5px;" />
+                            <ui:Slider name="music-volume-slider" high-value="1" low-value="0" value="0.8" show-input-field="true" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 15px;">
+                            <ui:Label text="SFX Volume" style="margin-bottom: 5px;" />
+                            <ui:Slider name="sfx-volume-slider" high-value="1" low-value="0" value="1" show-input-field="true" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 15px;">
+                            <ui:Label text="Voice Volume" style="margin-bottom: 5px;" />
+                            <ui:Slider name="voice-volume-slider" high-value="1" low-value="0" value="1" show-input-field="true" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Toggle name="mute-toggle" label="Mute All" />
+                        </ui:VisualElement>
+                        <ui:VisualElement style="margin-bottom: 10px;">
+                            <ui:Label text="Audio Output" style="margin-bottom: 5px;" />
+                            <ui:DropdownField name="audio-output-dropdown" choices="Default,Headphones,Speakers" index="0" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:Tab>
+            </ui:TabView>
+            <ui:VisualElement name="VisualElement" style="flex-direction: row; justify-content: flex-end; margin-top: 20px; flex-shrink: 1; flex-grow: 0; align-self: center;">
+                <ui:Button name="reset-button" text="Reset to Default" style="margin-right: 10px; padding: 10px 20px;" />
+                <ui:Button name="apply-button" text="Apply" style="margin-right: 10px; padding: 10px 20px;" />
+                <ui:Button name="close-button" text="Close" style="padding: 10px 20px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

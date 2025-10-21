@@ -1,0 +1,6 @@
+:root {
+}
+
+.settings-label {
+    margin-right: 30px;
+}
