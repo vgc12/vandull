@@ -9,7 +9,8 @@ namespace UI.States
         private readonly ProgressBar _healthBar;
         private readonly EventBinding<PlayerHitEvent> _playerHitEventBinding;
 
-        public InGameUIState(VisualElement rootElement) : base(rootElement)
+        public InGameUIState(VisualElement rootElement, UIStateMachine stateMachine) : base(rootElement, stateMachine,
+            UIStateType.InGame)
         {
             _playerHitEventBinding = new EventBinding<PlayerHitEvent>(OnPlayerHit);
             EventBus<PlayerHitEvent>.Register(_playerHitEventBinding);

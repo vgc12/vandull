@@ -2,7 +2,6 @@ using System.Collections;
 using Attributes;
 using Reflex.Attributes;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using ILogger = General.Logging.ILogger;
 
 namespace Player.Movement
@@ -40,7 +39,7 @@ namespace Player.Movement
 
         public bool JumpPressed { get; private set; }
 
-        public Vector2 MoveInput { get; private set; }
+        public Vector2 MoveInput => Input.Direction;
 
         public bool CrouchPressed { get; private set; }
 
@@ -101,24 +100,19 @@ namespace Player.Movement
 
         #region UnityFunctions
 
+        [Inject] public IInputService Input;
+
         private void Start()
         {
             _groundChecker = GetComponent<GroundChecker>();
 
             _rigidbody = GetComponent<Rigidbody>();
 
+            Input.Crouch += OnCrouchInput;
 
-            InputManager.Instance.InputActions.Player.Move.performed += OnMoveInput;
-            InputManager.Instance.InputActions.Player.Move.canceled += OnMoveInput;
+            Input.Jump += OnJumpInput;
 
-            InputManager.Instance.InputActions.Player.Jump.performed += OnJumpInput;
-            InputManager.Instance.InputActions.Player.Jump.canceled += OnJumpInput;
-
-            InputManager.Instance.InputActions.Player.Sprint.performed += OnSprintInput;
-            InputManager.Instance.InputActions.Player.Sprint.canceled += OnSprintInput;
-
-            InputManager.Instance.InputActions.Player.Crouch.performed += OnCrouchInput;
-            InputManager.Instance.InputActions.Player.Crouch.canceled += OnCrouchInput;
+            Input.Sprint += OnSprintInput;
 
             playerModel.localScale = new Vector3(1, config.InitialHeight, 1);
             crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
@@ -127,20 +121,11 @@ namespace Player.Movement
         }
 
 
-        private void OnDisable()
+        private void OnCrouchInput(bool value)
         {
-            InputManager.Instance.InputActions.Player.Move.performed -= OnMoveInput;
-            InputManager.Instance.InputActions.Player.Move.canceled -= OnMoveInput;
-
-            InputManager.Instance.InputActions.Player.Jump.performed -= OnJumpInput;
-            InputManager.Instance.InputActions.Player.Jump.canceled -= OnJumpInput;
-
-            InputManager.Instance.InputActions.Player.Sprint.performed -= OnSprintInput;
-            InputManager.Instance.InputActions.Player.Sprint.canceled -= OnSprintInput;
-
-            InputManager.Instance.InputActions.Player.Crouch.performed -= OnCrouchInput;
-            InputManager.Instance.InputActions.Player.Crouch.canceled -= OnCrouchInput;
+            CrouchPressed = value;
         }
+
 
         private void OnDrawGizmos()
         {
@@ -158,24 +143,15 @@ namespace Player.Movement
 
         #region ControlFunctions
 
-        private void OnSprintInput(InputAction.CallbackContext obj)
+        private void OnSprintInput(bool value)
         {
-            SprintPressed = obj.performed;
+            SprintPressed = value;
         }
 
-        private void OnCrouchInput(InputAction.CallbackContext obj)
-        {
-            CrouchPressed = obj.performed;
-        }
 
-        private void OnJumpInput(InputAction.CallbackContext obj)
+        private void OnJumpInput(bool value)
         {
-            JumpPressed = obj.performed;
-        }
-
-        private void OnMoveInput(InputAction.CallbackContext context)
-        {
-            MoveInput = context.ReadValue<Vector2>();
+            JumpPressed = value;
         }
 
         #endregion
@@ -187,7 +163,7 @@ namespace Player.Movement
 
         public void Move(float speed)
         {
-            var moveDirection = orientation.forward * MoveInput.y + orientation.right * MoveInput.x;
+            var moveDirection = orientation.forward * Input.Direction.y + orientation.right * Input.Direction.x;
             moveDirection.Normalize();
 
 

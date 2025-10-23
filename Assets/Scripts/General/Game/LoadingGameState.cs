@@ -2,7 +2,7 @@
 {
     public class LoadingGameState : BaseGameState
     {
-        public LoadingGameState(GameManager gameManager) : base(gameManager)
+        public LoadingGameState(GameManager gameManager) : base(gameManager, GameState.Loading)
         {
         }
     }

@@ -1,4 +1,5 @@
 using Attributes;
+using Reflex.Attributes;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,6 +9,9 @@ namespace Player.Looking
     public class PlayerLooking : MonoBehaviour
     {
         #region Variables
+
+        [Inject]
+        private IInputService _input;
 
         private enum LeanDirection
         {
@@ -43,6 +47,7 @@ namespace Player.Looking
         [SerializeField] [Required] private Transform leanPoint;
 
         [Header("Configuration")] [Required] public CameraBobConfig cameraBobConfig;
+        
 
         #endregion
 
@@ -57,10 +62,9 @@ namespace Player.Looking
 
         private void OnDestroy()
         {
-            InputManager.Instance.InputActions.Player.Look.performed -= OnMouseMove;
-            InputManager.Instance.InputActions.Player.Look.canceled -= OnMouseMove;
-            InputManager.Instance.InputActions.Player.Lean.started -= OnLeaning;
-            InputManager.Instance.InputActions.Player.Lean.canceled -= OnLeaning;
+
+            _input.Look -= OnMouseMove;
+            _input.Lean -= OnLeaning;
         }
 
         #endregion
@@ -70,23 +74,21 @@ namespace Player.Looking
 
         private void InitializeControls()
         {
-            InputManager.Instance.InputActions.Player.Look.performed += OnMouseMove;
-            InputManager.Instance.InputActions.Player.Look.canceled += OnMouseMove;
+            _input.Look += OnMouseMove;
 
+            _input.Lean += OnLeaning;
 
-            InputManager.Instance.InputActions.Player.Lean.started += OnLeaning;
-            InputManager.Instance.InputActions.Player.Lean.canceled += OnLeaning;
         }
 
 
-        private void OnLeaning(InputAction.CallbackContext context)
+        private void OnLeaning(float value)
         {
-            _leanDirection = (LeanDirection)context.ReadValue<float>();
+            _leanDirection = (LeanDirection)value;
         }
 
-        public void OnMouseMove(InputAction.CallbackContext context)
+        public void OnMouseMove(Vector2 direction)
         {
-            _mouseDelta = context.ReadValue<Vector2>();
+            _mouseDelta = direction;
         }
 
         #endregion

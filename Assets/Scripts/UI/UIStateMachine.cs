@@ -10,7 +10,6 @@ namespace UI
     [RequireComponent(typeof(UIDocument))]
     public class UIStateMachine : MonoBehaviour
     {
-        private UIState _currentMenuState;
         private UIDocument _document;
         private IState _inGameSettingsState;
         private IState _inGameState;
@@ -25,15 +24,15 @@ namespace UI
         private IState _missionWonState;
         private IState _pausedState;
         private IState _quitMenuState;
-
-        private VisualElement _root;
         private StateMachine.StateMachine _stateMachine;
+
+        public VisualElement Root { get; private set; }
 
 
         private void Awake()
         {
             _document = GetComponent<UIDocument>();
-            _root = _document.rootVisualElement;
+            Root = _document.rootVisualElement;
 
             _levelLostEventBinding = new EventBinding<LevelLostEvent>(LevelLostEvent);
             _levelWonEventBinding = new EventBinding<LevelWonEvent>(LevelWonEvent);
@@ -70,15 +69,13 @@ namespace UI
         {
             _stateMachine = new StateMachine.StateMachine();
 
-            _inGameState = new InGameUIState(_root.Q<VisualElement>("InGame"));
-            var settingsElement = _root.Q<VisualElement>("settings-root");
+            _inGameState = new InGameUIState(Root.Q<VisualElement>("InGame"), this);
+            var settingsElement = Root.Q<VisualElement>("settings-root");
             _inGameSettingsState =
-                new InGameSettingsUIState(settingsElement, () => _stateMachine.ChangeState(_pausedState));
-            _mainMenuState =
-                new MainMenuUISettingsState(settingsElement, () => _stateMachine.ChangeState(_mainMenuState));
-            /*  _pausedState = new PausedUIState(_root.Q<VisualElement>("PausedRoot"), ResumeButtonClicked,
-                  SettingsButtonClicked, QuitButtonClicked);
-
+                new InGameSettingsUIState(settingsElement, this);
+            _mainMenuState = new MainMenuUISettingsState(settingsElement, this);
+            _pausedState = new PausedUIState(Root.Q<VisualElement>("paused-root"), this);
+/*
               _mainMenuState = new MainMenuUIState(_root.Q<VisualElement>("MainMenuRoot"));
               _levelSelectState = new LevelSelectUIState(_root.Q<VisualElement>("LevelSelectRoot"));
               _quitMenuState =
@@ -92,7 +89,7 @@ namespace UI
                 .WithDescriptionLabelColor(Color.white);
 
             _missionWonState =
-                new MissionSuccessUIState(_root.Q<VisualElement>("mission-over-root"), missionWonData.Build());
+                new MissionSuccessUIState(Root.Q<VisualElement>("mission-over-root"), this, missionWonData.Build());
 
             builder = new MissionOverUIState.Data.Builder();
             var missionLostData = builder
@@ -102,7 +99,7 @@ namespace UI
                 .WithDescriptionLabelColor(Color.white);
 
             _missionLostState =
-                new MissionFailedUIState(_root.Q<VisualElement>("mission-over-root"), missionLostData.Build());
+                new MissionFailedUIState(Root.Q<VisualElement>("mission-over-root"), this, missionLostData.Build());
 
             _stateMachine.AddState(_inGameState);
             /*
@@ -120,37 +117,42 @@ namespace UI
         }
 
 
-        private void PauseSettingsButtonClicked()
+        public void PauseSettingsButtonClicked()
         {
             _stateMachine.ChangeState(_inGameSettingsState);
         }
 
-        private void MainMenuSettingsButtonClicked()
+        public void MainMenuSettingsButtonClicked()
         {
             _stateMachine.ChangeState(_mainMenuSettingsState);
         }
 
-        private void ResumeButtonClicked()
+        public void ResumeButtonClicked()
         {
             _stateMachine.ChangeState(_inGameState);
         }
 
-        private void SettingsBackButtonClicked()
+        public void SettingsBackButtonClicked()
         {
         }
 
-        private void QuitButtonClicked()
+        public void SettingsButtonClicked()
+        {
+        }
+
+        public void QuitButtonClicked()
         {
             _stateMachine.ChangeState(_quitMenuState);
         }
 
-        private enum UIState
+        public void QuitToMenuButtonClicked()
         {
-            InGame,
-            GamePaused,
-            Settings,
-            LevelSelect,
-            MainMenu
+            _stateMachine.ChangeState(_mainMenuState);
+        }
+
+        public void QuitToDesktopButtonClicked()
+        {
+            Application.Quit();
         }
     }
 }

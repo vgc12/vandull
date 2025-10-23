@@ -10,7 +10,8 @@ namespace UI
         private readonly Button _button;
         protected readonly Data StateData;
 
-        protected MissionOverUIState(VisualElement rootElement, Data stateData) : base(rootElement)
+        protected MissionOverUIState(VisualElement rootElement, UIStateMachine stateMachine, Data stateData,
+            UIStateType stateType) : base(rootElement, stateMachine, stateType)
         {
             StateData = stateData;
             _button = rootElement.Q<Button>("restart-button");

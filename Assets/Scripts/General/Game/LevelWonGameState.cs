@@ -2,7 +2,7 @@
 {
     public class LevelWonGameState : BaseGameState
     {
-        public LevelWonGameState(GameManager gameManager) : base(gameManager)
+        public LevelWonGameState(GameManager gameManager) : base(gameManager, GameState.LevelWon)
         {
         }
     }

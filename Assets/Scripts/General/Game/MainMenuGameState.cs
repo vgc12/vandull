@@ -2,7 +2,7 @@
 {
     public class MainMenuGameState : BaseGameState
     {
-        public MainMenuGameState(GameManager gameManager) : base(gameManager)
+        public MainMenuGameState(GameManager gameManager) : base(gameManager, GameState.MainMenu)
         {
         }
     }

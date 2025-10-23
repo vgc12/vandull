@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DependencyInjection;
 using Player;
 using UI.States;
 using UnityEngine;
@@ -15,7 +16,6 @@ namespace UI
         // Settings storage
         private readonly Dictionary<string, (string primary, string secondary)> _keyBindings = new();
 
-        private readonly Action _onClose;
         private readonly UIStateMachine _stateMachine;
         private Button _applyButton;
         private Button _cancelRebindButton;
@@ -33,9 +33,9 @@ namespace UI
         private Button _resetButton;
         private Label _waitingText;
 
-        public SettingsUIState(VisualElement rootElement, Action onClose) : base(rootElement)
+        public SettingsUIState(VisualElement root, UIStateMachine stateMachine, UIStateType stateType) : base(root,
+            stateMachine, stateType)
         {
-            _onClose = onClose;
             InitializeInputSystem();
             CacheUIElements();
             SetupEventListeners();
@@ -44,7 +44,10 @@ namespace UI
 
         private void InitializeInputSystem()
         {
-            _inputActions = InputManager.Instance.InputActions.asset;
+            if (!RuntimeResolver.Instance.TryResolve<InputManager>(out var inputManager))
+                Logger.LogError("Could not find input manager in scene!");
+
+            _inputActions = inputManager.InputActions.asset;
 
             // Cache all actions we'll be rebinding
             CacheAction("move-forward", "Player/Move Forward");
@@ -105,7 +108,7 @@ namespace UI
             _cancelRebindButton?.RegisterCallback<ClickEvent>(evt => CancelRebind());
             _applyButton?.RegisterCallback<ClickEvent>(evt => ApplySettings());
             _resetButton?.RegisterCallback<ClickEvent>(evt => ResetToDefaults());
-            _closeButton?.RegisterCallback<ClickEvent>(evt => _onClose?.Invoke());
+            _closeButton?.RegisterCallback<ClickEvent>(evt => UIStateMachine.SettingsBackButtonClicked());
         }
 
         private void SetupBindingButtons(string actionName)

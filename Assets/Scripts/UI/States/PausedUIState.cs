@@ -1,4 +1,5 @@
 ﻿using System;
+using UI;
 using UI.States;
 using UnityEngine.UIElements;
 
@@ -12,15 +13,9 @@ public class PausedUIState : UIBaseState
     private readonly Button _settingsButton;
     private readonly Action _settingsButtonClicked;
 
-    public PausedUIState(VisualElement rootElement,
-        Action resumeButtonClicked = null,
-        Action settingsButtonClicked = null,
-        Action quitButtonClicked = null) : base(rootElement)
+    public PausedUIState(VisualElement rootElement, UIStateMachine stateMachine) : base(rootElement, stateMachine,
+        UIStateType.Paused)
     {
-        _resumeButtonClicked = resumeButtonClicked;
-        _settingsButtonClicked = settingsButtonClicked;
-        _quitButtonClicked = quitButtonClicked;
-
         _resumeButton = rootElement.Q<Button>("ResumeButton");
         _settingsButton = rootElement.Q<Button>("SettingsButton");
         _quitButton = rootElement.Q<Button>("QuitButton");
