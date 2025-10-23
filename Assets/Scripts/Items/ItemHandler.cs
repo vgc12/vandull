@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Attributes;
 using EventBus;
-using General;
 using Items.Guns;
 using Npcs.Shared;
 using Player;
+using Reflex.Attributes;
 using UnityEngine;
+using ILogger = General.Logging.ILogger;
+
 
 namespace Items
 {
@@ -21,6 +23,8 @@ namespace Items
         [SerializeField] [Required] private RigHandler rigHandler;
 
         private List<Item> _inventory = new();
+
+        [Inject] public ILogger _logger;
 
         public Item EquippedItem { get; private set; }
 
@@ -52,13 +56,13 @@ namespace Items
         private void LogPrefabs()
         {
             Debug.Log("Current Prefabs:");
-            foreach (var prefab in gunObjects) VandullLogger.Log(prefab.name);
+            foreach (var prefab in gunObjects) _logger.Log(prefab.name);
         }
 
         private void LogInventory()
         {
             Debug.Log("Current Inventory:");
-            foreach (var item in _inventory) VandullLogger.Log(item.name + (item == EquippedItem ? " (Equipped)" : ""));
+            foreach (var item in _inventory) _logger.Log(item.name + (item == EquippedItem ? " (Equipped)" : ""));
         }
 
         public void SetUpItems()

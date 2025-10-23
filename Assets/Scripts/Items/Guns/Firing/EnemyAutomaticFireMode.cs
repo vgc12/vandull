@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using General;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -27,22 +26,21 @@ namespace Items.Guns.Firing
                 0f
             );
 
-            Vector3 direction = spread * MuzzleTransform.forward;
+            var direction = spread * MuzzleTransform.forward;
 
-         
 
             if (Physics.Raycast(startPoint, direction, out var hit, Config.damageSettings.range,
                     ~LayerMask.GetMask("Ignore Raycast")))
             {
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
 
-                VandullLogger.Log("Hit: " + hit.collider.name);
 
                 ApplyDamage(hit);
             }
             else
             {
-                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, direction * Config.damageSettings.range, new RaycastHit()));
+                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, direction * Config.damageSettings.range,
+                    new RaycastHit()));
             }
         }
     }

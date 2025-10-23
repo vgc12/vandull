@@ -1,6 +1,10 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:Template name="InGame" src="project://database/Assets/UI%20Toolkit/InGame.uxml?fileID=9197481963319205126&amp;guid=cf80589ebf47c364d8a5a56cfae695f5&amp;type=3#InGame" />
     <ui:Template name="MissionOver" src="project://database/Assets/UI%20Toolkit/MissionOver.uxml?fileID=9197481963319205126&amp;guid=b683d42d2e3b0b4449ee0cd37f1c56dc&amp;type=3#MissionOver" />
-    <ui:Instance template="InGame" name="InGame" style="flex-grow: 1; flex-shrink: 0; display: none;" />
-    <ui:Instance template="MissionOver" name="MissionOver" style="flex-grow: 1; display: none;" />
+    <ui:Template name="Settings" src="project://database/Assets/UI%20Toolkit/Settings.uxml?fileID=9197481963319205126&amp;guid=b812867386cba8a47baf796e146b38c7&amp;type=3#Settings" />
+    <ui:Template name="Paused" src="project://database/Assets/UI%20Toolkit/Paused.uxml?fileID=9197481963319205126&amp;guid=a31b4e4ddf5972143a96f02abe232ee4&amp;type=3#Paused" />
+    <ui:Instance template="InGame" name="in-game" style="flex-grow: 1; flex-shrink: 0; display: none;" />
+    <ui:Instance template="MissionOver" name="mission-over" style="flex-grow: 1; display: none;" />
+    <ui:Instance template="Settings" name="settings" style="flex-grow: 1; display: none; visibility: visible;" />
+    <ui:Instance template="Paused" name="paused" style="display: none;" />
 </ui:UXML>

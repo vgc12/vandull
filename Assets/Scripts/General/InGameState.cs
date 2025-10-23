@@ -1,8 +1,11 @@
-﻿using StateMachine;
+﻿using Levels;
 
 namespace General
 {
-    public class InGameState : BaseState
+    public class InGameState : BaseGameState
     {
+        public InGameState(GameManager gameManager) : base(gameManager)
+        {
+        }
     }
 }

@@ -1,5 +1,4 @@
 using EventBus;
-using Levels;
 using Levels.Strategies;
 using StateMachine;
 using UI.States;
@@ -13,11 +12,14 @@ namespace UI
     {
         private UIState _currentMenuState;
         private UIDocument _document;
-
+        private IState _inGameSettingsState;
         private IState _inGameState;
-        private IState _levelSelectState;
 
-        private EventBinding<LevelEvent> _levelStateChangedEvent;
+        private EventBinding<LevelLostEvent> _levelLostEventBinding;
+        private IState _levelSelectState;
+        private EventBinding<LevelWonEvent> _levelWonEventBinding;
+        private IState _mainMenuSettingsState;
+
         private IState _mainMenuState;
         private IState _missionLostState;
         private IState _missionWonState;
@@ -25,7 +27,6 @@ namespace UI
         private IState _quitMenuState;
 
         private VisualElement _root;
-        private IState _settingsState;
         private StateMachine.StateMachine _stateMachine;
 
 
@@ -34,8 +35,10 @@ namespace UI
             _document = GetComponent<UIDocument>();
             _root = _document.rootVisualElement;
 
-            _levelStateChangedEvent = new EventBinding<LevelEvent>(OnLevelEvent);
-            EventBus<LevelEvent>.Register(_levelStateChangedEvent);
+            _levelLostEventBinding = new EventBinding<LevelLostEvent>(LevelLostEvent);
+            _levelWonEventBinding = new EventBinding<LevelWonEvent>(LevelWonEvent);
+            EventBus<LevelLostEvent>.Register(_levelLostEventBinding);
+            EventBus<LevelWonEvent>.Register(_levelWonEventBinding);
 
             InitializeStateMachine();
         }
@@ -51,12 +54,15 @@ namespace UI
             _stateMachine.FixedUpdate();
         }
 
-        private void OnLevelEvent(LevelEvent obj)
+        private void LevelWonEvent(LevelWonEvent obj)
         {
-            if (obj.EventType == LevelEventType.LevelWon)
-                _stateMachine.ChangeState(_missionWonState);
+            _stateMachine.ChangeState(_missionWonState);
+        }
 
-            else if (obj.EventType == LevelEventType.LevelLost) _stateMachine.ChangeState(_missionLostState);
+
+        private void LevelLostEvent(LevelLostEvent obj)
+        {
+            _stateMachine.ChangeState(_missionLostState);
         }
 
 
@@ -65,9 +71,14 @@ namespace UI
             _stateMachine = new StateMachine.StateMachine();
 
             _inGameState = new InGameUIState(_root.Q<VisualElement>("InGame"));
+            var settingsElement = _root.Q<VisualElement>("settings-root");
+            _inGameSettingsState =
+                new InGameSettingsUIState(settingsElement, () => _stateMachine.ChangeState(_pausedState));
+            _mainMenuState =
+                new MainMenuUISettingsState(settingsElement, () => _stateMachine.ChangeState(_mainMenuState));
             /*  _pausedState = new PausedUIState(_root.Q<VisualElement>("PausedRoot"), ResumeButtonClicked,
                   SettingsButtonClicked, QuitButtonClicked);
-              _settingsState = new SettingsUIState(_root.Q<VisualElement>("SettingsRoot"));
+
               _mainMenuState = new MainMenuUIState(_root.Q<VisualElement>("MainMenuRoot"));
               _levelSelectState = new LevelSelectUIState(_root.Q<VisualElement>("LevelSelectRoot"));
               _quitMenuState =
@@ -80,7 +91,8 @@ namespace UI
                 .WithStatusLabelColor(Color.green)
                 .WithDescriptionLabelColor(Color.white);
 
-            _missionWonState = new MissionSuccessUIState(_root.Q<VisualElement>("MissionOver"), missionWonData.Build());
+            _missionWonState =
+                new MissionSuccessUIState(_root.Q<VisualElement>("mission-over-root"), missionWonData.Build());
 
             builder = new MissionOverUIState.Data.Builder();
             var missionLostData = builder
@@ -90,7 +102,7 @@ namespace UI
                 .WithDescriptionLabelColor(Color.white);
 
             _missionLostState =
-                new MissionFailedUIState(_root.Q<VisualElement>("MissionOver"), missionLostData.Build());
+                new MissionFailedUIState(_root.Q<VisualElement>("mission-over-root"), missionLostData.Build());
 
             _stateMachine.AddState(_inGameState);
             /*
@@ -102,18 +114,29 @@ namespace UI
             */
             _stateMachine.AddState(_missionLostState);
             _stateMachine.AddState(_missionWonState);
+            _stateMachine.AddState(_inGameSettingsState);
+            _stateMachine.AddState(_mainMenuSettingsState);
             _stateMachine.ChangeState(_inGameState);
         }
 
 
-        private void SettingsButtonClicked()
+        private void PauseSettingsButtonClicked()
         {
-            _stateMachine.ChangeState(_settingsState);
+            _stateMachine.ChangeState(_inGameSettingsState);
+        }
+
+        private void MainMenuSettingsButtonClicked()
+        {
+            _stateMachine.ChangeState(_mainMenuSettingsState);
         }
 
         private void ResumeButtonClicked()
         {
             _stateMachine.ChangeState(_inGameState);
+        }
+
+        private void SettingsBackButtonClicked()
+        {
         }
 
         private void QuitButtonClicked()

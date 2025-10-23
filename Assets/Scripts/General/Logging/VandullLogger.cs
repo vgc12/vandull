@@ -2,11 +2,11 @@
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace General
+namespace General.Logging
 {
-    public class VandullLogger
+    public class VandullLogger : ILogger
     {
-        public static void Log(object message,
+        public void Log(object message,
             [CallerMemberName] string member = "",
             [CallerFilePath] string file = "",
             [CallerLineNumber] int line = 0)
@@ -14,7 +14,7 @@ namespace General
             Debug.Log($"[{Path.GetFileName(file)}:{line} - {member}] {message}");
         }
 
-        public static void LogWarning(object message,
+        public void LogWarning(object message,
             [CallerMemberName] string member = "",
             [CallerFilePath] string file = "",
             [CallerLineNumber] int line = 0)
@@ -22,7 +22,7 @@ namespace General
             Debug.LogWarning($"[{Path.GetFileName(file)}:{line} - {member}] {message}");
         }
 
-        public static void LogError(object message,
+        public void LogError(object message,
             [CallerMemberName] string member = "",
             [CallerFilePath] string file = "",
             [CallerLineNumber] int line = 0)

@@ -1,5 +1,4 @@
-﻿using Levels.Strategies;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Levels
 {
@@ -8,20 +7,10 @@ namespace Levels
     {
         public string levelName;
 
-
-        public MissionStrategyReference missionStrategy = new();
-
         public int enemyCount = 5;
         public int hostageCount = 2;
         public int bombCount = 3;
         public string levelDescription;
         public int difficultyLevel = 1;
-
-        public IMissionStrategy CreateMissionStrategy()
-        {
-            var strategy = missionStrategy.CreateInstance();
-            strategy?.Initialize(this);
-            return strategy;
-        }
     }
 }

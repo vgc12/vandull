@@ -1,0 +1,8 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/Settings.uss?fileID=7433441132597879392&amp;guid=ec9430bf6f4d1a94dafe6ea75e7f0a90&amp;type=3#Settings" />
+    <ui:VisualElement name="paused-root" style="flex-grow: 1; background-color: rgb(0, 0, 0); -unity-text-align: upper-center; align-items: auto; align-content: center; justify-content: center; flex-shrink: 0;">
+        <ui:Button text="Resume" name="resume-button" class="settings-button" style="align-self: center; width: 30%; font-size: 24px; -unity-font-style: bold;" />
+        <ui:Button text="Settings" name="settings-button" class="settings-button" style="align-self: center; width: 30%; font-size: 24px; -unity-font-style: bold;" />
+        <ui:Button text="Quit" name="quit-button" class="settings-button" style="align-self: center; width: 30%; -unity-font-style: bold; font-size: 24px;" />
+    </ui:VisualElement>
+</ui:UXML>

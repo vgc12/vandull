@@ -1,5 +1,4 @@
-﻿using General;
-using StateMachine;
+﻿using StateMachine;
 
 namespace Player.States
 {
@@ -15,8 +14,6 @@ namespace Player.States
         public override void Enter()
         {
             _sm.PlayerMovement.Jump();
-
-            VandullLogger.Log("Jump");
         }
 
 

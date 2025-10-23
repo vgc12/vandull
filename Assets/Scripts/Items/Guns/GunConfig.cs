@@ -3,7 +3,6 @@ using Attributes;
 using Items.Guns.Aiming;
 using Items.Guns.Ammo;
 using Items.Guns.Firing;
-using Items.Guns.Recoil;
 using Items.Guns.Trail;
 
 namespace Items.Guns
@@ -18,22 +17,12 @@ namespace Items.Guns
         [Required] public AmmoSettings ammoSettings;
         [Required] public RecoilSettings recoilSettings;
         [Required] public TrailSettings trailSettings;
+        [Required] public AudioSettings AudioSettings;
     }
 
     public enum GripType
     {
         ARNoGrip,
         Pistol
-    }
-
-
-    public class GunSystems
-    {
-        public IRecoilSystem RecoilSystem { get; init; }
-        public ITrailSystem TrailSystem { get; init; }
-        public IAimingSystem AimingSystem { get; init; }
-
-        public IFireModeSystem FireModeSystem { get; init; }
-        public IAmmoSystem AmmoSystem { get; init; }
     }
 }

@@ -1,8 +1,9 @@
 using System.Collections;
 using Attributes;
-using General;
+using Reflex.Attributes;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ILogger = General.Logging.ILogger;
 
 namespace Player.Movement
 {
@@ -21,6 +22,8 @@ namespace Player.Movement
 
         private readonly RaycastHit[] _crouchCheckHits = new RaycastHit[1];
 
+        [Inject] private readonly ILogger _logger;
+
         private Coroutine _crouchCoroutine;
 
 
@@ -30,7 +33,6 @@ namespace Player.Movement
         private Rigidbody _rigidbody;
 
         private RaycastHit _slopeHit;
-
 
         public bool ObjectAbove { get; private set; }
 
@@ -75,7 +77,7 @@ namespace Player.Movement
 
                 if (size > 0)
                 {
-                    VandullLogger.Log(_crouchCheckHits[0].collider.name);
+                    _logger.Log(_crouchCheckHits[0].collider.name);
                     ObjectAbove = true;
                     yield return null;
                     continue;

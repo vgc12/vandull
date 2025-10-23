@@ -76,7 +76,6 @@ namespace Items.Guns.Firing
             {
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
 
-                VandullLogger.Log("Hit: " + hit.collider.name);
 
                 ApplyDamage(hit);
             }
@@ -111,8 +110,6 @@ namespace Items.Guns.Firing
 
                 if (hit.collider == null) continue;
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
-
-                VandullLogger.Log("Hit: " + hit.collider.name);
 
 
                 if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable) &&

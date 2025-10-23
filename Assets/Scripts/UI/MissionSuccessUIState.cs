@@ -4,7 +4,7 @@ namespace UI
 {
     public class MissionSuccessUIState : MissionOverUIState
     {
-        public MissionSuccessUIState(VisualElement rootElement, Data stateStateData) : base(rootElement, stateStateData)
+        public MissionSuccessUIState(VisualElement rootElement, Data stateData) : base(rootElement, stateData)
         {
         }
 

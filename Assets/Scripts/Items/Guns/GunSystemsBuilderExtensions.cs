@@ -1,15 +1,15 @@
-﻿using General;
+﻿using General.Logging;
 using Items.Guns.Trail;
 
 namespace Items.Guns
 {
     public static class GunSystemsBuilderExtensions
     {
-        public static IGunSystemsBuilder ForPlayer(this IGunSystemsBuilder builder)
+        public static IGunSystemsBuilder ForPlayer(this IGunSystemsBuilder builder, ILogger logger)
         {
             return builder
-                .AddShotFiredHandler(e => VandullLogger.Log($"Player fired at {e.ShootPoint}"))
-                .AddAmmoOutHandler(() => VandullLogger.Log("Player out of ammo!"));
+                .AddShotFiredHandler(e => logger.Log($"Player fired at {e.ShootPoint}"))
+                .AddAmmoOutHandler(() => logger.Log("Player out of ammo!"));
         }
 
 

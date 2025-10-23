@@ -1,7 +1,8 @@
 ﻿using System;
-using General;
 using Levels.Strategies;
+using Reflex.Attributes;
 using UnityEngine;
+using ILogger = General.Logging.ILogger;
 
 namespace Levels
 {
@@ -10,6 +11,8 @@ namespace Levels
     {
         [SerializeField] private MissionType strategyTypeName;
 
+        [Inject] private readonly ILogger _logger;
+
         public Type StrategyType
         {
             get => string.IsNullOrEmpty(strategyTypeName.ToString())
@@ -17,14 +20,14 @@ namespace Levels
                 : Type.GetType(typeof(IMissionStrategy).Namespace + '.' + strategyTypeName);
             set
             {
-                strategyTypeName = MissionType.KillAllEnemiesStrategy;
+                strategyTypeName = MissionType.Elimination;
                 Enum.TryParse(value?.AssemblyQualifiedName, out strategyTypeName);
             }
         }
 
         public IMissionStrategy CreateInstance()
         {
-            VandullLogger.Log(strategyTypeName.ToString());
+            _logger.Log(strategyTypeName.ToString());
             if (StrategyType == null) return null;
             return (IMissionStrategy)Activator.CreateInstance(StrategyType);
         }

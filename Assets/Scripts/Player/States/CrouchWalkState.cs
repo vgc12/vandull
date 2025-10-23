@@ -1,5 +1,4 @@
-﻿using General;
-using StateMachine;
+﻿using StateMachine;
 
 namespace Player.States
 {
@@ -15,7 +14,6 @@ namespace Player.States
         public override void Enter()
         {
             _sm.PlayerMovement.Crouch();
-            VandullLogger.Log("Crouch Walking");
         }
 
         public override void Update()

@@ -1,22 +1,27 @@
-﻿using General;
+﻿using General.Logging;
+using Reflex.Attributes;
+using Reflex.Core;
 using StateMachine;
 
 namespace Player.States
 {
     public class CrouchState : BaseState
     {
+        [Inject] private readonly ILogger _logger;
+
         private readonly PlayerStateMachine _sm;
 
         public CrouchState(PlayerStateMachine sm)
         {
             _sm = sm;
+            _logger = Container.ProjectContainer.Resolve<ILogger>();
         }
 
 
         public override void Enter()
         {
             _sm.PlayerMovement.Crouch();
-            VandullLogger.Log("Crouching");
+            _logger.Log("Crouching");
         }
 
         public override void Update()

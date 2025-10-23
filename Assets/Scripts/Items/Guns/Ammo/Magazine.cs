@@ -1,11 +1,14 @@
-﻿using General;
+﻿using Reflex.Attributes;
 using UnityEngine;
+using ILogger = General.Logging.ILogger;
 
 namespace Items.Guns.Ammo
 {
     [RequireComponent(typeof(Rigidbody), typeof(Collider))]
     public class Magazine : MonoBehaviour, IEquippable
     {
+        [Inject] private readonly ILogger _logger;
+
         private AmmoSettings _ammoSettings;
 
         private Collider _collider;
@@ -96,13 +99,13 @@ namespace Items.Guns.Ammo
             var hasError = false;
             if (AmmoSettings == null)
             {
-                VandullLogger.LogError("AmmoSettings is not set on Magazine");
+                _logger.LogError("AmmoSettings is not set on Magazine");
                 hasError = true;
             }
 
             if (MagazinePosition == null)
             {
-                VandullLogger.LogError("MagazineTransform is not set on Magazine");
+                _logger.LogError("MagazineTransform is not set on Magazine");
                 hasError = true;
             }
 

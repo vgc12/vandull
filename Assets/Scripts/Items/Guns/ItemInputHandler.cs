@@ -35,6 +35,7 @@ namespace Items.Guns
             InputManager.Instance.InputActions.Player.SwitchFireMode.started += OnFireModeSwitched;
             InputManager.Instance.InputActions.Player.SwitchFireMode.canceled += OnFireModeSwitched;
 
+
             InputManager.Instance.InputActions.Player.Restart.performed += OnRestart;
         }
 

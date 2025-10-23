@@ -10,10 +10,10 @@ namespace UI
         private readonly Button _button;
         protected readonly Data StateData;
 
-        protected MissionOverUIState(VisualElement rootElement, Data stateStateData) : base(rootElement)
+        protected MissionOverUIState(VisualElement rootElement, Data stateData) : base(rootElement)
         {
-            StateData = stateStateData;
-            _button = rootElement.Q<Button>("RestartButton");
+            StateData = stateData;
+            _button = rootElement.Q<Button>("restart-button");
             _button.clicked += LevelManager.Instance.ReloadLevel;
         }
 
@@ -25,14 +25,14 @@ namespace UI
 
         public void ApplyData(VisualElement rootPageElement, Data data)
         {
-            var statusLabel = rootPageElement.Q<Label>("MissionStatusLabel");
+            var statusLabel = rootPageElement.Q<Label>("mission-status-label");
             if (statusLabel != null)
             {
                 statusLabel.text = data.StatusLabelText;
                 statusLabel.style.color = data.StatusLabelColor;
             }
 
-            var descriptionLabel = rootPageElement.Q<Label>("MissionDescriptionLabel");
+            var descriptionLabel = rootPageElement.Q<Label>("mission-description-label");
             if (descriptionLabel != null) descriptionLabel.text = data.DescriptionLabelText;
         }
 
