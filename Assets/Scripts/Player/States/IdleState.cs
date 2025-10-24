@@ -14,6 +14,7 @@ namespace Player.States
         public override void Enter()
         {
             _sm.PlayerLooking.Bobber.StopBobbing();
+            _sm.PlayerLooking.weaponBobber.StopBobbing();
         }
 
 

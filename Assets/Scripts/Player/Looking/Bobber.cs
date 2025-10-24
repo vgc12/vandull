@@ -4,12 +4,8 @@ using UnityEngine;
 
 namespace Player.Looking
 {
-    [RequireComponent(typeof(Rigidbody))]
     public class Bobber : MonoBehaviour
     {
-        
-
-
         [Header("Transform References")] [SerializeField] [Required]
         private Transform BobTransform;
 
@@ -23,19 +19,18 @@ namespace Player.Looking
         private float _bobTimer;
 
         private Vector3 _initialPosition;
-        private Rigidbody _rigidBody;
+
 
         private void Awake()
         {
-            _rigidBody = GetComponent<Rigidbody>();
             _initialPosition = BobTransform.localPosition;
         }
 
-        public void Bob(CameraBobSetting cameraBobSetting)
+        public void Bob(CameraBobSetting cameraBobSetting, Vector3 velocity)
         {
             StopCurrentBobCoroutine();
 
-            var velocity = _rigidBody.linearVelocity;
+
             var horizontalSpeed = new Vector3(velocity.x, 0, velocity.z).magnitude;
             var isMoving = horizontalSpeed > movementThreshold;
 
@@ -87,6 +82,8 @@ namespace Player.Looking
                 Time.deltaTime * positionLerpSpeed
             );
         }
+        
+    
 
 
         private IEnumerator LerpToPosition(Vector3 targetPosition)

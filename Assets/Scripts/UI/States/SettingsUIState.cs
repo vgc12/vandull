@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using DependencyInjection;
 using EventBus;
 using Player.Input;
@@ -17,7 +16,6 @@ namespace UI.States
         // Settings storage
         private readonly Dictionary<string, (string primary, string secondary)> _keyBindings = new();
 
-        private readonly UIStateMachine _stateMachine;
         private Button _applyButton;
         private Button _cancelRebindButton;
         private Button _closeButton;
@@ -92,11 +90,11 @@ namespace UI.States
             _sensitivitySlider = RootPageElement.Query<VisualElement>("sensitivity").Children<Slider>().First();
             _invertYoggle = RootPageElement.Query<VisualElement>("invert-y").Children<Toggle>().First();
             _invertXToggle = RootPageElement.Query<VisualElement>("invert-x").Children<Toggle>().First();
-          
+
             _toggleCrouchToggle = RootPageElement.Query<VisualElement>("toggle-crouch").Children<Toggle>().First();
             _toggleSprintToggle = RootPageElement.Query<VisualElement>("toggle-sprint").Children<Toggle>().First();
             _toggleAimToggle = RootPageElement.Query<VisualElement>("toggle-aim").Children<Toggle>().First();
-         
+
 
             // Hide overlay initially
             if (_inputOverlay != null) _inputOverlay.style.display = DisplayStyle.None;
@@ -120,10 +118,10 @@ namespace UI.States
             SetupBindingButtons("cycle-backward");
 
             // Setup control buttons
-            _cancelRebindButton?.RegisterCallback<ClickEvent>(evt => CancelRebind());
-            _applyButton?.RegisterCallback<ClickEvent>(evt => ApplySettings());
-            _resetButton?.RegisterCallback<ClickEvent>(evt => ResetToDefaults());
-            _closeButton?.RegisterCallback<ClickEvent>(evt => UIStateMachine.SettingsBackButtonClicked());
+            _cancelRebindButton.clicked += CancelRebind;
+            _applyButton.clicked += ApplySettings;
+            _resetButton.clicked += ResetToDefaults;
+            _closeButton.clicked += UIStateMachine.SettingsBackButtonClicked;
         }
 
         private void SetupBindingButtons(string actionName)
@@ -274,7 +272,7 @@ namespace UI.States
                 ToggleSprint = _toggleSprintToggle.value,
                 ToggleAim = _toggleAimToggle.value
             };
-            
+
             EventBus<ControlSettingsChangedEvent>.Raise(ev);
         }
 

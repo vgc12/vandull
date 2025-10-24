@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 551795b23c0d468ab005e020e0157478, type: 3}
+  m_Name: WeaponBobConfig
+  m_EditorClassIdentifier: Assembly-CSharp:Player.Looking.Player.Looking:CameraBobConfig
+  walkConfig:
+    frequency: 3.81
+    maxSpeed: 1.64
+    horizontalAmplitude: 0.02
+    verticalAmplitude: 0.007
+    speedCurve: 1.7
+  sprintConfig:
+    frequency: 3.81
+    maxSpeed: 1.64
+    horizontalAmplitude: 0.02
+    verticalAmplitude: 0.007
+    speedCurve: 1.7
+  crouchWalkConfig:
+    frequency: 3.81
+    maxSpeed: 1.64
+    horizontalAmplitude: 0.02
+    verticalAmplitude: 0.007
+    speedCurve: 1.7

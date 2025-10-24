@@ -29,10 +29,10 @@ namespace Player.Movement
 
         private GroundChecker _groundChecker;
 
-
-        private Rigidbody _rigidbody;
-
         private RaycastHit _slopeHit;
+
+
+        public Rigidbody Rigidbody { get; private set; }
 
         public bool ObjectAbove { get; private set; }
 
@@ -107,14 +107,14 @@ namespace Player.Movement
         {
             _groundChecker = GetComponent<GroundChecker>();
 
-            _rigidbody = GetComponent<Rigidbody>();
+            Rigidbody = GetComponent<Rigidbody>();
 
             _input.Crouch += OnCrouchInput;
 
             _input.Jump += OnJumpInput;
 
             _input.Sprint += OnSprintInput;
-            
+
             _input.Move += OnMoveInput;
 
             playerModel.localScale = new Vector3(1, config.InitialHeight, 1);
@@ -205,19 +205,19 @@ namespace Player.Movement
 
         public void ApplyMovement(Vector3 movement)
         {
-            _rigidbody.AddForce(movement, ForceMode.Force);
+            Rigidbody.AddForce(movement, ForceMode.Force);
         }
 
         public void ApplyDrag()
         {
-            _rigidbody.linearDamping = _groundChecker.IsGrounded ? config.GroundDrag : config.AirDrag;
+            Rigidbody.linearDamping = _groundChecker.IsGrounded ? config.GroundDrag : config.AirDrag;
         }
 
 
         public void Jump()
         {
-            _rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
-            _rigidbody.AddForce(_rigidbody.linearVelocity / 3 * (config.JumpForce * config.JumpMultiplier),
+            Rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
+            Rigidbody.AddForce(Rigidbody.linearVelocity / 3 * (config.JumpForce * config.JumpMultiplier),
                 ForceMode.Impulse);
         }
 

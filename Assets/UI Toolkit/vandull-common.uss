@@ -57,7 +57,7 @@
     -unity-font-style: bold;
 }
 
-.button-red :hover {
+.button-red:hover {
     color: rgb(255, 255, 255);
     border-left-color: rgb(255, 0, 0);
     border-right-color: rgb(255, 0, 0);

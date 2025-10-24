@@ -30,6 +30,7 @@ namespace Player
 
         public PlayerLooking PlayerLooking { get; private set; }
 
+
         private bool IsGroundedAndNotCrouching =>
             _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed;
 

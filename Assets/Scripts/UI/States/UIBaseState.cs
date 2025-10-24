@@ -61,13 +61,13 @@ namespace UI.States
 
         protected static void LockCursorAndHideMouse()
         {
+            Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = true;
         }
 
         protected static void UnlockCursorAndShowMouse()
         {
-            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
     }

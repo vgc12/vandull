@@ -1,9 +1,12 @@
+using System;
 using EventBus;
+using Reflex.Attributes;
 using UI.States;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using static PlayerInputActions;
+using ILogger = General.Logging.ILogger;
 
 namespace Player.Input
 {
@@ -18,12 +21,18 @@ namespace Player.Input
 
         private SettingsUIState.ControlSettingsChangedEvent _currentControlSettings;
 
+        private int _lastAimToggleFrame = -1;
+
+        [Inject] private ILogger _logger;
+
         private bool _sprintToggled;
         private UIStateType _uiState;
 
 
         public InputManager()
         {
+            var guid = Guid.NewGuid().ToString();
+            Debug.Log($"[InputManager] Created InputManager with GUID: {guid}");
             Initialize();
             EnablePlayerActions();
             _uiStateChangedEventBinding = new EventBinding<UIStateSwitchedEvent>(OnUIStateChanged);
@@ -161,13 +170,15 @@ namespace Player.Input
 
         public void OnAim(InputAction.CallbackContext context)
         {
-            if (_currentControlSettings.ToggleAim && context.started)
+            if (_currentControlSettings.ToggleAim && context.performed)
             {
+                _logger.Log(context.performed);
                 _aimToggled = !_aimToggled;
                 Aim.Invoke(_aimToggled);
                 return;
             }
 
+            if (_currentControlSettings.ToggleAim) return;
             if (context.performed)
                 Aim.Invoke(true);
             else if (context.canceled)
@@ -255,6 +266,7 @@ namespace Player.Input
 
         private void OnControlsChanged(SettingsUIState.ControlSettingsChangedEvent obj)
         {
+            _currentControlSettings = obj;
         }
 
         public void EnableUIActions()

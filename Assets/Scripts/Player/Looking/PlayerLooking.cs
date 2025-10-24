@@ -2,7 +2,6 @@ using Attributes;
 using Player.Input;
 using Reflex.Attributes;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Player.Looking
 {
@@ -11,8 +10,7 @@ namespace Player.Looking
     {
         #region Variables
 
-        [Inject]
-        private IPlayerInput _input;
+        [Inject] private IPlayerInput _input;
 
         private enum LeanDirection
         {
@@ -33,6 +31,7 @@ namespace Player.Looking
         private Rigidbody _rigidbody;
 
         public Bobber Bobber { get; private set; }
+        [Required] public Bobber weaponBobber;
 
         [Header("Configuration")] [Required] [SerializeField]
         private PlayerLookingConfig config;
@@ -48,7 +47,7 @@ namespace Player.Looking
         [SerializeField] [Required] private Transform leanPoint;
 
         [Header("Configuration")] [Required] public CameraBobConfig cameraBobConfig;
-        
+        [Required] public CameraBobConfig weaponBobConfig;
 
         #endregion
 
@@ -63,7 +62,6 @@ namespace Player.Looking
 
         private void OnDestroy()
         {
-
             _input.Look -= OnMouseMove;
             _input.Lean -= OnLeaning;
         }
@@ -78,7 +76,6 @@ namespace Player.Looking
             _input.Look += OnMouseMove;
 
             _input.Lean += OnLeaning;
-
         }
 
 
