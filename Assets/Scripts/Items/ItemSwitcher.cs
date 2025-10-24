@@ -1,5 +1,7 @@
 ﻿using EventBus;
 using Player;
+using Player.Input;
+using Reflex.Attributes;
 using Singletons;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,23 +15,26 @@ namespace Items
 
         private EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
 
+        [Inject]
+        private readonly IPlayerInput _input;
 
         private void Start()
         {
-            InputManager.Instance.InputActions.Player.SwitchItem.performed += OnItemSwitched;
+            _input.SwitchItem += OnItemSwitched;
             _itemHandler = GetComponent<ItemHandler>();
             EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_itemHandler.EquippedItem));
         }
 
         private void OnDestroy()
         {
-            InputManager.Instance.InputActions.Player.SwitchItem.performed -= OnItemSwitched;
+            _input.SwitchItem -= OnItemSwitched;
         }
 
-        private void OnItemSwitched(InputAction.CallbackContext obj)
+        private void OnItemSwitched(float value)
         {
-            _itemHandler.SwitchItem((int)obj.ReadValue<float>());
+            _itemHandler.SwitchItem((int)value);
             EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_itemHandler.EquippedItem));
         }
+    
     }
 }

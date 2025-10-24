@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Attributes;
 using EventBus;
 using General;
+using General.Extensions;
 using Items.Guns.Aiming;
 using Items.Guns.Ammo;
 using Items.Guns.Firing;
@@ -39,7 +40,7 @@ namespace Items.Guns
         public bool IsAiming => AimingSystem.IsAiming;
         public bool IsReloading => AmmoSystem.IsReloading;
 
-        private void Awake()
+        private void Start()
         {
             var systems = initializer.CreateGunSystems(this);
 

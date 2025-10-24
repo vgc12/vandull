@@ -1,5 +1,6 @@
 ﻿using Items.Guns;
 using Player;
+using Player.Input;
 using UnityEngine;
 
 namespace Items

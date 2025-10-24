@@ -1,5 +1,9 @@
+using System;
 using EventBus;
+using Levels;
 using Levels.Strategies;
+using Player.Input;
+using Reflex.Attributes;
 using StateMachine;
 using UI.States;
 using UnityEngine;
@@ -24,8 +28,18 @@ namespace UI
         private IState _missionWonState;
         private IState _pausedState;
         private IState _quitMenuState;
+        private IState _loadingState;
+        
         private StateMachine.StateMachine _stateMachine;
 
+        private bool _backPressed;
+        private bool _settingsPressed;
+        private bool _quitButtonClicked;
+        private bool _quitToMenuButtonClicked;
+        private bool _isLoading;
+        private bool _levelWon;
+        private bool _levelLost;
+        
         public VisualElement Root { get; private set; }
 
 
@@ -33,7 +47,7 @@ namespace UI
         {
             _document = GetComponent<UIDocument>();
             Root = _document.rootVisualElement;
-
+            
             _levelLostEventBinding = new EventBinding<LevelLostEvent>(LevelLostEvent);
             _levelWonEventBinding = new EventBinding<LevelWonEvent>(LevelWonEvent);
             EventBus<LevelLostEvent>.Register(_levelLostEventBinding);
@@ -42,7 +56,12 @@ namespace UI
             InitializeStateMachine();
         }
 
-
+        private void Start()
+        {
+            _input.InGameCancel += () => _backPressed = true;
+            _input.InMenuCancel += () => _backPressed = true;
+        }
+        
         private void Update()
         {
             _stateMachine.Update();
@@ -55,32 +74,39 @@ namespace UI
 
         private void LevelWonEvent(LevelWonEvent obj)
         {
-            _stateMachine.ChangeState(_missionWonState);
+            _levelWon = true;
         }
 
 
         private void LevelLostEvent(LevelLostEvent obj)
         {
-            _stateMachine.ChangeState(_missionLostState);
+           _levelLost = true;
         }
+
+        [Inject]
+        private IInputService _input;
+        
+        
 
 
         public void InitializeStateMachine()
         {
+        
+            
             _stateMachine = new StateMachine.StateMachine();
 
-            _inGameState = new InGameUIState(Root.Q<VisualElement>("InGame"), this);
-            var settingsElement = Root.Q<VisualElement>("settings-root");
-            _inGameSettingsState =
-                new InGameSettingsUIState(settingsElement, this);
-            _mainMenuState = new MainMenuUISettingsState(settingsElement, this);
-            _pausedState = new PausedUIState(Root.Q<VisualElement>("paused-root"), this);
-/*
-              _mainMenuState = new MainMenuUIState(_root.Q<VisualElement>("MainMenuRoot"));
-              _levelSelectState = new LevelSelectUIState(_root.Q<VisualElement>("LevelSelectRoot"));
-              _quitMenuState =
-                  new QuitUIState(_root.Q<VisualElement>("QuitRoot"), QuitButtonClicked, ResumeButtonClicked);
-              */
+            _loadingState = new LoadingUIState(Root.Q<VisualElement>("loading"), this);
+            
+            _inGameState = new InGameUIState(Root.Q<VisualElement>("in-game"), this);
+            var settingsElement = Root.Q<VisualElement>("settings");
+            _inGameSettingsState = new InGameSettingsUIState(settingsElement, this);
+            _mainMenuSettingsState = new MainMenuUISettingsState(settingsElement, this);
+            _pausedState = new PausedUIState(Root.Q<VisualElement>("paused"), this);
+            
+              _mainMenuState = new MainMenuUIState(Root.Q<VisualElement>("main-menu"), this);
+              _levelSelectState = new LevelSelectUIState(Root.Q<VisualElement>("level-select"), this);
+              _quitMenuState = new QuitUIState(Root.Q<VisualElement>("quit"), this);
+             
             var builder = new MissionOverUIState.Data.Builder();
             var missionWonData = builder
                 .WithStatusLabelText("Mission Accomplished")
@@ -89,7 +115,7 @@ namespace UI
                 .WithDescriptionLabelColor(Color.white);
 
             _missionWonState =
-                new MissionSuccessUIState(Root.Q<VisualElement>("mission-over-root"), this, missionWonData.Build());
+                new MissionSuccessUIState(Root.Q<VisualElement>("mission-over"), this, missionWonData.Build());
 
             builder = new MissionOverUIState.Data.Builder();
             var missionLostData = builder
@@ -99,60 +125,78 @@ namespace UI
                 .WithDescriptionLabelColor(Color.white);
 
             _missionLostState =
-                new MissionFailedUIState(Root.Q<VisualElement>("mission-over-root"), this, missionLostData.Build());
+                new MissionFailedUIState(Root.Q<VisualElement>("mission-over"), this, missionLostData.Build());
 
-            _stateMachine.AddState(_inGameState);
-            /*
-            _stateMachine.AddState(_pausedState);
-            _stateMachine.AddState(_settingsState);
-            _stateMachine.AddState(_mainMenuState);
-            _stateMachine.AddState(_levelSelectState);
-            _stateMachine.AddState(_quitMenuState);
-            */
-            _stateMachine.AddState(_missionLostState);
-            _stateMachine.AddState(_missionWonState);
-            _stateMachine.AddState(_inGameSettingsState);
-            _stateMachine.AddState(_mainMenuSettingsState);
-            _stateMachine.ChangeState(_inGameState);
+            _stateMachine.AddAnyTransition(_loadingState, () => LevelManager.Instance.IsLoading);
+            
+            _stateMachine.AddTransition(_loadingState, _inGameState, () => !LevelManager.Instance.IsLoading && LevelManager.Instance.IsLevelActive);
+            
+            _stateMachine.AddTransition(_inGameState, _pausedState, () => _backPressed);
+            _stateMachine.AddTransition(_inGameState, _missionWonState, () => _levelWon);
+            _stateMachine.AddTransition(_inGameState, _missionLostState, () => _levelLost);
+            
+            _stateMachine.AddTransition(_mainMenuSettingsState, _mainMenuState, () => _backPressed);
+            
+            _stateMachine.AddTransition(_inGameSettingsState, _pausedState, () => _backPressed);
+            
+            _stateMachine.AddTransition(_pausedState, _inGameSettingsState, () => _settingsPressed);
+            _stateMachine.AddTransition(_pausedState, _quitMenuState, () => _quitButtonClicked);
+            _stateMachine.AddTransition(_pausedState, _inGameState, () => _backPressed);
+            
+            _stateMachine.AddTransition(_mainMenuState, _mainMenuSettingsState, () => _settingsPressed);
+            _stateMachine.AddTransition(_mainMenuState, _quitMenuState, () => _quitButtonClicked);
+            
+            _stateMachine.AddTransition(_quitMenuState, _pausedState, () => _backPressed && LevelManager.Instance.IsLevelActive);
+            _stateMachine.AddTransition(_quitMenuState, _mainMenuState, () => _quitToMenuButtonClicked && !LevelManager.Instance.IsLevelActive);
+            
+          _stateMachine.AddState(_levelSelectState);
+            _stateMachine.ChangeState(_levelSelectState);
         }
 
 
         public void PauseSettingsButtonClicked()
         {
-            _stateMachine.ChangeState(_inGameSettingsState);
+            _settingsPressed = true;
         }
 
         public void MainMenuSettingsButtonClicked()
         {
-            _stateMachine.ChangeState(_mainMenuSettingsState);
+            _settingsPressed = true;
         }
 
         public void ResumeButtonClicked()
         {
-            _stateMachine.ChangeState(_inGameState);
+            _backPressed = true;
         }
 
         public void SettingsBackButtonClicked()
         {
+            _backPressed = true;
         }
+        
 
-        public void SettingsButtonClicked()
-        {
-        }
-
-        public void QuitButtonClicked()
-        {
-            _stateMachine.ChangeState(_quitMenuState);
-        }
+    
 
         public void QuitToMenuButtonClicked()
         {
-            _stateMachine.ChangeState(_mainMenuState);
+            _quitToMenuButtonClicked = true;
         }
 
         public void QuitToDesktopButtonClicked()
         {
             Application.Quit();
+        }
+
+        public void QuitButtonClicked()
+        {
+            _quitButtonClicked = true;
+        }
+
+        public void ResetInteractions()
+        {
+            _backPressed = false;
+            _settingsPressed = false;
+            _quitButtonClicked = false;
         }
     }
 }

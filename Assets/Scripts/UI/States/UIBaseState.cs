@@ -48,6 +48,7 @@ namespace UI.States
         public override void Exit()
         {
             RootPageElement.style.display = DisplayStyle.None;
+            UIStateMachine.ResetInteractions();
         }
 
         /// <summary>

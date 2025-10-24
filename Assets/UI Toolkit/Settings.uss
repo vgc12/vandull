@@ -179,6 +179,7 @@
     text-overflow: ellipsis;
     flex-grow: 1;
     -unity-text-align: middle-left;
+    -unity-font-definition: url("project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&guid=83ac249aaefaf3b42a3de0b92f763dee&type=3#BungeeHairline-Regular");
 }
 
 .settings-button {

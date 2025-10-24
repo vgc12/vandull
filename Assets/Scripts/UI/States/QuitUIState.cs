@@ -1,8 +1,7 @@
 ﻿using System;
-using UI.States;
 using UnityEngine.UIElements;
 
-namespace UI
+namespace UI.States
 {
     public class QuitUIState : UIBaseState
     {

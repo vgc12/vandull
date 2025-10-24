@@ -89,17 +89,25 @@ namespace DependencyInjection
         /// </remarks>
         public bool TryResolve<T>(out T dependency)
         {
+            dependency = default;
             _cachedSceneContainer ??= TryGetSceneContainer();
             _cachedProjectContainer ??= TryGetProjectContainer();
-            dependency = _cachedSceneContainer.Resolve<T>();
+            if (_cachedProjectContainer != null)
+            {
+                dependency = _cachedProjectContainer.Resolve<T>();
+            }
+
+            if (_cachedProjectContainer != null && dependency != null) return true;
+            
+            if (_cachedSceneContainer!= null)
+            {
+                dependency = _cachedSceneContainer.Resolve<T>();
+            }
 
             if (_cachedSceneContainer != null && dependency != null) return true;
 
-            dependency = _cachedProjectContainer.Resolve<T>();
+           
 
-            if (_cachedProjectContainer != null && dependency != null) return true;
-
-            dependency = default;
             return false;
         }
 

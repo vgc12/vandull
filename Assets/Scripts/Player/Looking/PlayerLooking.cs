@@ -1,4 +1,5 @@
 using Attributes;
+using Player.Input;
 using Reflex.Attributes;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,7 +12,7 @@ namespace Player.Looking
         #region Variables
 
         [Inject]
-        private IInputService _input;
+        private IPlayerInput _input;
 
         private enum LeanDirection
         {

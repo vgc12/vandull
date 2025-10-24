@@ -3,8 +3,16 @@
     <ui:Template name="MissionOver" src="project://database/Assets/UI%20Toolkit/MissionOver.uxml?fileID=9197481963319205126&amp;guid=b683d42d2e3b0b4449ee0cd37f1c56dc&amp;type=3#MissionOver" />
     <ui:Template name="Settings" src="project://database/Assets/UI%20Toolkit/Settings.uxml?fileID=9197481963319205126&amp;guid=b812867386cba8a47baf796e146b38c7&amp;type=3#Settings" />
     <ui:Template name="Paused" src="project://database/Assets/UI%20Toolkit/Paused.uxml?fileID=9197481963319205126&amp;guid=a31b4e4ddf5972143a96f02abe232ee4&amp;type=3#Paused" />
+    <ui:Template name="Loading" src="project://database/Assets/UI%20Toolkit/Loading.uxml?fileID=9197481963319205126&amp;guid=3bcd702e9c0f33a45927ce75a622d915&amp;type=3#Loading" />
+    <ui:Template name="MainMenu" src="project://database/Assets/UI%20Toolkit/MainMenu.uxml?fileID=9197481963319205126&amp;guid=67cda445534b2f54bb2c44ba2ffa96e7&amp;type=3#MainMenu" />
+    <ui:Template name="LevelSelect" src="project://database/Assets/UI%20Toolkit/LevelSelect.uxml?fileID=9197481963319205126&amp;guid=c914a5450100fda4c9c20ae38633eb05&amp;type=3#LevelSelect" />
+    <ui:Template name="Quit" src="project://database/Assets/UI%20Toolkit/Quit.uxml?fileID=9197481963319205126&amp;guid=1246f51f5d81b4e44ba7006d7373ec36&amp;type=3#Quit" />
     <ui:Instance template="InGame" name="in-game" style="flex-grow: 1; flex-shrink: 0; display: none;" />
     <ui:Instance template="MissionOver" name="mission-over" style="flex-grow: 1; display: none;" />
     <ui:Instance template="Settings" name="settings" style="flex-grow: 1; display: none; visibility: visible;" />
     <ui:Instance template="Paused" name="paused" style="display: none;" />
+    <ui:Instance template="Loading" name="loading" style="display: none;" />
+    <ui:Instance template="MainMenu" name="main-menu" style="display: none;" />
+    <ui:Instance template="LevelSelect" name="level-select" style="display: none;" />
+    <ui:Instance template="Quit" name="quit" style="display: none;" />
 </ui:UXML>

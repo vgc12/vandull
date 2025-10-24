@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Attributes;
 using EventBus;
 using General;
+using General.Game;
 using Levels.Strategies;
 using Singletons;
 using UnityEngine;
@@ -14,15 +15,17 @@ namespace Levels
     ///     LevelManager: Handles level loading, level-specific logic, and mission objectives
     ///     Does NOT handle pause/game state - that's GameManager's job
     /// </summary>
-    public class LevelManager : Singleton<LevelManager>
+    public class LevelManager : PersistentSingleton<LevelManager>
     {
         [ScriptableObjectDropdown] public List<LevelConfig> levels;
 
+        
+        
+        
         private LevelConfig _currentLevel;
 
 
-        private bool _isLevelActive;
-
+        public bool IsLevelActive { get; private set; }
 
         private EventBinding<LevelLoadEvent> _levelLoadBinding;
         private int _remainingBombs;
@@ -31,6 +34,8 @@ namespace Levels
         private int _remainingHostages;
 
         private bool LevelWon => _remainingEnemies <= 0 && _remainingHostages <= 0 && _remainingBombs <= 0;
+        public bool IsLoading { get; private set; }
+
 
         protected override void Awake()
         {
@@ -46,10 +51,15 @@ namespace Levels
             var bombDiffusedEventBinding = new EventBinding<BombDefusedEvent>(BombDefused);
             var enemyKilledEventBinding = new EventBinding<EnemyKilledEvent>(EnemyKilled);
             var hostageRescuedEventBinding = new EventBinding<HostageRescuedEvent>(HostageRescued);
-
+            var levelLostEventBinding = new EventBinding<PlayerKilledEvent>(LevelFailed);
+            
+            EventBus<PlayerKilledEvent>.Register(levelLostEventBinding);
             EventBus<BombDefusedEvent>.Register(bombDiffusedEventBinding);
             EventBus<EnemyKilledEvent>.Register(enemyKilledEventBinding);
             EventBus<HostageRescuedEvent>.Register(hostageRescuedEventBinding);
+           
+         
+            
         }
 
 
@@ -61,14 +71,14 @@ namespace Levels
 
         private void BombDefused()
         {
-            if (!_isLevelActive) return;
+            if (!IsLevelActive) return;
             _remainingBombs--;
             if (LevelWon) LevelCompleted();
         }
 
         private void HostageRescued()
         {
-            if (!_isLevelActive) return;
+            if (!IsLevelActive) return;
             _remainingHostages--;
             if (LevelWon) LevelCompleted();
         }
@@ -87,7 +97,7 @@ namespace Levels
 
         private IEnumerator LoadLevelCoroutine(LevelConfig config)
         {
-            GameManager.Instance?.ChangeState<LoadingGameState>();
+          
 
             // Cleanup previous level
             CleanupCurrentLevel();
@@ -97,7 +107,7 @@ namespace Levels
 
             while (asyncLoad is { isDone: false })
             {
-                // Could raise progress events here
+                IsLoading = true;
                 EventBus<LevelLoadProgressEvent>.Raise(new LevelLoadProgressEvent(asyncLoad.progress));
                 yield return null;
             }
@@ -106,14 +116,14 @@ namespace Levels
             _currentLevel = config;
             InitializeLevel(config);
 
-            // Tell GameManager we're ready
-            GameManager.Instance?.ChangeState<InGameState>();
+            IsLoading = false;
+            
         }
 
         private void InitializeLevel(LevelConfig config)
         {
             _remainingEnemies = config.enemyCount;
-            _isLevelActive = true;
+            IsLevelActive = true;
 
             // Setup mission strategy based on level type
 
@@ -124,7 +134,7 @@ namespace Levels
 
         private void EnemyKilled()
         {
-            if (!_isLevelActive) return;
+            if (!IsLevelActive) return;
 
             _remainingEnemies--;
 
@@ -133,14 +143,14 @@ namespace Levels
 
         private void LevelCompleted()
         {
-            _isLevelActive = false;
-            GameManager.Instance?.ChangeState<LevelWonGameState>();
+            IsLevelActive = false;
+            EventBus<LevelWonEvent>.Raise(new LevelWonEvent());
         }
 
         public void LevelFailed()
         {
-            _isLevelActive = false;
-            GameManager.Instance?.ChangeState<LevelLostGameState>();
+            IsLevelActive = false;
+            EventBus<LevelLostEvent>.Raise(new());
         }
 
         public void ReloadLevel()
@@ -157,7 +167,7 @@ namespace Levels
 
         private void CleanupCurrentLevel()
         {
-            _isLevelActive = false;
+            IsLevelActive = false;
         }
 
         private void OnLevelLoadRequested(LevelLoadEvent evt)

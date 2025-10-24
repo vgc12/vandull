@@ -1,4 +1,6 @@
 using General.Logging;
+using Player;
+using Player.Input;
 using Reflex.Core;
 using UnityEngine;
 using ILogger = General.Logging.ILogger;
@@ -11,6 +13,8 @@ namespace DependencyInjection
         {
             // builder.AddSingleton(typeof(InGameAudioManager), typeof(IAudioManager));
             builder.AddSingleton(new VandullLogger(), typeof(ILogger));
+
+            builder.AddSingleton(new InputManager(),typeof(InputManager) ,typeof(IInputService), typeof(IPlayerInput), typeof(IUIInput));
         }
     }
 }

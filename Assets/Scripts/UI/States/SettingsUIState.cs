@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using DependencyInjection;
-using Player;
-using UI.States;
+using Player.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-namespace UI
+namespace UI.States
 {
     public class SettingsUIState : UIBaseState
     {

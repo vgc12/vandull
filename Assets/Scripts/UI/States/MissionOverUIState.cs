@@ -1,9 +1,8 @@
 ﻿using Levels;
-using UI.States;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace UI
+namespace UI.States
 {
     public abstract class MissionOverUIState : UIBaseState
     {

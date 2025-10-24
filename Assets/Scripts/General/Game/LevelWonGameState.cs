@@ -1,8 +1,10 @@
-﻿namespace Levels
+﻿using Levels;
+
+namespace General.Game
 {
     public class LevelWonGameState : BaseGameState
     {
-        public LevelWonGameState(GameManager gameManager) : base(gameManager, GameState.LevelWon)
+        public LevelWonGameState(GameManager gameManager) : base(gameManager)
         {
         }
     }

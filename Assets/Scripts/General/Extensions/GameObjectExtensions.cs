@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using UnityEngine;
 
-namespace General
+namespace General.Extensions
 {
     public static class GameObjectExtensions
     {

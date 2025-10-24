@@ -1,7 +1,6 @@
-﻿using UI.States;
-using UnityEngine.UIElements;
+﻿using UnityEngine.UIElements;
 
-namespace UI
+namespace UI.States
 {
     public class MainMenuUIState : UIBaseState
     {

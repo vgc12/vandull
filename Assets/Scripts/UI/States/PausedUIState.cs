@@ -1,41 +1,44 @@
 ﻿using System;
-using UI;
-using UI.States;
 using UnityEngine.UIElements;
 
-public class PausedUIState : UIBaseState
+namespace UI.States
 {
-    private readonly Button _quitButton;
-    private readonly Action _quitButtonClicked;
-
-    private readonly Button _resumeButton;
-    private readonly Action _resumeButtonClicked;
-    private readonly Button _settingsButton;
-    private readonly Action _settingsButtonClicked;
-
-    public PausedUIState(VisualElement rootElement, UIStateMachine stateMachine) : base(rootElement, stateMachine,
-        UIStateType.Paused)
+    public class PausedUIState : UIBaseState
     {
-        _resumeButton = rootElement.Q<Button>("ResumeButton");
-        _settingsButton = rootElement.Q<Button>("SettingsButton");
-        _quitButton = rootElement.Q<Button>("QuitButton");
-    }
+        private readonly Button _quitDesktop;
+        private readonly Action _quitButtonClicked;
 
-    public override void Enter()
-    {
-        base.Enter();
+        private readonly Button _resumeButton;
+        private readonly Action _resumeButtonClicked;
+        private readonly Button _settingsButton;
+        private readonly Action _settingsButtonClicked;
+        private readonly Button _quitMenu;
 
-        if (_resumeButton != null) _resumeButton.clicked += _resumeButtonClicked;
-        if (_settingsButton != null) _settingsButton.clicked += _settingsButtonClicked;
-        if (_quitButton != null) _quitButton.clicked += _quitButtonClicked;
-    }
+        public PausedUIState(VisualElement rootElement, UIStateMachine stateMachine) : base(rootElement, stateMachine,
+            UIStateType.Paused)
+        {
+            _resumeButton = rootElement.Q<Button>("resume-button");
+            _settingsButton = rootElement.Q<Button>("settings-button");
+            _quitDesktop = rootElement.Q<Button>("quit-desktop-button");
+            _quitMenu = rootElement.Q<Button>("quit-menu-button");
+        }
 
-    public override void Exit()
-    {
-        if (_resumeButton != null) _resumeButton.clicked -= _resumeButtonClicked;
-        if (_settingsButton != null) _settingsButton.clicked -= _settingsButtonClicked;
-        if (_quitButton != null) _quitButton.clicked -= _quitButtonClicked;
+        public override void Enter()
+        {
+            base.Enter();
 
-        base.Exit();
+            if (_resumeButton != null) _resumeButton.clicked += UIStateMachine.ResumeButtonClicked;
+            if (_settingsButton != null) _settingsButton.clicked += UIStateMachine.PauseSettingsButtonClicked;
+            if (_quitDesktop != null) _quitDesktop.clicked += UIStateMachine.QuitButtonClicked;
+        }
+
+        public override void Exit()
+        {
+            if (_resumeButton != null) _resumeButton.clicked += UIStateMachine.ResumeButtonClicked;
+            if (_settingsButton != null) _settingsButton.clicked += UIStateMachine.PauseSettingsButtonClicked;
+            if (_quitDesktop != null) _quitDesktop.clicked += UIStateMachine.QuitButtonClicked;
+
+            base.Exit();
+        }
     }
 }

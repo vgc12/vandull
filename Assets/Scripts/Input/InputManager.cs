@@ -5,77 +5,33 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using static PlayerInputActions;
 
-namespace Player
+namespace Player.Input
 {
-    public interface IInputManager
-    {
-        bool IsUIEngaged { get; }
-        void EnablePlayerActions();
-        void Cleanup();
-    }
 
-    // Player input events
-    public interface IPlayerInput
-    {
-        Vector2 Direction { get; }
-        event UnityAction Attack;
-        event UnityAction<Vector2> Move;
-        event UnityAction<Vector2> Look;
-        event UnityAction Interact;
-        event UnityAction<bool> Crouch;
-        event UnityAction<bool> Jump;
-        event UnityAction Previous;
-        event UnityAction Next;
-        event UnityAction<bool> Sprint;
-        event UnityAction<float> Lean;
-        event UnityAction<bool> Aim;
-        event UnityAction<float> SwitchItem;
-        event UnityAction Reload;
-        event UnityAction SwitchFireMode;
-        event UnityAction Restart;
-    }
 
-    // UI input events
-    public interface IUIInput
-    {
-        event UnityAction UIEngaged;
-        event UnityAction UIDisengaged;
-        event UnityAction<Vector2> Navigate;
-        event UnityAction Submit;
-        event UnityAction Cancel;
-        event UnityAction<Vector2> Point;
-        event UnityAction Click;
-        event UnityAction RightClick;
-        event UnityAction MiddleClick;
-        event UnityAction<Vector2> ScrollWheel;
-        event UnityAction<Vector3> TrackedDevicePosition;
-        event UnityAction<Quaternion> TrackedDeviceOrientation;
-    }
 
-    // Complete interface
-    public interface IInputService : IInputManager, IPlayerInput, IUIInput
-    {
-    }
-
-    public class InputManager : IInputService, IInputReader, IPlayerActions, IUIActions
+    public class InputManager : IInputService, IPlayerActions, IUIActions
     {
         private readonly EventBinding<UIStateSwitchedEvent> _uiStateChangedEventBinding;
         private UIStateType _uiState;
 
         public InputManager()
         {
+            Initialize();
+            EnablePlayerActions();
             _uiStateChangedEventBinding = new EventBinding<UIStateSwitchedEvent>(OnUIStateChanged);
             EventBus<UIStateSwitchedEvent>.Register(_uiStateChangedEventBinding);
         }
 
         public PlayerInputActions InputActions { get; private set; }
-        public bool IsUIEngaged { get; private set; }
+
 
         // IInputReader properties
         public Vector2 Direction => InputActions.Player.Move.ReadValue<Vector2>();
+       
 
         // Player action events
-        public event UnityAction Attack = delegate { };
+        public event UnityAction<(bool started, bool performed, bool canceled)> Attack = delegate { };
         public event UnityAction<Vector2> Move = delegate { };
         public event UnityAction<Vector2> Look = delegate { };
         public event UnityAction Interact = delegate { };
@@ -92,11 +48,11 @@ namespace Player
         public event UnityAction Restart = delegate { };
 
         // UI events
-        public event UnityAction UIEngaged = delegate { };
+        public event UnityAction InGameCancel = delegate { };
         public event UnityAction UIDisengaged = delegate { };
         public event UnityAction<Vector2> Navigate = delegate { };
         public event UnityAction Submit = delegate { };
-        public event UnityAction Cancel = delegate { };
+        public event UnityAction InMenuCancel = delegate { };
         public event UnityAction<Vector2> Point = delegate { };
         public event UnityAction Click = delegate { };
         public event UnityAction RightClick = delegate { };
@@ -105,7 +61,7 @@ namespace Player
         public event UnityAction<Vector3> TrackedDevicePosition = delegate { };
         public event UnityAction<Quaternion> TrackedDeviceOrientation = delegate { };
 
-        public void EnablePlayerActions()
+        public void Initialize()
         {
             if (InputActions == null)
             {
@@ -114,9 +70,6 @@ namespace Player
                 InputActions.UI.SetCallbacks(this);
             }
 
-            InputActions.Enable();
-            InputActions.UI.Disable();
-            IsUIEngaged = false;
         }
 
         public void Cleanup()
@@ -136,61 +89,60 @@ namespace Player
 
         public void OnAttack(InputAction.CallbackContext context)
         {
-            if (context.performed && !IsUIEngaged) Attack.Invoke();
+           Attack.Invoke((context.started,context.performed,context.canceled));
         }
 
         public void OnInteract(InputAction.CallbackContext context)
         {
-            if (context.performed && !IsUIEngaged) Interact.Invoke();
+            if (context.performed ) Interact.Invoke();
         }
 
         public void OnCrouch(InputAction.CallbackContext context)
         {
-            if (!IsUIEngaged)
-            {
+          
                 if (context.performed)
                     Crouch.Invoke(true);
                 else if (context.canceled)
                     Crouch.Invoke(false);
-            }
+            
         }
 
         public void OnJump(InputAction.CallbackContext context)
         {
-            if (context.started && !IsUIEngaged) Jump.Invoke(context.started);
+            if (context.started ) Jump.Invoke(context.started);
         }
 
         public void OnPrevious(InputAction.CallbackContext context)
         {
-            if (context.performed && !IsUIEngaged) Previous.Invoke();
+            if (context.performed ) Previous.Invoke();
         }
 
         public void OnNext(InputAction.CallbackContext context)
         {
-            if (context.performed && !IsUIEngaged) Next.Invoke();
+            if (context.performed ) Next.Invoke();
         }
 
         public void OnSprint(InputAction.CallbackContext context)
         {
-            if (!IsUIEngaged)
-            {
+            
+            
                 if (context.performed)
                     Sprint.Invoke(true);
                 else if (context.canceled)
                     Sprint.Invoke(false);
-            }
+            
         }
 
         public void OnLean(InputAction.CallbackContext context)
         {
             if (context.performed || context.canceled)
-                if (!IsUIEngaged)
+                
                     Lean.Invoke(context.ReadValue<float>());
         }
 
         public void OnAim(InputAction.CallbackContext context)
         {
-            if (!IsUIEngaged)
+            
             {
                 if (context.performed)
                     Aim.Invoke(true);
@@ -201,17 +153,17 @@ namespace Player
 
         public void OnSwitchItem(InputAction.CallbackContext context)
         {
-            if (context.performed && !IsUIEngaged) SwitchItem.Invoke(context.ReadValue<float>());
+            if (context.performed ) SwitchItem.Invoke(context.ReadValue<float>());
         }
 
         public void OnReload(InputAction.CallbackContext context)
         {
-            if (context.performed && !IsUIEngaged) Reload.Invoke();
+            if (context.started ) Reload.Invoke();
         }
 
         public void OnSwitchFireMode(InputAction.CallbackContext context)
         {
-            if (context.performed && !IsUIEngaged) SwitchFireMode.Invoke();
+            if (context.started ) SwitchFireMode.Invoke();
         }
 
         public void OnRestart(InputAction.CallbackContext context)
@@ -221,22 +173,23 @@ namespace Player
 
         public void OnUIEngage(InputAction.CallbackContext context)
         {
-            if (!context.performed) return;
-
-            if (_uiState == UIStateType.InGame)
-            {
-                SetPlayerActionsEnabled(false);
-                InputActions.UI.Enable();
-                IsUIEngaged = true;
-                UIEngaged.Invoke();
-            }
-            else
-            {
-                InputActions.UI.Disable();
-                SetPlayerActionsEnabled(true);
-                IsUIEngaged = false;
-                UIDisengaged.Invoke();
-            }
+            if(_uiState != UIStateType.InGame) return;
+            InGameCancel.Invoke();
+            EnableUIActions();
+        }
+        
+        public void EnableUIActions()
+        {
+            InputActions.UI.Enable();
+            SetPlayerActionsEnabled(false);
+     
+        }
+        
+        public void EnablePlayerActions()
+        {
+            InputActions.UI.Disable();
+            SetPlayerActionsEnabled(true);
+        
         }
 
         // UI Actions
@@ -252,7 +205,9 @@ namespace Player
 
         public void OnCancel(InputAction.CallbackContext context)
         {
-            if (context.performed) Cancel.Invoke();
+            if (!context.started) return;
+            InMenuCancel.Invoke();
+         
         }
 
         public void OnPoint(InputAction.CallbackContext context)
@@ -289,11 +244,7 @@ namespace Player
         {
             if (context.performed) TrackedDeviceOrientation.Invoke(context.ReadValue<Quaternion>());
         }
-
-        private void OnEnable()
-        {
-            EnablePlayerActions();
-        }
+        
 
         private void OnDestroy()
         {
@@ -304,18 +255,13 @@ namespace Player
         private void OnUIStateChanged(UIStateSwitchedEvent evt)
         {
             _uiState = evt.NewState;
-
-            if (evt.NewState == UIStateType.InGame)
+            if (_uiState == UIStateType.InGame)
             {
-                InputActions.UI.Disable();
-                SetPlayerActionsEnabled(true);
-                IsUIEngaged = false;
+                EnablePlayerActions();
             }
             else
             {
-                SetPlayerActionsEnabled(false);
-                InputActions.UI.Enable();
-                IsUIEngaged = true;
+                EnableUIActions();
             }
         }
 
@@ -325,8 +271,6 @@ namespace Player
 
             foreach (var action in map.actions)
             {
-                if (action == InputActions.Player.UIEngage) continue;
-
                 if (value)
                     action.Enable();
                 else
@@ -340,10 +284,5 @@ namespace Player
         }
     }
 
-    public interface IInputReader
-    {
-        Vector2 Direction { get; }
-        event UnityAction Attack;
-        void EnablePlayerActions();
-    }
+
 }

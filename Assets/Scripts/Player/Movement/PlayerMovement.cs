@@ -1,5 +1,6 @@
 using System.Collections;
 using Attributes;
+using Player.Input;
 using Reflex.Attributes;
 using UnityEngine;
 using ILogger = General.Logging.ILogger;
@@ -39,7 +40,7 @@ namespace Player.Movement
 
         public bool JumpPressed { get; private set; }
 
-        public Vector2 MoveInput => Input.Direction;
+        public Vector2 MoveInput { get; private set; }
 
         public bool CrouchPressed { get; private set; }
 
@@ -100,7 +101,7 @@ namespace Player.Movement
 
         #region UnityFunctions
 
-        [Inject] public IInputService Input;
+        [Inject] private readonly IPlayerInput _input;
 
         private void Start()
         {
@@ -108,16 +109,23 @@ namespace Player.Movement
 
             _rigidbody = GetComponent<Rigidbody>();
 
-            Input.Crouch += OnCrouchInput;
+            _input.Crouch += OnCrouchInput;
 
-            Input.Jump += OnJumpInput;
+            _input.Jump += OnJumpInput;
 
-            Input.Sprint += OnSprintInput;
+            _input.Sprint += OnSprintInput;
+            
+            _input.Move += OnMoveInput;
 
             playerModel.localScale = new Vector3(1, config.InitialHeight, 1);
             crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
                 config.InitialCrouchCameraPosition,
                 crouchPositionTransform.localPosition.z);
+        }
+
+        private void OnMoveInput(Vector2 value)
+        {
+            MoveInput = value;
         }
 
 
@@ -136,7 +144,7 @@ namespace Player.Movement
                 headCheckTransform.position + Vector3.up *
                 (config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y));
             //Gizmos.DrawRay(playerModel.transform.position, Vector3.down * (playerModel.localScale.y * 0.5f + 0.3f));
-            Gizmos.DrawRay(transform.position, slopeDir * 20f);
+            Gizmos.DrawRay(transform.position, _slopeDir * 20f);
         }
 
         #endregion
@@ -159,18 +167,18 @@ namespace Player.Movement
 
         #region MovementFunctions
 
-        private Vector3 slopeDir;
+        private Vector3 _slopeDir;
 
         public void Move(float speed)
         {
-            var moveDirection = orientation.forward * Input.Direction.y + orientation.right * Input.Direction.x;
+            var moveDirection = orientation.forward * MoveInput.y + orientation.right * MoveInput.x;
             moveDirection.Normalize();
 
 
             if (OnSlope())
             {
                 var slopeMoveDirection = Vector3.ProjectOnPlane(moveDirection, _slopeHit.normal).normalized;
-                slopeDir = slopeMoveDirection;
+                _slopeDir = slopeMoveDirection;
 
                 ApplyMovement(slopeMoveDirection * (speed * config.SlopeMultiplier));
 
