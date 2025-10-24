@@ -11,7 +11,7 @@ namespace Items.Guns
 {
     public class ItemInputHandler : MonoBehaviour
     {
-        private bool _aimToggled;
+     
         private Gun _currentGun;
         private Item _currentItem;
 
@@ -80,7 +80,7 @@ namespace Items.Guns
         {
             _currentItem = obj.NewItem;
             // Important that this gets toggled off, when item is switched
-            _aimToggled = false;
+       
             if (obj.NewItem is Gun newGun)
             {
                 if (_currentGun != null) _currentGun.StopAiming();

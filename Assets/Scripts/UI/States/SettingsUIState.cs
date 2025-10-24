@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DependencyInjection;
 using EventBus;
 using Player.Input;
@@ -88,12 +89,14 @@ namespace UI.States
             _applyButton = RootPageElement.Q<Button>("apply-button");
             _resetButton = RootPageElement.Q<Button>("reset-button");
             _closeButton = RootPageElement.Q<Button>("close-button");
-            _sensitivitySlider = RootPageElement.Q<Slider>("sensitivity slider");
-            _invertYoggle = RootPageElement.Q<Toggle>("invert-y toggle");
-            _invertXToggle = RootPageElement.Q<Toggle>("invert-x toggle");
-            _toggleCrouchToggle = RootPageElement.Q<Toggle>("toggle-crouch toggle");
-            _toggleSprintToggle = RootPageElement.Q<Toggle>("toggle-sprint toggle");
-            _toggleAimToggle = RootPageElement.Q<Toggle>("toggle-aim toggle");
+            _sensitivitySlider = RootPageElement.Query<VisualElement>("sensitivity").Children<Slider>().First();
+            _invertYoggle = RootPageElement.Query<VisualElement>("invert-y").Children<Toggle>().First();
+            _invertXToggle = RootPageElement.Query<VisualElement>("invert-x").Children<Toggle>().First();
+          
+            _toggleCrouchToggle = RootPageElement.Query<VisualElement>("toggle-crouch").Children<Toggle>().First();
+            _toggleSprintToggle = RootPageElement.Query<VisualElement>("toggle-sprint").Children<Toggle>().First();
+            _toggleAimToggle = RootPageElement.Query<VisualElement>("toggle-aim").Children<Toggle>().First();
+         
 
             // Hide overlay initially
             if (_inputOverlay != null) _inputOverlay.style.display = DisplayStyle.None;
@@ -262,7 +265,7 @@ namespace UI.States
 
         private void ApplySettings()
         {
-            EventBus<ControlSettingsChangedEvent>.Raise(new ControlSettingsChangedEvent
+            var ev = new ControlSettingsChangedEvent
             {
                 MouseSensitivity = _sensitivitySlider.value,
                 InvertX = _invertXToggle.value,
@@ -270,7 +273,9 @@ namespace UI.States
                 ToggleCrouch = _toggleCrouchToggle.value,
                 ToggleSprint = _toggleSprintToggle.value,
                 ToggleAim = _toggleAimToggle.value
-            });
+            };
+            
+            EventBus<ControlSettingsChangedEvent>.Raise(ev);
         }
 
         private void ResetToDefaults()
