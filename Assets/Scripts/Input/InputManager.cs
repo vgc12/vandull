@@ -7,13 +7,20 @@ using static PlayerInputActions;
 
 namespace Player.Input
 {
-
-
-
     public class InputManager : IInputService, IPlayerActions, IUIActions
     {
+        private readonly EventBinding<SettingsUIState.ControlSettingsChangedEvent> _controlsChangedEventBinding;
         private readonly EventBinding<UIStateSwitchedEvent> _uiStateChangedEventBinding;
+
+        private bool _aimToggled;
+
+        private bool _crouchToggled;
+
+        private SettingsUIState.ControlSettingsChangedEvent _currentControlSettings;
+
+        private bool _sprintToggled;
         private UIStateType _uiState;
+
 
         public InputManager()
         {
@@ -21,6 +28,9 @@ namespace Player.Input
             EnablePlayerActions();
             _uiStateChangedEventBinding = new EventBinding<UIStateSwitchedEvent>(OnUIStateChanged);
             EventBus<UIStateSwitchedEvent>.Register(_uiStateChangedEventBinding);
+            _controlsChangedEventBinding =
+                new EventBinding<SettingsUIState.ControlSettingsChangedEvent>(OnControlsChanged);
+            EventBus<SettingsUIState.ControlSettingsChangedEvent>.Register(_controlsChangedEventBinding);
         }
 
         public PlayerInputActions InputActions { get; private set; }
@@ -28,7 +38,7 @@ namespace Player.Input
 
         // IInputReader properties
         public Vector2 Direction => InputActions.Player.Move.ReadValue<Vector2>();
-       
+
 
         // Player action events
         public event UnityAction<(bool started, bool performed, bool canceled)> Attack = delegate { };
@@ -68,8 +78,8 @@ namespace Player.Input
                 InputActions = new PlayerInputActions();
                 InputActions.Player.SetCallbacks(this);
                 InputActions.UI.SetCallbacks(this);
+                _currentControlSettings = new SettingsUIState.ControlSettingsChangedEvent();
             }
-
         }
 
         public void Cleanup()
@@ -89,81 +99,94 @@ namespace Player.Input
 
         public void OnAttack(InputAction.CallbackContext context)
         {
-           Attack.Invoke((context.started,context.performed,context.canceled));
+            Attack.Invoke((context.started, context.performed, context.canceled));
         }
 
         public void OnInteract(InputAction.CallbackContext context)
         {
-            if (context.performed ) Interact.Invoke();
+            if (context.performed) Interact.Invoke();
         }
 
         public void OnCrouch(InputAction.CallbackContext context)
         {
-          
-                if (context.performed)
-                    Crouch.Invoke(true);
-                else if (context.canceled)
-                    Crouch.Invoke(false);
-            
+            if (_currentControlSettings.ToggleCrouch && context.started)
+            {
+                _crouchToggled = !_crouchToggled;
+                Crouch.Invoke(_crouchToggled);
+                return;
+            }
+
+            if (context.performed)
+                Crouch.Invoke(true);
+            else if (context.canceled)
+                Crouch.Invoke(false);
         }
 
         public void OnJump(InputAction.CallbackContext context)
         {
-            if (context.started ) Jump.Invoke(context.started);
+            if (context.started) Jump.Invoke(context.started);
         }
 
         public void OnPrevious(InputAction.CallbackContext context)
         {
-            if (context.performed ) Previous.Invoke();
+            if (context.performed) Previous.Invoke();
         }
 
         public void OnNext(InputAction.CallbackContext context)
         {
-            if (context.performed ) Next.Invoke();
+            if (context.performed) Next.Invoke();
         }
 
         public void OnSprint(InputAction.CallbackContext context)
         {
-            
-            
-                if (context.performed)
-                    Sprint.Invoke(true);
-                else if (context.canceled)
-                    Sprint.Invoke(false);
-            
+            if (_currentControlSettings.ToggleSprint && context.started)
+            {
+                _sprintToggled = !_sprintToggled;
+                Sprint.Invoke(_sprintToggled);
+                return;
+            }
+
+            if (context.performed)
+                Sprint.Invoke(true);
+            else if (context.canceled)
+                Sprint.Invoke(false);
         }
 
         public void OnLean(InputAction.CallbackContext context)
         {
             if (context.performed || context.canceled)
-                
-                    Lean.Invoke(context.ReadValue<float>());
+
+                Lean.Invoke(context.ReadValue<float>());
         }
 
         public void OnAim(InputAction.CallbackContext context)
         {
-            
+            if (_currentControlSettings.ToggleAim && context.started)
             {
-                if (context.performed)
-                    Aim.Invoke(true);
-                else if (context.canceled)
-                    Aim.Invoke(false);
+                _aimToggled = !_aimToggled;
+                Aim.Invoke(_aimToggled);
+                return;
             }
+
+            if (context.performed)
+                Aim.Invoke(true);
+            else if (context.canceled)
+                Aim.Invoke(false);
         }
 
         public void OnSwitchItem(InputAction.CallbackContext context)
         {
-            if (context.performed ) SwitchItem.Invoke(context.ReadValue<float>());
+            if (context.performed) SwitchItem.Invoke(context.ReadValue<float>());
         }
 
         public void OnReload(InputAction.CallbackContext context)
         {
-            if (context.started ) Reload.Invoke();
+            if (context.started) Reload.Invoke();
         }
 
         public void OnSwitchFireMode(InputAction.CallbackContext context)
         {
-            if (context.started ) SwitchFireMode.Invoke();
+            if (context.started) SwitchFireMode.Invoke();
         }
 
         public void OnRestart(InputAction.CallbackContext context)
@@ -173,23 +196,9 @@ namespace Player.Input
 
         public void OnUIEngage(InputAction.CallbackContext context)
         {
-            if(_uiState != UIStateType.InGame) return;
+            if (_uiState != UIStateType.InGame) return;
             InGameCancel.Invoke();
             EnableUIActions();
-        }
-        
-        public void EnableUIActions()
-        {
-            InputActions.UI.Enable();
-            SetPlayerActionsEnabled(false);
-     
-        }
-        
-        public void EnablePlayerActions()
-        {
-            InputActions.UI.Disable();
-            SetPlayerActionsEnabled(true);
-        
         }
 
         // UI Actions
@@ -207,7 +216,6 @@ namespace Player.Input
         {
             if (!context.started) return;
             InMenuCancel.Invoke();
-         
         }
 
         public void OnPoint(InputAction.CallbackContext context)
@@ -244,7 +252,23 @@ namespace Player.Input
         {
             if (context.performed) TrackedDeviceOrientation.Invoke(context.ReadValue<Quaternion>());
         }
-        
+
+        private void OnControlsChanged(SettingsUIState.ControlSettingsChangedEvent obj)
+        {
+        }
+
+        public void EnableUIActions()
+        {
+            InputActions.UI.Enable();
+            SetPlayerActionsEnabled(false);
+        }
+
+        public void EnablePlayerActions()
+        {
+            InputActions.UI.Disable();
+            SetPlayerActionsEnabled(true);
+        }
+
 
         private void OnDestroy()
         {
@@ -256,13 +280,9 @@ namespace Player.Input
         {
             _uiState = evt.NewState;
             if (_uiState == UIStateType.InGame)
-            {
                 EnablePlayerActions();
-            }
             else
-            {
                 EnableUIActions();
-            }
         }
 
         private void SetPlayerActionsEnabled(bool value)
@@ -270,12 +290,10 @@ namespace Player.Input
             var map = InputActions.asset.FindActionMap("Player");
 
             foreach (var action in map.actions)
-            {
                 if (value)
                     action.Enable();
                 else
                     action.Disable();
-            }
         }
 
         private static bool IsMouse(InputAction.CallbackContext context)
@@ -283,6 +301,4 @@ namespace Player.Input
             return context.control.device is Mouse;
         }
     }
-
-
 }

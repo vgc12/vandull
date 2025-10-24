@@ -8,11 +8,11 @@
     <ui:Template name="LevelSelect" src="project://database/Assets/UI%20Toolkit/LevelSelect.uxml?fileID=9197481963319205126&amp;guid=c914a5450100fda4c9c20ae38633eb05&amp;type=3#LevelSelect" />
     <ui:Template name="Quit" src="project://database/Assets/UI%20Toolkit/Quit.uxml?fileID=9197481963319205126&amp;guid=1246f51f5d81b4e44ba7006d7373ec36&amp;type=3#Quit" />
     <ui:Instance template="InGame" name="in-game" style="flex-grow: 1; flex-shrink: 0; display: none;" />
-    <ui:Instance template="MissionOver" name="mission-over" style="flex-grow: 1; display: none;" />
-    <ui:Instance template="Settings" name="settings" style="flex-grow: 1; display: none; visibility: visible;" />
-    <ui:Instance template="Paused" name="paused" style="display: none;" />
-    <ui:Instance template="Loading" name="loading" style="display: none;" />
-    <ui:Instance template="MainMenu" name="main-menu" style="display: none;" />
-    <ui:Instance template="LevelSelect" name="level-select" style="display: none;" />
-    <ui:Instance template="Quit" name="quit" style="display: none;" />
+    <ui:Instance template="MissionOver" name="mission-over" style="flex-grow: 1; display: none; flex-shrink: 0;" />
+    <ui:Instance template="Settings" name="settings" style="flex-grow: 1; display: none; visibility: visible; flex-shrink: 1;" />
+    <ui:Instance template="Paused" name="paused" style="display: none; flex-shrink: 0; flex-grow: 1;" />
+    <ui:Instance template="Loading" name="loading" style="display: none; flex-grow: 1; flex-shrink: 0;" />
+    <ui:Instance template="MainMenu" name="main-menu" style="display: none; flex-shrink: 0; flex-grow: 1;" />
+    <ui:Instance template="LevelSelect" name="level-select" style="display: none; flex-shrink: 0; flex-grow: 1;" />
+    <ui:Instance template="Quit" name="quit" style="display: none; flex-shrink: 0; flex-grow: 1;" />
 </ui:UXML>

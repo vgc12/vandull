@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DependencyInjection;
+using EventBus;
 using Player.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -26,10 +27,16 @@ namespace UI.States
 
         // UI Elements
         private VisualElement _inputOverlay;
+        private Toggle _invertXToggle;
+        private Toggle _invertYoggle;
 
         // Rebinding state
         private InputActionRebindingExtensions.RebindingOperation _rebindOperation;
         private Button _resetButton;
+        private Slider _sensitivitySlider;
+        private Toggle _toggleAimToggle;
+        private Toggle _toggleCrouchToggle;
+        private Toggle _toggleSprintToggle;
         private Label _waitingText;
 
         public SettingsUIState(VisualElement root, UIStateMachine stateMachine, UIStateType stateType) : base(root,
@@ -81,6 +88,12 @@ namespace UI.States
             _applyButton = RootPageElement.Q<Button>("apply-button");
             _resetButton = RootPageElement.Q<Button>("reset-button");
             _closeButton = RootPageElement.Q<Button>("close-button");
+            _sensitivitySlider = RootPageElement.Q<Slider>("sensitivity slider");
+            _invertYoggle = RootPageElement.Q<Toggle>("invert-y toggle");
+            _invertXToggle = RootPageElement.Q<Toggle>("invert-x toggle");
+            _toggleCrouchToggle = RootPageElement.Q<Toggle>("toggle-crouch toggle");
+            _toggleSprintToggle = RootPageElement.Q<Toggle>("toggle-sprint toggle");
+            _toggleAimToggle = RootPageElement.Q<Toggle>("toggle-aim toggle");
 
             // Hide overlay initially
             if (_inputOverlay != null) _inputOverlay.style.display = DisplayStyle.None;
@@ -246,9 +259,18 @@ namespace UI.States
             return key.ToUpper();
         }
 
+
         private void ApplySettings()
         {
-            Debug.Log("Settings applied!");
+            EventBus<ControlSettingsChangedEvent>.Raise(new ControlSettingsChangedEvent
+            {
+                MouseSensitivity = _sensitivitySlider.value,
+                InvertX = _invertXToggle.value,
+                InvertY = _invertYoggle.value,
+                ToggleCrouch = _toggleCrouchToggle.value,
+                ToggleSprint = _toggleSprintToggle.value,
+                ToggleAim = _toggleAimToggle.value
+            });
         }
 
         private void ResetToDefaults()
@@ -270,6 +292,17 @@ namespace UI.States
             if (_rebindOperation == null) return;
             _rebindOperation.Dispose();
             _rebindOperation = null;
+        }
+
+
+        public struct ControlSettingsChangedEvent : IEvent
+        {
+            public float MouseSensitivity { get; init; }
+            public bool InvertY { get; init; }
+            public bool InvertX { get; init; }
+            public bool ToggleCrouch { get; init; }
+            public bool ToggleSprint { get; init; }
+            public bool ToggleAim { get; init; }
         }
 
         [Serializable]

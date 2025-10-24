@@ -64,6 +64,12 @@ namespace StateMachine
             _currentState = _nodes[state.GetType()];
         }
 
+        public void SetStateAndEnter(IState state)
+        {
+            _currentState = _nodes[state.GetType()];
+            _currentState.State.Enter();
+        }
+
         public void AddState(IState state)
         {
             GetOrAddNode(state);
