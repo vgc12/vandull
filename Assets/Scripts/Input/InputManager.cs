@@ -19,13 +19,11 @@ namespace Player.Input
 
         private bool _crouchToggled;
 
+        private bool _sprintToggled;
         private SettingsUIState.ControlSettingsChangedEvent _currentControlSettings;
-
-        private int _lastAimToggleFrame = -1;
-
+        
         [Inject] private ILogger _logger;
 
-        private bool _sprintToggled;
         private UIStateType _uiState;
 
 
@@ -116,15 +114,24 @@ namespace Player.Input
             if (context.performed) Interact.Invoke();
         }
 
+        private float _lastCrouchInputTime;
+        private float _lastSprintInputTime;
+        private float _lastAimInputTime;
+        private float _crouchInputBuffer = 0.002f;
+        
         public void OnCrouch(InputAction.CallbackContext context)
         {
-            if (_currentControlSettings.ToggleCrouch && context.started)
+            if (_currentControlSettings.ToggleCrouch && context.started && 
+                Time.time - _lastCrouchInputTime > _crouchInputBuffer)
             {
+                _lastCrouchInputTime = Time.time;
                 _crouchToggled = !_crouchToggled;
                 Crouch.Invoke(_crouchToggled);
                 return;
             }
 
+            if (_currentControlSettings.ToggleCrouch) return;
+            
             if (context.performed)
                 Crouch.Invoke(true);
             else if (context.canceled)
@@ -148,13 +155,16 @@ namespace Player.Input
 
         public void OnSprint(InputAction.CallbackContext context)
         {
-            if (_currentControlSettings.ToggleSprint && context.started)
+            if (_currentControlSettings.ToggleSprint && context.started && 
+                Time.time - _lastSprintInputTime > _crouchInputBuffer)
             {
+                _lastSprintInputTime = Time.time;
+            
                 _sprintToggled = !_sprintToggled;
                 Sprint.Invoke(_sprintToggled);
                 return;
             }
-
+            if(_currentControlSettings.ToggleSprint) return;
             if (context.performed)
                 Sprint.Invoke(true);
             else if (context.canceled)
@@ -170,9 +180,12 @@ namespace Player.Input
 
         public void OnAim(InputAction.CallbackContext context)
         {
-            if (_currentControlSettings.ToggleAim && context.performed)
+            if (_currentControlSettings.ToggleAim && context.started && 
+                Time.time - _lastAimInputTime > _crouchInputBuffer)
             {
-                _logger.Log(context.performed);
+                _lastAimInputTime = Time.time;
+            
+         
                 _aimToggled = !_aimToggled;
                 Aim.Invoke(_aimToggled);
                 return;

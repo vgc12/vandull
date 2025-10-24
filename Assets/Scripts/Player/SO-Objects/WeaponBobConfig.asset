@@ -13,20 +13,38 @@ MonoBehaviour:
   m_Name: WeaponBobConfig
   m_EditorClassIdentifier: Assembly-CSharp:Player.Looking.Player.Looking:CameraBobConfig
   walkConfig:
-    frequency: 3.81
+    frequency: 3.31
     maxSpeed: 1.64
-    horizontalAmplitude: 0.02
+    horizontalAmplitude: 0.01
     verticalAmplitude: 0.007
     speedCurve: 1.7
   sprintConfig:
     frequency: 3.81
     maxSpeed: 1.64
     horizontalAmplitude: 0.02
-    verticalAmplitude: 0.007
+    verticalAmplitude: 0.012
     speedCurve: 1.7
   crouchWalkConfig:
     frequency: 3.81
     maxSpeed: 1.64
     horizontalAmplitude: 0.02
     verticalAmplitude: 0.007
+    speedCurve: 1.7
+  aimWalkConfig:
+    frequency: 3.81
+    maxSpeed: 1.64
+    horizontalAmplitude: 0.001
+    verticalAmplitude: 0.001
+    speedCurve: 1.7
+  aimCrouchWalkConfig:
+    frequency: 3.81
+    maxSpeed: 1.64
+    horizontalAmplitude: 0.004
+    verticalAmplitude: 0.001
+    speedCurve: 1.7
+  sprintAimConfig:
+    frequency: 4.3
+    maxSpeed: 1.64
+    horizontalAmplitude: 0.005
+    verticalAmplitude: 0.002
     speedCurve: 1.7

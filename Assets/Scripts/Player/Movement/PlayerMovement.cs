@@ -26,10 +26,10 @@ namespace Player.Movement
 
         private Coroutine _crouchCoroutine;
 
-
         private GroundChecker _groundChecker;
 
         private RaycastHit _slopeHit;
+        
 
 
         public Rigidbody Rigidbody { get; private set; }
@@ -45,20 +45,20 @@ namespace Player.Movement
         public bool CrouchPressed { get; private set; }
 
         public Transform PlayerModel => playerModel;
+        
+        public bool IsAiming { get; set; }
 
 
         public void Crouch()
         {
             if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
-
             _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.CrouchHeight, config.CrouchCameraPosition));
         }
 
         public void UnCrouch()
         {
             if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
-            _crouchCoroutine =
-                StartCoroutine(SetPlayerHeight(config.InitialHeight, config.InitialCrouchCameraPosition));
+            _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.InitialHeight, config.InitialCrouchCameraPosition));
         }
 
 
@@ -116,11 +116,18 @@ namespace Player.Movement
             _input.Sprint += OnSprintInput;
 
             _input.Move += OnMoveInput;
+            
+            _input.Aim += OnAimInput;
 
             playerModel.localScale = new Vector3(1, config.InitialHeight, 1);
             crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
                 config.InitialCrouchCameraPosition,
                 crouchPositionTransform.localPosition.z);
+        }
+
+        private void OnAimInput(bool value)
+        {
+            IsAiming = value;
         }
 
         private void OnMoveInput(Vector2 value)

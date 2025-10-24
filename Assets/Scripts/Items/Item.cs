@@ -1,4 +1,5 @@
-﻿using Items.Guns;
+﻿using System;
+using Items.Guns;
 using Player;
 using Player.Input;
 using UnityEngine;
@@ -45,6 +46,13 @@ namespace Items
         public virtual void Despawn()
         {
             if (gameObject != null) Destroy(gameObject);
+        }
+
+        
+        
+        private void OnDestroy()
+        {
+            Despawn();
         }
     }
 }

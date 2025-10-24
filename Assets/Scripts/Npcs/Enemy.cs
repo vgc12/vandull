@@ -146,11 +146,8 @@ namespace Npcs
         {
             _transform.LookAt(target);
             _transform.rotation = Quaternion.Euler(0, _transform.rotation.eulerAngles.y, 0);
-
-
-/*
-            var direction = target - Gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
-     */
+            
+            
         }
 
 

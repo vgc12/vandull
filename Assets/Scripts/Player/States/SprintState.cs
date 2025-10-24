@@ -21,7 +21,10 @@ namespace Player.States
 
             _sm.PlayerLooking.Look();
             var weaponEffects = _sm.PlayerLooking.weaponBobber;
-            weaponEffects.Bob(_sm.PlayerLooking.weaponBobConfig.sprintConfig,
+            var config = _sm.PlayerMovement.IsAiming ?
+                _sm.PlayerLooking.weaponBobConfig.sprintAimConfig
+                : _sm.PlayerLooking.weaponBobConfig.sprintConfig;
+            weaponEffects.Bob(config,
                 _sm.PlayerMovement.Rigidbody.linearVelocity);
             var ce = _sm.PlayerLooking.Bobber;
             ce.Bob(_sm.PlayerLooking.cameraBobConfig.sprintConfig, _sm.PlayerMovement.Rigidbody.linearVelocity);

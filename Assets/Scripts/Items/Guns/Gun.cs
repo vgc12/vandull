@@ -40,7 +40,7 @@ namespace Items.Guns
         public bool IsAiming => AimingSystem.IsAiming;
         public bool IsReloading => AmmoSystem.IsReloading;
 
-        private void Start()
+        private void Awake()
         {
             var systems = initializer.CreateGunSystems(this);
 
@@ -163,7 +163,7 @@ namespace Items.Guns
     public interface IImpactSystem : IGunSystem
     {
     }
-
+    
 
     public interface IFireModeSystem : IGunSystem
     {

@@ -20,7 +20,10 @@ namespace Player.States
             _sm.PlayerMovement.ApplyDrag();
             _sm.PlayerLooking.Look();
             var weaponEffects = _sm.PlayerLooking.weaponBobber;
-            weaponEffects.Bob(_sm.PlayerLooking.weaponBobConfig.walkConfig,
+            var config = _sm.PlayerMovement.IsAiming ?
+                _sm.PlayerLooking.weaponBobConfig.aimWalkConfig
+                : _sm.PlayerLooking.weaponBobConfig.walkConfig;
+            weaponEffects.Bob(config,
                 _sm.PlayerMovement.Rigidbody.linearVelocity);
             var cameraEffects = _sm.PlayerLooking.Bobber;
             cameraEffects.Bob(_sm.PlayerLooking.cameraBobConfig.walkConfig,

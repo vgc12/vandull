@@ -5,6 +5,7 @@ namespace Player.States
     public class IdleState : BaseState
     {
         private readonly PlayerStateMachine _sm;
+        
 
         public IdleState(PlayerStateMachine sm)
         {

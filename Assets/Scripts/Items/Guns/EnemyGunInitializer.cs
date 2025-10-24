@@ -11,7 +11,6 @@ namespace Items.Guns
         order = 1)]
     public class EnemyGunInitializer : GunInitializer
     {
-        public ISensor Sensor;
 
         public override GunSystems CreateGunSystems(Gun gun)
         {

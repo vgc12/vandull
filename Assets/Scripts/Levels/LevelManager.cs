@@ -125,6 +125,7 @@ namespace Levels
             _remainingEnemies = config.enemyCount;
             IsLevelActive = true;
 
+            
             // Setup mission strategy based on level type
 
 
