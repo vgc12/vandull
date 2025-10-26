@@ -11,6 +11,24 @@ namespace Player
 
         public RigBuilder rigBuilder;
 
+        public Transform LeftHandTarget { get; set; }
+        public Transform LeftHandHint { get; set; }
+        public Transform RightHandTarget { get; set; }
+        public Transform RightHandHint { get; set; }
+
+        public bool FollowItemTargets { get; set; } = true;
+
+
+        private void Update()
+        {
+            if (!FollowItemTargets) return;
+            if (leftHandConstraint && LeftHandTarget && LeftHandHint)
+                ConstraintFollowTransform(leftHandConstraint, LeftHandTarget, LeftHandHint);
+
+            if (rightHandConstraint && RightHandTarget && RightHandHint)
+                ConstraintFollowTransform(rightHandConstraint, RightHandTarget, RightHandHint);
+        }
+
 
         public void SetLeftHandData(Transform leftHandTarget, Transform leftHandHint)
         {
@@ -20,6 +38,15 @@ namespace Player
         public void SetRightHandData(Transform rightHandTarget, Transform rightHandHint)
         {
             ApplyConstraint(rightHandConstraint, rightHandTarget, rightHandHint);
+        }
+
+
+        public void ConstraintFollowTransform(TwoBoneIKConstraint constraint, Transform target, Transform hint)
+        {
+            constraint.data.target.position = target.position;
+            constraint.data.target.rotation = target.rotation;
+            constraint.data.hint.position = hint.position;
+            constraint.data.hint.rotation = hint.rotation;
         }
 
 
@@ -35,7 +62,7 @@ namespace Player
             RebuildRigs();
         }
 
-        private void RebuildRigs()
+        public void RebuildRigs()
         {
             rigBuilder.Build();
         }

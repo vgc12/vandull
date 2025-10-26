@@ -13,16 +13,21 @@ namespace Player.Input
     public class InputManager : IInputService, IPlayerActions, IUIActions
     {
         private readonly EventBinding<SettingsUIState.ControlSettingsChangedEvent> _controlsChangedEventBinding;
+        private readonly float _crouchInputBuffer = 0.002f;
         private readonly EventBinding<UIStateSwitchedEvent> _uiStateChangedEventBinding;
 
         private bool _aimToggled;
 
         private bool _crouchToggled;
+        private SettingsUIState.ControlSettingsChangedEvent _currentControlSettings;
+        private float _lastAimInputTime;
+
+        private float _lastCrouchInputTime;
+        private float _lastSprintInputTime;
+
+        [Inject] private ILogger _logger;
 
         private bool _sprintToggled;
-        private SettingsUIState.ControlSettingsChangedEvent _currentControlSettings;
-        
-        [Inject] private ILogger _logger;
 
         private UIStateType _uiState;
 
@@ -114,14 +119,9 @@ namespace Player.Input
             if (context.performed) Interact.Invoke();
         }
 
-        private float _lastCrouchInputTime;
-        private float _lastSprintInputTime;
-        private float _lastAimInputTime;
-        private float _crouchInputBuffer = 0.002f;
-        
         public void OnCrouch(InputAction.CallbackContext context)
         {
-            if (_currentControlSettings.ToggleCrouch && context.started && 
+            if (_currentControlSettings.ToggleCrouch && context.started &&
                 Time.time - _lastCrouchInputTime > _crouchInputBuffer)
             {
                 _lastCrouchInputTime = Time.time;
@@ -131,7 +131,7 @@ namespace Player.Input
             }
 
             if (_currentControlSettings.ToggleCrouch) return;
-            
+
             if (context.performed)
                 Crouch.Invoke(true);
             else if (context.canceled)
@@ -140,7 +140,7 @@ namespace Player.Input
 
         public void OnJump(InputAction.CallbackContext context)
         {
-            if (context.started) Jump.Invoke(context.started);
+            if (context.started || context.canceled) Jump.Invoke(context.started);
         }
 
         public void OnPrevious(InputAction.CallbackContext context)
@@ -155,16 +155,17 @@ namespace Player.Input
 
         public void OnSprint(InputAction.CallbackContext context)
         {
-            if (_currentControlSettings.ToggleSprint && context.started && 
+            if (_currentControlSettings.ToggleSprint && context.started &&
                 Time.time - _lastSprintInputTime > _crouchInputBuffer)
             {
                 _lastSprintInputTime = Time.time;
-            
+
                 _sprintToggled = !_sprintToggled;
                 Sprint.Invoke(_sprintToggled);
                 return;
             }
-            if(_currentControlSettings.ToggleSprint) return;
+
+            if (_currentControlSettings.ToggleSprint) return;
             if (context.performed)
                 Sprint.Invoke(true);
             else if (context.canceled)
@@ -180,12 +181,12 @@ namespace Player.Input
 
         public void OnAim(InputAction.CallbackContext context)
         {
-            if (_currentControlSettings.ToggleAim && context.started && 
+            if (_currentControlSettings.ToggleAim && context.started &&
                 Time.time - _lastAimInputTime > _crouchInputBuffer)
             {
                 _lastAimInputTime = Time.time;
-            
-         
+
+
                 _aimToggled = !_aimToggled;
                 Aim.Invoke(_aimToggled);
                 return;

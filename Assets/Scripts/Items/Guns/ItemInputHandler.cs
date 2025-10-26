@@ -1,23 +1,20 @@
 ﻿using EventBus;
 using Levels;
-using Player;
 using Player.Input;
 using Reflex.Attributes;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 namespace Items.Guns
 {
     public class ItemInputHandler : MonoBehaviour
     {
-     
+        [Inject] private readonly IPlayerInput _input;
+
         private Gun _currentGun;
         private Item _currentItem;
 
         private EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
-        [Inject]
-        private readonly IPlayerInput _input;
+
         private void Awake()
         {
             _itemSwitchedEventBinding = new EventBinding<ItemSwitchedEvent>(OnItemSwitched);
@@ -28,22 +25,31 @@ namespace Items.Guns
         public void Start()
         {
             _input.Aim += OnAim;
-  
+
             _input.Reload += OnReload;
-       
+
 
             _input.Attack += Use;
 
             _input.SwitchFireMode += OnFireModeSwitched;
-            
-            _input.Restart += OnRestart;
 
-         
+            _input.Restart += OnRestart;
         }
+
+        private void OnDestroy()
+        {
+            EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedEventBinding);
+            _input.Aim -= OnAim;
+            _input.Reload -= OnReload;
+            _input.Attack -= Use;
+            _input.SwitchFireMode -= OnFireModeSwitched;
+            _input.Restart -= OnRestart;
+        }
+
 
         private void OnRestart()
         {
-            LevelManager.Instance.ReloadLevel();   
+            LevelManager.Instance.ReloadLevel();
         }
 
         private void Use((bool started, bool performed, bool canceled) context)
@@ -59,28 +65,22 @@ namespace Items.Guns
         public void OnReload()
         {
             if (_currentItem == null) return;
-     
+
             _currentGun.StartReload();
         }
 
-        private void OnDestroy()
-        {
-
-            EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedEventBinding);
-        }
-        
 
         private void OnFireModeSwitched()
         {
             if (!_currentGun) return;
             _currentGun.CycleFireMode();
         }
-        
+
         private void OnItemSwitched(ItemSwitchedEvent obj)
         {
             _currentItem = obj.NewItem;
             // Important that this gets toggled off, when item is switched
-       
+
             if (obj.NewItem is Gun newGun)
             {
                 if (_currentGun != null) _currentGun.StopAiming();
@@ -96,15 +96,9 @@ namespace Items.Guns
         {
             if (_currentGun == null) return;
             if (value)
-            {
                 _currentGun.StartAiming();
-            }
             else
-            {
                 _currentGun.StopAiming();
-            }
         }
-
-
     }
 }

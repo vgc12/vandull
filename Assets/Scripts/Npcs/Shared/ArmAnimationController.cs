@@ -9,6 +9,7 @@ namespace Npcs.Shared
         private readonly int _arNoGrip = Animator.StringToHash("AR_No_Grip");
         private readonly int _pistolGrip = Animator.StringToHash("Pistol_Grip");
 
+
         public void PlayAnimation(GripType type)
         {
             if (type == GripType.Pistol)

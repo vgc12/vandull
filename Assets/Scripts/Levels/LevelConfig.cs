@@ -6,7 +6,6 @@ namespace Levels
     public class LevelConfig : ScriptableObject
     {
         public string levelName;
-
         public int enemyCount = 5;
         public int hostageCount = 2;
         public int bombCount = 3;

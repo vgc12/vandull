@@ -1,4 +1,5 @@
 ﻿using DependencyInjection;
+using EventBus;
 using UnityEngine;
 using ILogger = General.Logging.ILogger;
 
@@ -14,7 +15,18 @@ namespace Items.Guns
         {
             RuntimeResolver.Instance.TryResolve(out _logger);
             var builder = new Builder(gun);
-            return builder.ForPlayer(_logger).Build();
+            return builder.ForPlayer(_logger).AddItemEquippedHandler(() =>
+                EventBus<PlayerEquippedNewItemEvent>.Raise(new PlayerEquippedNewItemEvent(gun))).Build();
+        }
+    }
+
+    public class PlayerEquippedNewItemEvent : IEvent
+    {
+        public readonly Item Item;
+
+        public PlayerEquippedNewItemEvent(Item item)
+        {
+            Item = item;
         }
     }
 }

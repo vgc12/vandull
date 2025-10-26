@@ -96,8 +96,14 @@ namespace Items
             EquippedItem = item;
             EquippedItem.Equip();
 
-            rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
-            rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
+            rigHandler.LeftHandTarget = EquippedItem.leftHandTarget;
+            rigHandler.LeftHandHint = EquippedItem.leftHandHint;
+            rigHandler.RightHandTarget = EquippedItem.rightHandTarget;
+            rigHandler.RightHandHint = EquippedItem.rightHandHint;
+            rigHandler.RebuildRigs();
+
+            //rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
+            // rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
 //            animator.SetLayerWeight((int)EquippedItem.gripType, 1);
 
             armAnimationController.PlayAnimation(EquippedItem.gripType);

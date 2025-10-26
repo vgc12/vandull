@@ -9,107 +9,116 @@ namespace Items.Guns.Ammo
     {
         [Inject] private readonly ILogger _logger;
 
-        private AmmoSettings _ammoSettings;
-
         private Collider _collider;
-
+        private Transform _equipPosition;
+        private MeshRenderer _meshRenderer;
         private Rigidbody _rigidbody;
 
         public int CurrentAmmo { get; set; }
         public int Capacity { get; set; }
-
-
         public bool IsEmpty => CurrentAmmo <= 0;
         public bool IsFull => CurrentAmmo >= Capacity;
-
         public bool IsDropped { get; private set; }
-
-        public Transform MagazinePosition { get; set; }
-
-        public MeshRenderer MeshRenderer { get; private set; }
-
-        public AmmoSettings AmmoSettings
-        {
-            get => _ammoSettings;
-            set
-            {
-                _ammoSettings = value;
-                Capacity = _ammoSettings.magazineSize;
-                CurrentAmmo = Capacity;
-            }
-        }
 
         private void Awake()
         {
-            _collider = GetComponent<Collider>();
-            _rigidbody = GetComponent<Rigidbody>();
-            MeshRenderer = GetComponentInChildren<MeshRenderer>();
-            _collider.enabled = false;
-            _rigidbody.isKinematic = true;
-            IsDropped = false;
-        }
-
-        private void Update()
-        {
-            if (transform.parent != null) transform.position = MagazinePosition.position;
+            CacheComponents();
+            SetPhysicsState(true, false);
         }
 
         public void Equip()
         {
-            if (CheckErrors()) return;
-            MeshRenderer.enabled = true;
-            transform.SetParent(MagazinePosition);
-            transform.rotation = MagazinePosition.rotation;
-            _rigidbody.isKinematic = true;
-            _collider.enabled = false;
+            if (!IsInitialized()) return;
+
+            transform.SetParent(_equipPosition);
+            transform.SetPositionAndRotation(_equipPosition.position, _equipPosition.rotation);
+
+            SetVisibility(true);
+            SetPhysicsState(true, false);
             IsDropped = false;
         }
 
         public void UnEquip()
         {
-            if (CheckErrors()) return;
+            if (!IsInitialized()) return;
+
             transform.SetParent(null);
-            MeshRenderer.enabled = false;
-            _rigidbody.isKinematic = true;
-            _collider.enabled = false;
+            SetVisibility(false);
+            SetPhysicsState(true, false);
             IsDropped = false;
         }
 
-        public void SubtractAmmo(int amount)
+        public void Initialize(AmmoSettings settings, Transform equipPosition)
         {
-            CurrentAmmo = Mathf.Max(0, CurrentAmmo - amount);
-        }
+            if (!ValidateInitialization(settings, equipPosition)) return;
 
-        public void SubtractOne()
-        {
-            SubtractAmmo(1);
+            _equipPosition = equipPosition;
+            Capacity = settings.magazineSize;
+            CurrentAmmo = Capacity;
         }
 
         public void Drop()
         {
             transform.SetParent(null);
-            _rigidbody.isKinematic = false;
-            _collider.enabled = true;
+            SetPhysicsState(false, true);
             IsDropped = true;
         }
 
-
-        private bool CheckErrors()
+        public void ConsumeAmmo(int amount = 1)
         {
-            var hasError = false;
-            if (AmmoSettings == null)
+            CurrentAmmo = Mathf.Max(0, CurrentAmmo - amount);
+        }
+
+        private void CacheComponents()
+        {
+            _collider = GetComponent<Collider>();
+            _rigidbody = GetComponent<Rigidbody>();
+            _meshRenderer = GetComponentInChildren<MeshRenderer>();
+        }
+
+        private void SetPhysicsState(bool isKinematic, bool colliderEnabled)
+        {
+            if (_rigidbody != null)
+                _rigidbody.isKinematic = isKinematic;
+
+            if (_collider != null)
+                _collider.enabled = colliderEnabled;
+        }
+
+        private void SetVisibility(bool visible)
+        {
+            if (_meshRenderer != null)
+                _meshRenderer.enabled = visible;
+        }
+
+        private bool IsInitialized()
+        {
+            if (_equipPosition == null)
             {
-                _logger.LogError("AmmoSettings is not set on Magazine");
-                hasError = true;
+                _logger?.LogError("Magazine not initialized - EquipPosition is null");
+                return false;
             }
 
-            if (MagazinePosition == null)
+            return true;
+        }
+
+        private bool ValidateInitialization(AmmoSettings settings, Transform equipPosition)
+        {
+            var isValid = true;
+
+            if (settings == null)
             {
-                _logger.LogError("MagazineTransform is not set on Magazine");
-                hasError = true;
+                _logger?.LogError("AmmoSettings is null during Magazine initialization");
+                isValid = false;
             }
 
-            return hasError;
+            if (equipPosition == null)
+            {
+                _logger?.LogError("EquipPosition is null during Magazine initialization");
+                isValid = false;
+            }
+
+            return isValid;
         }
     }
 }

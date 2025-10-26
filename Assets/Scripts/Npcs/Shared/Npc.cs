@@ -100,6 +100,7 @@ namespace Npcs.Shared
         {
             if (invulnerable || IsDead) return;
             health -= amount;
+            health = Mathf.Clamp(health, 0, float.MaxValue);
             if (IsDead) Die();
         }
 

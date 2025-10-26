@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Attributes;
 using EventBus;
-using General;
 using General.Extensions;
 using Items.Guns.Aiming;
 using Items.Guns.Ammo;
@@ -18,16 +17,17 @@ namespace Items.Guns
 
         [SerializeField] [Required] private GunInitializer initializer;
 
-        public Transform magazinePosition;
+        [Required] public Transform magazinePosition;
 
-        public Transform hipFireTransform;
+        [Required] public Transform hipFireTransform;
 
-        public Transform recoilTransform;
+        [Required] public Transform recoilTransform;
 
-        public Transform aimTransform;
+        [Required] public Transform aimTransform;
 
-        public Transform muzzleTransform;
+        [Required] public Transform muzzleTransform;
 
+        [Required] public Transform leftHandTransform;
 
         public IAimingSystem AimingSystem { get; private set; }
         public IAmmoSystem AmmoSystem { get; private set; }
@@ -53,6 +53,23 @@ namespace Items.Guns
 
             AimingSystem.StartAiming();
             AimingSystem.StopAiming();
+        }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            /*
+            foreach (var fireMode in FireModeSystem?.AvailableFireModes)
+            {
+                foreach (var del in fireMode.OnShotFired.GetInvocationList())
+                {
+                    fireMode.OnShotFired-= (Action<ShotFiredEvent>)del;
+                }
+            }
+            */
+            foreach (var fireMode in FireModeSystem?.AvailableFireModes) fireMode.OnShotFired = null;
+            AmmoSystem.OnOutOfAmmo = null;
+            AmmoSystem.OnReloadComplete = null;
         }
 
 
@@ -160,10 +177,6 @@ namespace Items.Guns
         }
     }
 
-    public interface IImpactSystem : IGunSystem
-    {
-    }
-    
 
     public interface IFireModeSystem : IGunSystem
     {

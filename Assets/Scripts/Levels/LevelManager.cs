@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using Attributes;
 using EventBus;
-using General;
-using General.Game;
 using Levels.Strategies;
 using Singletons;
 using UnityEngine;
@@ -19,19 +17,17 @@ namespace Levels
     {
         [ScriptableObjectDropdown] public List<LevelConfig> levels;
 
-        
-        
-        
+
         private LevelConfig _currentLevel;
-
-
-        public bool IsLevelActive { get; private set; }
 
         private EventBinding<LevelLoadEvent> _levelLoadBinding;
         private int _remainingBombs;
 
         private int _remainingEnemies;
         private int _remainingHostages;
+
+
+        public bool IsLevelActive { get; private set; }
 
         private bool LevelWon => _remainingEnemies <= 0 && _remainingHostages <= 0 && _remainingBombs <= 0;
         public bool IsLoading { get; private set; }
@@ -52,14 +48,11 @@ namespace Levels
             var enemyKilledEventBinding = new EventBinding<EnemyKilledEvent>(EnemyKilled);
             var hostageRescuedEventBinding = new EventBinding<HostageRescuedEvent>(HostageRescued);
             var levelLostEventBinding = new EventBinding<PlayerKilledEvent>(LevelFailed);
-            
+
             EventBus<PlayerKilledEvent>.Register(levelLostEventBinding);
             EventBus<BombDefusedEvent>.Register(bombDiffusedEventBinding);
             EventBus<EnemyKilledEvent>.Register(enemyKilledEventBinding);
             EventBus<HostageRescuedEvent>.Register(hostageRescuedEventBinding);
-           
-         
-            
         }
 
 
@@ -97,12 +90,11 @@ namespace Levels
 
         private IEnumerator LoadLevelCoroutine(LevelConfig config)
         {
-          
-
             // Cleanup previous level
             CleanupCurrentLevel();
 
             // Load the scene
+
             var asyncLoad = SceneManager.LoadSceneAsync(config.levelName);
 
             while (asyncLoad is { isDone: false })
@@ -117,7 +109,6 @@ namespace Levels
             InitializeLevel(config);
 
             IsLoading = false;
-            
         }
 
         private void InitializeLevel(LevelConfig config)
@@ -125,7 +116,7 @@ namespace Levels
             _remainingEnemies = config.enemyCount;
             IsLevelActive = true;
 
-            
+
             // Setup mission strategy based on level type
 
 
@@ -151,7 +142,7 @@ namespace Levels
         public void LevelFailed()
         {
             IsLevelActive = false;
-            EventBus<LevelLostEvent>.Raise(new());
+            EventBus<LevelLostEvent>.Raise(new LevelLostEvent());
         }
 
         public void ReloadLevel()

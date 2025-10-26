@@ -1,6 +1,5 @@
 ﻿using System;
 using Items.Guns;
-using Player;
 using Player.Input;
 using UnityEngine;
 
@@ -18,9 +17,11 @@ namespace Items
 
         public Transform rightHandHint;
 
-        protected InputManager InputManager;
-
         public GripType gripType = GripType.Pistol;
+
+        protected InputManager InputManager;
+        public Action OnItemEquipped;
+        public Action OnItemUnequipped;
         public bool IsEquipped { get; protected set; }
 
         public void Update()
@@ -28,10 +29,16 @@ namespace Items
             if (IsEquipped) OnUpdate();
         }
 
+
+        public virtual void OnDestroy()
+        {
+        }
+
         public virtual void Equip()
         {
             gameObject.SetActive(true);
             IsEquipped = true;
+            OnItemEquipped?.Invoke();
         }
 
 
@@ -39,6 +46,7 @@ namespace Items
         {
             gameObject.SetActive(false);
             IsEquipped = false;
+            OnItemUnequipped?.Invoke();
         }
 
         protected abstract void OnUpdate();
@@ -46,13 +54,6 @@ namespace Items
         public virtual void Despawn()
         {
             if (gameObject != null) Destroy(gameObject);
-        }
-
-        
-        
-        private void OnDestroy()
-        {
-            Despawn();
         }
     }
 }

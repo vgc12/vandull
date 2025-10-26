@@ -181,6 +181,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12147e929fb84be4bb339ffad467502b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  AutoUnparentOnAwake: 1
 --- !u!1 &2776849274612544072
 GameObject:
   m_ObjectHideFlags: 0

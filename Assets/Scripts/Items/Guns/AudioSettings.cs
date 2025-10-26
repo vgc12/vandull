@@ -3,10 +3,11 @@ using UnityEngine;
 
 namespace Items.Guns
 {
-    public class AudioSettings
+    [CreateAssetMenu(fileName = "AudioSettings", menuName = "Guns/AudioSettings", order = 1)]
+    public class AudioSettings : ScriptableObject
     {
-        [Required] public AudioSource Shoot;
-        [Required] public AudioSource OutOfAmmoClick;
-        [Required] public AudioSource Reload;
+        [Required] public AudioClip shoot;
+        [Required] public AudioClip outOfAmmoClick;
+        [Required] public AudioClip reload;
     }
 }

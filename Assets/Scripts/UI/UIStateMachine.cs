@@ -3,6 +3,7 @@ using Levels;
 using Levels.Strategies;
 using Player.Input;
 using Reflex.Attributes;
+using Singletons;
 using StateMachine;
 using UI.States;
 using UnityEngine;
@@ -11,23 +12,9 @@ using UnityEngine.UIElements;
 namespace UI
 {
     // Command enum for all UI actions
-    public enum UICommand
-    {
-        None,
-        Back,
-        OpenSettings,
-        OpenQuitMenu,
-        QuitToMenu,
-        QuitToDesktop,
-        Resume,
-        Play,
-        LevelWon,
-        LevelLost,
-        StartLoading
-    }
 
     [RequireComponent(typeof(UIDocument))]
-    public class UIStateMachine : MonoBehaviour
+    public class UIStateMachine : PersistentSingleton<UIStateMachine>
     {
         private UIDocument _document;
         private IState _inGameSettingsState;
@@ -145,7 +132,7 @@ namespace UI
             _stateMachine.AddAnyTransition(_loadingState, () => LevelManager.Instance.IsLoading);
 
             _stateMachine.AddTransition(_loadingState, _inGameState,
-                () => !LevelManager.Instance.IsLoading && LevelManager.Instance.IsLevelActive);
+                () =>  LevelManager.Instance.IsLevelActive);
 
             _stateMachine.AddTransition(_inGameState, _pausedState,
                 () => IsCommand(UICommand.Back));

@@ -18,12 +18,13 @@ namespace UI.States
             var container = RootPageElement.Q<VisualElement>("level-button-container");
             foreach (var level in levels)
             {
-                if (level.name == "Main Menu") continue;
+                if (level.levelName == "Main Menu") continue;
                 var button = new Button(() => EventBus<LevelLoadEvent>.Raise(new LevelLoadEvent(level)))
                 {
-                    text = level.name
+                    text = level.levelName
                 };
-                button.AddToClassList("button-red level-select-button");
+                button.AddToClassList("button-red");
+                button.AddToClassList("level-select-button");
                 Logger.Log($"Button classes: {string.Join(", ", button.GetClasses())}");
                 container.Add(button);
             }
