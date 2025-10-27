@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using EventBus;
 using Items.Guns;
 using UnityEngine;
@@ -8,7 +9,9 @@ namespace Npcs.Shared
     public class ReloadAnimationHandler : MonoBehaviour
     {
         [SerializeField] private GameObject leftHand;
-        public Gun _currentGun;
+ 
+        public float timescale = 1f;
+        public Gun currentGun;
 
 
         private void Awake()
@@ -16,40 +19,54 @@ namespace Npcs.Shared
             var playerEquippedNewItemEventBinding =
                 new EventBinding<PlayerEquippedNewItemEvent>(OnPlayerEquippedNewItem);
             EventBus<PlayerEquippedNewItemEvent>.Register(playerEquippedNewItemEventBinding);
+       
         }
 
         private void Start()
         {
-            _currentGun = GetComponentsInChildren<Gun>().First(g => g.IsEquipped);
+            currentGun = GetComponentsInChildren<Gun>().First(g => g.IsEquipped);
         }
 
+        private void Update()
+        {
+            Time.timeScale = timescale;
+        }
 
         private void OnPlayerEquippedNewItem(PlayerEquippedNewItemEvent obj)
         {
-            if (obj.Item is Gun gun) _currentGun = gun;
+            if (obj.Item is Gun gun)
+            {
+                currentGun = gun;
+              
+            }
+            
         }
-
-        public void ParentMagazineToHand()
+        
+        public void ShowGunMagazine()
         {
-            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null || leftHand == null) return;
+            if (!currentGun || currentGun.AmmoSystem.CurrentMagazine == null) return;
 
-            _currentGun.AmmoSystem.CurrentMagazine.transform.SetParent(leftHand.transform, true);
-            //_currentGun.AmmoSystem.CurrentMagazine.transform.localPosition = Vector3.zero;
-            //_currentGun.AmmoSystem.CurrentMagazine.transform.localRotation = Quaternion.identity;
+            currentGun.AmmoSystem.CurrentMagazine.gameObject.SetActive(true);
         }
+        public void HideGunMagazine()
+        {
+            if (!currentGun || currentGun.AmmoSystem.CurrentMagazine == null) return;
 
+            currentGun.AmmoSystem.CurrentMagazine.UnEquip();
+        }
+  
         public void DropMagazine()
         {
-            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null) return;
+            if (!currentGun || currentGun.AmmoSystem.CurrentMagazine == null) return;
 
-            _currentGun.AmmoSystem.CurrentMagazine.Drop();
+            currentGun.AmmoSystem.CurrentMagazine.Drop();
         }
 
-        public void SpawnMagazine()
+        public void EquipNewMagazine()
         {
-            if (!_currentGun) return;
+            if (!currentGun) return;
 
-            _currentGun.AmmoSystem.EquipNewMagazine();
+            currentGun.AmmoSystem.EquipNewMagazine();
         }
     }
 }

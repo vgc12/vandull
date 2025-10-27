@@ -48,8 +48,7 @@ namespace Items.Guns.Ammo
         private bool HasSpareAmmo => _magazines.Count > 1;
 
         public bool CurrentMagazineEmpty => CurrentMagazine.IsEmpty;
-
-
+        
         // Properties
         public Magazine CurrentMagazine { get; private set; }
         public bool IsReloading { get; private set; }
@@ -147,8 +146,7 @@ namespace Items.Guns.Ammo
 
             if (_gun.Owner == OwnerStatus.Enemy) EquipNewMagazine();
             IsReloading = false;
-
-            EquipCurrentMagazine();
+            
 
             // Chamber a round if needed
             if (!_bulletInChamber)

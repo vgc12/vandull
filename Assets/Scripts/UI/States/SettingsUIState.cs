@@ -135,15 +135,13 @@ namespace UI.States
             var primaryButton = buttonsContainer.Q<Button>("primary");
             var secondaryButton = buttonsContainer.Q<Button>("secondary");
 
-            primaryButton?.RegisterCallback<ClickEvent>(evt => StartRebind(actionName, 0, primaryButton));
-            secondaryButton?.RegisterCallback<ClickEvent>(evt => StartRebind(actionName, 1, secondaryButton));
+            primaryButton.clicked += ()=> StartRebind(actionName, 0, primaryButton);
+            secondaryButton.clicked += ()=> StartRebind(actionName, 1, secondaryButton);
         }
 
         private void StartRebind(string actionName, int bindingIndex, Button button)
         {
-            if (!_actionMap.ContainsKey(actionName)) return;
-
-            var action = _actionMap[actionName];
+            if (!_actionMap.TryGetValue(actionName, out var action)) return;
 
             // Disable the action while rebinding
             action.Disable();
