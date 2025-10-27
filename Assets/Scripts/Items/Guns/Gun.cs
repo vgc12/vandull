@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Attributes;
-using EventBus;
 using General.Extensions;
 using Items.Guns.Aiming;
 using Items.Guns.Ammo;
@@ -13,7 +12,15 @@ namespace Items.Guns
 {
     public sealed class Gun : Item
     {
-        [Header("Gun Components")] public GunConfig gunConfig;
+        [Required] public FireModeSettings fireModeSettings;
+        [Required] public FiringSettings firingSettings;
+        [Required] public AimSettings aimSettings;
+        [Required] public DamageSettings damageSettings;
+        [Required] public AmmoSettings ammoSettings;
+        [Required] public RecoilSettings recoilSettings;
+        [Required] public TrailSettings trailSettings;
+        [Required] public AudioSettings audioSettings;
+
 
         [SerializeField] [Required] private GunInitializer initializer;
 
@@ -21,13 +28,23 @@ namespace Items.Guns
 
         [Required] public Transform hipFireTransform;
 
-        [Required] public Transform recoilTransform;
-
         [Required] public Transform aimTransform;
 
         [Required] public Transform muzzleTransform;
+        [Required] public ItemAnimation reloadAnimation;
 
-        [Required] public Transform leftHandTransform;
+        private Transform _recoilTransform;
+
+
+        public Transform RecoilTransform
+        {
+            get
+            {
+                _recoilTransform ??= FindFirstObjectByType<PlayerRecoilObject>().transform;
+                return _recoilTransform;
+            }
+        }
+
 
         public IAimingSystem AimingSystem { get; private set; }
         public IAmmoSystem AmmoSystem { get; private set; }
@@ -36,6 +53,7 @@ namespace Items.Guns
 
         public IFireModeSystem FireModeSystem { get; private set; }
 
+        public IItemAnimationSystem AnimationSystem { get; private set; }
 
         public bool IsAiming => AimingSystem.IsAiming;
         public bool IsReloading => AmmoSystem.IsReloading;
@@ -50,6 +68,7 @@ namespace Items.Guns
             RecoilSystem = systems.RecoilSystem;
             TrailSystem = systems.TrailSystem;
             FireModeSystem = systems.FireModeSystem;
+            AnimationSystem = systems.ItemAnimationSystem;
 
             AimingSystem.StartAiming();
             AimingSystem.StopAiming();
@@ -58,15 +77,7 @@ namespace Items.Guns
         public override void OnDestroy()
         {
             base.OnDestroy();
-            /*
-            foreach (var fireMode in FireModeSystem?.AvailableFireModes)
-            {
-                foreach (var del in fireMode.OnShotFired.GetInvocationList())
-                {
-                    fireMode.OnShotFired-= (Action<ShotFiredEvent>)del;
-                }
-            }
-            */
+
             foreach (var fireMode in FireModeSystem?.AvailableFireModes) fireMode.OnShotFired = null;
             AmmoSystem.OnOutOfAmmo = null;
             AmmoSystem.OnReloadComplete = null;
@@ -102,7 +113,7 @@ namespace Items.Guns
 
         public IReadOnlyList<FireType> GetAvailableFireModes()
         {
-            return gunConfig.fireModeSettings.availableFireModes;
+            return fireModeSettings.availableFireModes;
         }
 
 
@@ -165,26 +176,5 @@ namespace Items.Guns
 
             base.UnEquip();
         }
-    }
-
-    public class ShotHitEvent : IEvent
-    {
-        public RaycastHit Hit;
-
-        public ShotHitEvent(RaycastHit hit)
-        {
-            Hit = hit;
-        }
-    }
-
-
-    public interface IFireModeSystem : IGunSystem
-    {
-        IFireSystem CurrentFireSystem { get; }
-        IReadOnlyList<IFireSystem> AvailableFireModes { get; }
-
-        void SetCurrentFireMode(FireType fireType);
-
-        void CycleFireMode();
     }
 }

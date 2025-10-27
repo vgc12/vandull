@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Items.Guns.Firing
 {
     public class SemiAutoFireMode : BaseFireMode
     {
-        public SemiAutoFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
-            Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour, muzzleTransform, onShotFiredSubscribers)
+        public SemiAutoFireMode(Gun gun, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(gun, onShotFiredSubscribers)
         {
         }
 

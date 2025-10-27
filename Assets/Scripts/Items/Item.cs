@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Attributes;
+using EventBus;
 using Items.Guns;
-using Player.Input;
 using UnityEngine;
 
 namespace Items
@@ -17,11 +17,13 @@ namespace Items
 
         public Transform rightHandHint;
 
-        public GripType gripType = GripType.Pistol;
+        [Required] public ItemAnimation holdingItemAnimation;
 
-        protected InputManager InputManager;
-        public Action OnItemEquipped;
-        public Action OnItemUnequipped;
+        public IItemAnimationSystem ItemAnimationSystem;
+
+        public OwnerStatus Owner { get; set; }
+
+
         public bool IsEquipped { get; protected set; }
 
         public void Update()
@@ -38,7 +40,7 @@ namespace Items
         {
             gameObject.SetActive(true);
             IsEquipped = true;
-            OnItemEquipped?.Invoke();
+            if (Owner == OwnerStatus.Player) EventBus<ItemEquippedEvent>.Raise(new ItemEquippedEvent(this));
         }
 
 
@@ -46,7 +48,7 @@ namespace Items
         {
             gameObject.SetActive(false);
             IsEquipped = false;
-            OnItemUnequipped?.Invoke();
+            if (Owner == OwnerStatus.Player) EventBus<ItemUnequippedEvent>.Raise(new ItemUnequippedEvent(this));
         }
 
         protected abstract void OnUpdate();
@@ -55,5 +57,25 @@ namespace Items
         {
             if (gameObject != null) Destroy(gameObject);
         }
+    }
+
+    public class ItemEquippedEvent : IEvent
+    {
+        public ItemEquippedEvent(Item item)
+        {
+            Item = item;
+        }
+
+        public Item Item { get; }
+    }
+
+    public class ItemUnequippedEvent : IEvent
+    {
+        public ItemUnequippedEvent(Item item)
+        {
+            Item = item;
+        }
+
+        public Item Item { get; }
     }
 }

@@ -1,24 +1,18 @@
-﻿using System;
-using EventBus;
+﻿using EventBus;
 using UnityEngine;
 
 namespace Items.Guns.Aiming
 {
     public class AimingSystem : IAimingSystem
     {
-        private readonly GunConfig _config;
-        private readonly Transform _transform;
+        private readonly Gun _gun;
 
-        public AimingSystem(
-            Transform gunTransform,
-            GunConfig config,
-            Transform hipFirePoint,
-            Transform aimFirePoint)
+        public AimingSystem(Gun gun)
         {
-            _transform = gunTransform ?? throw new ArgumentNullException(nameof(gunTransform));
-            _config = config ?? throw new ArgumentNullException(nameof(config));
-            HipFirePoint = hipFirePoint ?? throw new ArgumentNullException(nameof(hipFirePoint));
-            AimFirePoint = aimFirePoint ?? throw new ArgumentNullException(nameof(aimFirePoint));
+            _gun = gun;
+
+            HipFirePoint = gun.hipFireTransform;
+            AimFirePoint = gun.aimTransform;
         }
 
 
@@ -42,14 +36,14 @@ namespace Items.Guns.Aiming
 
         public void ResetPosition()
         {
-            _transform.position = HipFirePoint.position;
+            _gun.transform.position = HipFirePoint.position;
         }
 
         public void Update()
         {
-            _transform.position = Vector3.Lerp(_transform.position,
+            _gun.transform.position = Vector3.Lerp(_gun.transform.position,
                 IsAiming ? AimFirePoint.position : HipFirePoint.position,
-                Time.deltaTime * (1f / _config.aimSettings.adsTime));
+                Time.deltaTime * (1f / _gun.aimSettings.adsTime));
         }
     }
 }

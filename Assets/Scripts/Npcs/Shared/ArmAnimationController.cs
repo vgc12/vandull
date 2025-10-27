@@ -1,21 +1,29 @@
-﻿using Items.Guns;
+﻿using System.Collections.Generic;
+using General.Extensions;
+using Items.Guns;
+using Singletons;
 using UnityEngine;
 
 namespace Npcs.Shared
 {
-    public class ArmAnimationController : MonoBehaviour
+    public class ArmAnimationController : Singleton<ArmAnimationController>
     {
-        public Animator animator;
-        private readonly int _arNoGrip = Animator.StringToHash("AR_No_Grip");
-        private readonly int _pistolGrip = Animator.StringToHash("Pistol_Grip");
+        // Static cache shared across all instances (perfect for singletons)
+        private static readonly Dictionary<int, float> AnimationLengths = new();
+        [SerializeField] private Animator animator;
 
-
-        public void PlayAnimation(GripType type)
+        public float PlayAnimation(ItemAnimation itemAnimation)
         {
-            if (type == GripType.Pistol)
-                animator.Play(_pistolGrip, 0);
-            else
-                animator.Play(_arNoGrip, 0);
+            if (itemAnimation == null) return 0f;
+
+            animator.Play(itemAnimation.AnimationHash, 0);
+
+            if (AnimationLengths.TryGetValue(itemAnimation.AnimationHash, out var length)) return length;
+
+            length = animator.GetAnimationLength(itemAnimation.AnimationHash);
+            AnimationLengths[itemAnimation.AnimationHash] = length;
+
+            return length;
         }
     }
 }

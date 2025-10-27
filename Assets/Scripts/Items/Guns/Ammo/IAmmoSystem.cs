@@ -18,9 +18,14 @@ namespace Items.Guns.Ammo
         public Action<ReloadEvent> OnReloadComplete { get; set; }
 
         public Action OnOutOfAmmo { get; set; }
+
+        public Magazine CurrentMagazine { get; }
+
         void StartReload();
         void ConsumeAmmo();
 
         void DropMagazine();
+
+        void EquipNewMagazine();
     }
 }

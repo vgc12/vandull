@@ -69,12 +69,6 @@ namespace Items.Guns
                 return this;
             }
 
-            public IGunSystemsBuilder AddItemEquippedHandler(Action action)
-            {
-                _eventHandlers.AddItemEquippedHandler(action);
-                return this;
-            }
-
 
             // Build Method
             public GunSystems Build()
@@ -82,6 +76,18 @@ namespace Items.Guns
                 var systems = CreateSystems();
                 WireUpEvents(systems);
                 return systems;
+            }
+
+            public IGunSystemsBuilder WithAnimationSystem(Func<IItemAnimationSystem> factory)
+            {
+                _factories.SetAnimationSystemFactory(factory);
+                return this;
+            }
+
+            public IGunSystemsBuilder WithOwnerStatus(OwnerStatus owner)
+            {
+                _factories.SetOwnerStatus(owner);
+                return this;
             }
 
             // Configuration Methods
@@ -117,6 +123,7 @@ namespace Items.Guns
                 var trailSystem = _factories.CreateTrailSystem();
                 var recoilSystem = _factories.CreateRecoilSystem();
                 var aimingSystem = _factories.CreateAimingSystem();
+                var animationSystem = _factories.CreateAnimationSystem();
 
                 // Add default shot handlers before creating fire modes
                 _eventHandlers.AddDefaultHandlers(_gun, recoilSystem, ammoSystem, trailSystem);
@@ -130,8 +137,10 @@ namespace Items.Guns
                     FireModeSystem = fireModeSystem,
                     AimingSystem = aimingSystem,
                     AmmoSystem = ammoSystem,
-                    RecoilSystem = recoilSystem
+                    RecoilSystem = recoilSystem,
+                    ItemAnimationSystem = animationSystem
                 };
+                _gun.Owner = _factories.GetOwner();
             }
 
             private void WireUpEvents(GunSystems systems)
@@ -151,7 +160,6 @@ namespace Items.Guns
 
                 // Add custom ammo out handlers
                 _eventHandlers.WireAmmoOutHandlers(systems.AmmoSystem);
-                _eventHandlers.WireItemEquippedHandlers(_gun);
             }
         }
 
@@ -162,13 +170,12 @@ namespace Items.Guns
         private class FireModeConfiguration
         {
             private readonly Dictionary<FireType, Func<IFireSystem>> _customFactories = new();
-            private readonly Gun _gun;
+
             private List<FireType> _enabledModes;
 
             public FireModeConfiguration(Gun gun)
             {
-                _gun = gun;
-                _enabledModes = gun?.gunConfig?.fireModeSettings?.availableFireModes?.ToList()
+                _enabledModes = gun?.fireModeSettings?.availableFireModes?.ToList()
                                 ?? new List<FireType> { FireType.SemiAutomatic };
             }
 
@@ -212,11 +219,7 @@ namespace Items.Guns
                     return factory();
 
                 return FireModeFactory.CreateFireMode(
-                    fireType,
-                    gun.gunConfig,
-                    gun.transform,
-                    gun,
-                    gun.muzzleTransform
+                    fireType, gun
                 );
             }
 
@@ -232,7 +235,9 @@ namespace Items.Guns
             private readonly Gun _gun;
             private Func<IAimingSystem> _aimingSystemFactory;
             private Func<IAmmoSystem> _ammoSystemFactory;
+            private Func<IItemAnimationSystem> _animationSystemFactory;
             private Func<IFireModeSystem> _fireModeSystemFactory;
+            private OwnerStatus _owner;
             private Func<IRecoilSystem> _recoilSystemFactory;
             private Func<ITrailSystem> _trailSystemFactory;
 
@@ -240,6 +245,11 @@ namespace Items.Guns
             {
                 _gun = gun;
                 SetDefaultFactories();
+            }
+
+            public void SetAnimationSystemFactory(Func<IItemAnimationSystem> factory)
+            {
+                if (factory != null) _animationSystemFactory = factory;
             }
 
             public void SetFireModeSystemFactory(Func<IFireModeSystem> factory)
@@ -260,6 +270,11 @@ namespace Items.Guns
             public void SetRecoilSystemFactory(Func<IRecoilSystem> factory)
             {
                 if (factory != null) _recoilSystemFactory = factory;
+            }
+
+            public void SetOwnerStatus(OwnerStatus owner)
+            {
+                _owner = owner;
             }
 
             public void SetTrailSystemFactory(Func<ITrailSystem> factory)
@@ -294,36 +309,44 @@ namespace Items.Guns
                 return _trailSystemFactory();
             }
 
+            public IItemAnimationSystem CreateAnimationSystem()
+            {
+                return _animationSystemFactory != null
+                    ? _animationSystemFactory()
+                    : new PlayerGunAnimationSystem();
+            }
+
             private void SetDefaultFactories()
             {
                 _aimingSystemFactory = () => new AimingSystem(
-                    _gun.transform,
-                    _gun.gunConfig,
-                    _gun.hipFireTransform,
-                    _gun.aimTransform
+                    _gun
                 );
 
                 _ammoSystemFactory = () => new AmmoSystem(
-                    _gun.gunConfig,
-                    _gun.magazinePosition,
+                    _gun,
                     _gun.GetComponentInParent<RigHandler>()
                 );
 
                 _recoilSystemFactory = () => new RecoilSystem(
-                    _gun.gunConfig,
-                    _gun.transform,
-                    _gun.recoilTransform,
                     _gun
                 );
 
-                _trailSystemFactory = () => new TrailSystem(_gun.gunConfig.trailSettings);
+                _trailSystemFactory = () => new TrailSystem(_gun.trailSettings);
+
+                _animationSystemFactory = () => new PlayerGunAnimationSystem();
+                _owner = OwnerStatus.Player;
+            }
+
+            public OwnerStatus GetOwner()
+            {
+                return _owner;
             }
         }
 
         private class EventHandlers
         {
             private readonly List<Action> _ammoOutHandlers = new();
-            private readonly List<Action> _itemEquippedHandlers = new();
+
             public readonly List<Action<ShotFiredEvent>> ShotFiredHandlers = new();
 
             public void AddShotFiredHandler(Action<ShotFiredEvent> handler)
@@ -336,10 +359,6 @@ namespace Items.Guns
                 if (handler != null) _ammoOutHandlers.Add(handler);
             }
 
-            public void AddItemEquippedHandler(Action action)
-            {
-                if (action != null) _itemEquippedHandlers.Add(action);
-            }
 
             public void AddDefaultHandlers(Gun gun, IRecoilSystem recoil, IAmmoSystem ammo, ITrailSystem trail)
             {
@@ -354,28 +373,19 @@ namespace Items.Guns
                 foreach (var handler in _ammoOutHandlers)
                     ammoSystem.OnOutOfAmmo += handler;
             }
-
-            public void WireItemEquippedHandlers(Item item)
-            {
-                foreach (var handler in _itemEquippedHandlers)
-                    item.OnItemEquipped += handler;
-            }
         }
 
         private static class FireModeFactory
         {
             public static IFireSystem CreateFireMode(
                 FireType fireType,
-                GunConfig config,
-                Transform gunTransform,
-                MonoBehaviour behaviour,
-                Transform muzzleTransform)
+                Gun gun)
             {
                 return fireType switch
                 {
-                    FireType.SemiAutomatic => new SemiAutoFireMode(config, gunTransform, behaviour, muzzleTransform),
-                    FireType.Automatic => new AutomaticFireMode(config, gunTransform, behaviour, muzzleTransform),
-                    FireType.Burst => new BurstFireMode(config, gunTransform, behaviour, muzzleTransform),
+                    FireType.SemiAutomatic => new SemiAutoFireMode(gun),
+                    FireType.Automatic => new AutomaticFireMode(gun),
+                    FireType.Burst => new BurstFireMode(gun),
                     _ => throw new ArgumentException($"Unsupported fire type: {fireType}")
                 };
             }

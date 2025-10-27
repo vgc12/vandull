@@ -1,4 +1,5 @@
-﻿using EventBus;
+﻿using System.Linq;
+using EventBus;
 using Items.Guns;
 using UnityEngine;
 
@@ -7,8 +8,8 @@ namespace Npcs.Shared
     public class ReloadAnimationHandler : MonoBehaviour
     {
         [SerializeField] private GameObject leftHand;
-        public GameObject HandMagazine { get; set; }
-        public GameObject GunMagazine { get; set; }
+        public Gun _currentGun;
+
 
         private void Awake()
         {
@@ -17,41 +18,38 @@ namespace Npcs.Shared
             EventBus<PlayerEquippedNewItemEvent>.Register(playerEquippedNewItemEventBinding);
         }
 
+        private void Start()
+        {
+            _currentGun = GetComponentsInChildren<Gun>().First(g => g.IsEquipped);
+        }
+
+
         private void OnPlayerEquippedNewItem(PlayerEquippedNewItemEvent obj)
         {
-            if (obj.Item is Gun gun)
-            {
-            }
+            if (obj.Item is Gun gun) _currentGun = gun;
         }
 
-        public void DisableHandMag()
+        public void ParentMagazineToHand()
         {
-            if (HandMagazine != null)
-                HandMagazine.SetActive(false);
+            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null || leftHand == null) return;
+
+            _currentGun.AmmoSystem.CurrentMagazine.transform.SetParent(leftHand.transform, true);
+            //_currentGun.AmmoSystem.CurrentMagazine.transform.localPosition = Vector3.zero;
+            //_currentGun.AmmoSystem.CurrentMagazine.transform.localRotation = Quaternion.identity;
         }
 
-        public void EnableHandMag()
+        public void DropMagazine()
         {
-            if (HandMagazine != null)
-                HandMagazine.SetActive(true);
+            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null) return;
+
+            _currentGun.AmmoSystem.CurrentMagazine.Drop();
         }
 
-
-        public void DisableGunMag()
+        public void SpawnMagazine()
         {
-            if (GunMagazine != null)
-                GunMagazine.SetActive(false);
-        }
+            if (!_currentGun) return;
 
-        public void EnableGunMag()
-        {
-            if (GunMagazine != null)
-                GunMagazine.SetActive(true);
-        }
-
-        public void SetHandMagMesh(GameObject handMagazine)
-        {
-            HandMagazine = handMagazine;
+            _currentGun.AmmoSystem.EquipNewMagazine();
         }
     }
 }

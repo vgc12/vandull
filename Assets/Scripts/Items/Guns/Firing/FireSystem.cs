@@ -8,23 +8,21 @@ namespace Items.Guns.Firing
 {
     public abstract class BaseFireMode : IFireSystem
     {
+        protected readonly Gun _gun;
         protected readonly MonoBehaviour Behaviour;
-        protected readonly GunConfig Config;
         protected readonly RaycastHit[] HitResults = new RaycastHit[10];
         protected readonly Transform Transform;
         protected bool IsOutOfAmmo;
 
         protected float LastFireTime;
 
-        protected BaseFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
-            Transform muzzleTransform,
+        protected BaseFireMode(Gun gun,
             List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
         {
-            Config = config ?? throw new ArgumentNullException(nameof(config));
-            Transform = gunTransform ?? throw new ArgumentNullException(nameof(gunTransform));
-            Behaviour = behaviour ?? throw new ArgumentNullException(nameof(behaviour));
-
-            MuzzleTransform = muzzleTransform ?? throw new ArgumentNullException(nameof(muzzleTransform));
+            _gun = gun ?? throw new ArgumentNullException(nameof(gun));
+            Transform = gun.transform;
+            Behaviour = gun;
+            MuzzleTransform = gun.muzzleTransform;
 
             if (onShotFiredSubscribers == null) return;
             foreach (var subscriber in onShotFiredSubscribers) OnShotFired += subscriber;
@@ -35,7 +33,7 @@ namespace Items.Guns.Firing
 
         public abstract void ExecuteFireCommand(FireCommand command);
 
-        public virtual bool CanFire => Time.time > LastFireTime + Config.firingSettings.fireRate && !IsOutOfAmmo;
+        public virtual bool CanFire => Time.time > LastFireTime + _gun.firingSettings.fireRate && !IsOutOfAmmo;
 
         public Action<ShotFiredEvent> OnShotFired { get; set; }
 
@@ -69,9 +67,9 @@ namespace Items.Guns.Firing
         protected virtual void PerformRaycast()
         {
             var startPoint = MuzzleTransform.position;
-            var endPoint = startPoint + MuzzleTransform.forward * Config.damageSettings.range;
+            var endPoint = startPoint + MuzzleTransform.forward * _gun.damageSettings.range;
 
-            if (Physics.Raycast(startPoint, MuzzleTransform.forward, out var hit, Config.damageSettings.range,
+            if (Physics.Raycast(startPoint, MuzzleTransform.forward, out var hit, _gun.damageSettings.range,
                     ~LayerMask.GetMask("Ignore Raycast")))
             {
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
@@ -91,14 +89,14 @@ namespace Items.Guns.Firing
 
             if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
             {
-                damageable.TakeDamage(Config.damageSettings.damage * bodyPart.damageMultiplier,
+                damageable.TakeDamage(_gun.damageSettings.damage * bodyPart.damageMultiplier,
                     MuzzleTransform.forward);
                 EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
-                    Config.damageSettings.damage));
+                    _gun.damageSettings.damage));
             }
             else
             {
-                damageable.TakeDamage(Config.damageSettings.damage, MuzzleTransform.forward);
+                damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward);
             }
         }
 
@@ -116,14 +114,14 @@ namespace Items.Guns.Firing
                     !hit.collider.transform.root.TryGetComponent(out damageable)) continue;
                 if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
                 {
-                    damageable.TakeDamage(Config.damageSettings.damage * bodyPart.damageMultiplier,
+                    damageable.TakeDamage(_gun.damageSettings.damage * bodyPart.damageMultiplier,
                         MuzzleTransform.forward);
                     EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
-                        Config.damageSettings.damage));
+                        _gun.damageSettings.damage));
                 }
                 else
                 {
-                    damageable.TakeDamage(Config.damageSettings.damage, MuzzleTransform.forward);
+                    damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward);
                 }
             }
         }

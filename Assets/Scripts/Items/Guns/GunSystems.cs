@@ -13,5 +13,7 @@ namespace Items.Guns
 
         public IFireModeSystem FireModeSystem { get; init; }
         public IAmmoSystem AmmoSystem { get; init; }
+
+        public IItemAnimationSystem ItemAnimationSystem { get; init; }
     }
 }
