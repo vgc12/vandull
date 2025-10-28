@@ -2,7 +2,7 @@
 
 namespace Items.Guns.Ammo
 {
-    public interface IAmmoSystem : IGunSystem
+    public interface IAmmoSystem : IItemSystem
     {
         // When the magazine is empty but may have chambered round
 

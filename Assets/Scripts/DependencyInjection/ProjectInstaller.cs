@@ -15,6 +15,8 @@ namespace DependencyInjection
 
             builder.AddSingleton(typeof(InputManager), typeof(InputManager), typeof(IInputService),
                 typeof(IPlayerInput), typeof(IUIInput));
+            builder.AddSingleton(typeof(AudioManager), typeof(IAudioManager), typeof(AudioManager));
+            
         }
     }
 }

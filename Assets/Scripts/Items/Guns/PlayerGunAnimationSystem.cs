@@ -18,5 +18,10 @@ namespace Items.Guns
         {
             return ArmAnimationController.Instance.GetCurrentAnimationTime();
         }
+
+        public void Update()
+        {
+            
+        }
     }
 }

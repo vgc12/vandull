@@ -10,7 +10,7 @@ namespace Items.Guns.Firing
         SingleShot
     }
 
-    public interface IFireSystem : IGunSystem
+    public interface IFireSystem : IItemSystem
     {
         public Transform MuzzleTransform { get; }
         bool CanFire { get; }

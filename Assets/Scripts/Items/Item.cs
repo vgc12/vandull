@@ -20,6 +20,8 @@ namespace Items
         [Required] public ItemAnimation holdingItemAnimation;
 
         public IItemAnimationSystem ItemAnimationSystem;
+        
+        public IItemAudioSystem AudioSystem;
 
         public OwnerStatus Owner { get; set; }
 

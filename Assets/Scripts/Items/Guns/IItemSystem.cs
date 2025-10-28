@@ -1,6 +1,6 @@
 ﻿namespace Items.Guns
 {
-    public interface IGunSystem
+    public interface IItemSystem
     {
         public void Update();
     }

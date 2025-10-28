@@ -51,9 +51,9 @@ namespace Items.Guns
         public IAmmoSystem AmmoSystem { get; private set; }
         public IRecoilSystem RecoilSystem { get; private set; }
         public ITrailSystem TrailSystem { get; private set; }
-
         public IFireModeSystem FireModeSystem { get; private set; }
 
+        
 
         public bool IsAiming => AimingSystem.IsAiming;
         public bool IsReloading => AmmoSystem.IsReloading;

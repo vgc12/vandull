@@ -3,7 +3,7 @@ using Items.Guns.Firing;
 
 namespace Items.Guns
 {
-    public interface IFireModeSystem : IGunSystem
+    public interface IFireModeSystem : IItemSystem
     {
         IFireSystem CurrentFireSystem { get; }
         IReadOnlyList<IFireSystem> AvailableFireModes { get; }

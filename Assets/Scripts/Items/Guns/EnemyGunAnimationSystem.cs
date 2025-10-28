@@ -19,5 +19,10 @@
         {
             return 0;
         }
+
+        public void Update()
+        {
+            
+        }
     }
 }
