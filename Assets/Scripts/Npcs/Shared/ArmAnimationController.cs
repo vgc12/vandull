@@ -12,18 +12,29 @@ namespace Npcs.Shared
         private static readonly Dictionary<int, float> AnimationLengths = new();
         [SerializeField] private Animator animator;
 
-        public float PlayAnimation(ItemAnimation itemAnimation)
+        public float PlayAnimation(ItemAnimation itemAnimation, float startTime = 0f)
         {
-            if (itemAnimation == null) return 0f;
-
-            animator.Play(itemAnimation.AnimationHash, 0);
-
-            if (AnimationLengths.TryGetValue(itemAnimation.AnimationHash, out var length)) return length;
-
-            length = animator.GetAnimationLength(itemAnimation.AnimationHash);
-            AnimationLengths[itemAnimation.AnimationHash] = length;
+            
+            if (!itemAnimation) return 0f;
+            AnimationLengths.TryGetValue(itemAnimation.AnimationHash, out var length);
+            
+            if (length <= 0f)
+            {
+                length = animator.GetAnimationLength(itemAnimation.AnimationHash);
+                AnimationLengths[itemAnimation.AnimationHash] = length;
+            }
+            
+            animator.Play(itemAnimation.AnimationHash, 0, startTime/length);
+    
+        
 
             return length;
+        }
+
+        public float GetCurrentAnimationTime()
+        {
+            var currentAnimatorStateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            return currentAnimatorStateInfo.normalizedTime * currentAnimatorStateInfo.length;
         }
     }
 }

@@ -27,5 +27,6 @@ namespace Items.Guns.Ammo
         void DropMagazine();
 
         void EquipNewMagazine();
+        void StartQuickReload();
     }
 }

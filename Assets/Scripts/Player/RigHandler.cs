@@ -16,16 +16,17 @@ namespace Player
         public Transform RightHandTarget { get; set; }
         public Transform RightHandHint { get; set; }
 
-        public bool FollowItemTargets { get; set; } = true;
+        public bool LeftHandFollowItemTarget { get; set; } = true;
+        public bool RightHandFollowItemTarget { get; set; } = true;
 
 
         private void Update()
         {
-            if (!FollowItemTargets) return;
-            if (leftHandConstraint && LeftHandTarget && LeftHandHint)
+            if (LeftHandFollowItemTarget && leftHandConstraint && LeftHandTarget && LeftHandHint)
                 ConstraintFollowTransform(leftHandConstraint, LeftHandTarget, LeftHandHint);
 
-            if (rightHandConstraint && RightHandTarget && RightHandHint)
+
+            if (RightHandFollowItemTarget && rightHandConstraint && RightHandTarget && RightHandHint)
                 ConstraintFollowTransform(rightHandConstraint, RightHandTarget, RightHandHint);
         }
 

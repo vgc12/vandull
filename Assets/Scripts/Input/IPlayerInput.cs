@@ -6,6 +6,7 @@ namespace Player.Input
     public interface IPlayerInput
     {
         Vector2 Direction { get; }
+        event UnityAction QuickReload;
         event UnityAction<(bool started, bool performed, bool canceled)> Attack;
         event UnityAction<Vector2> Move;
         event UnityAction<Vector2> Look;

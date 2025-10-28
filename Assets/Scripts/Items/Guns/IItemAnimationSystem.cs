@@ -2,7 +2,8 @@
 {
     public interface IItemAnimationSystem
     {
-        void PlayAnimation(ItemAnimation animation);
-        float PlayAnimationAndGetLength(ItemAnimation animation);
+        void PlayAnimation(ItemAnimation animation, float startTime = 0f);
+        float PlayAnimationAndGetLength(ItemAnimation animation, float startTime = 0f);
+        float GetCurrentAnimationTime();
     }
 }

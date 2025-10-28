@@ -24,6 +24,9 @@ namespace Items.Guns.Ammo
         private bool _bulletInChamber = true;
         private int _currentMagazineIndex;
         private bool _weaponMustReload;
+        
+        private ItemAnimation _interruptedReloadAnimation;
+        private float _interruptedReloadTime;
 
         public AmmoSystem(Gun gun, RigHandler rigHandler)
         {
@@ -69,9 +72,19 @@ namespace Items.Guns.Ammo
             if (!CanReload) return;
 
             IsReloading = true;
-            _behaviour.StartCoroutine(ReloadRoutine());
+           var length = _gun.ItemAnimationSystem.PlayAnimationAndGetLength(_gun.reloadAnimation);
+            _behaviour.StartCoroutine(ReloadRoutine(length));
         }
 
+        public void StartQuickReload()
+        {
+            if (!CanReload) return;
+
+            IsReloading = true;
+            var length = _gun.ItemAnimationSystem.PlayAnimationAndGetLength(_gun.quickReloadAnimation);
+            _behaviour.StartCoroutine(ReloadRoutine(length));
+        }
+        
         public void ConsumeAmmo()
         {
             if (!CurrentMagazineEmpty)
@@ -87,7 +100,7 @@ namespace Items.Guns.Ammo
             if (!_weaponMustReload) return;
 
             _weaponMustReload = false;
-            _behaviour.StartCoroutine(ReloadRoutine());
+            _behaviour.StartCoroutine(ReloadRoutine(_gun.ItemAnimationSystem.PlayAnimationAndGetLength(_interruptedReloadAnimation, _interruptedReloadTime)));
         }
 
         public void DropMagazine()
@@ -104,6 +117,8 @@ namespace Items.Guns.Ammo
             _currentMagazineIndex = (_currentMagazineIndex + 1) % _magazines.Count;
             EquipCurrentMagazine();
         }
+
+   
 
         ~AmmoSystem()
         {
@@ -134,11 +149,12 @@ namespace Items.Guns.Ammo
         }
 
         // Reload Logic
-        private IEnumerator ReloadRoutine()
+        private IEnumerator ReloadRoutine(float length)
         {
-            var length = _gun.AnimationSystem.PlayAnimationAndGetLength(_gun.reloadAnimation);
+            
             // Disable rig syncing during reload
-            _rigHandler.FollowItemTargets = false;
+           
+            _rigHandler.LeftHandFollowItemTarget = false;
 
 
             // Wait for reload animation
@@ -155,8 +171,8 @@ namespace Items.Guns.Ammo
                 CurrentMagazine.ConsumeAmmo();
             }
 
-            _rigHandler.FollowItemTargets = true;
-            _gun.AnimationSystem.PlayAnimation(_gun.holdingItemAnimation);
+            _rigHandler.LeftHandFollowItemTarget = true;
+            _gun.ItemAnimationSystem.PlayAnimation(_gun.holdingItemAnimation);
 
             OnReloadComplete?.Invoke(new ReloadEvent(CurrentMagazine));
         }
@@ -166,6 +182,7 @@ namespace Items.Guns.Ammo
         {
             if (!IsReloading) return;
             if (evt.NewItem.transform.root.gameObject.layer != LayerMask.NameToLayer("Player")) return;
+            _interruptedReloadTime = _gun.ItemAnimationSystem.GetCurrentAnimationTime();
 
             // Cancel current reload and mark for retry
             IsReloading = false;

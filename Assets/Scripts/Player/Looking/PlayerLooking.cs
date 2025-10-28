@@ -45,6 +45,8 @@ namespace Player.Looking
         [SerializeField] [Required] private Transform orientation;
 
         [SerializeField] [Required] private Transform leanPoint;
+        
+        [SerializeField] private Transform itemHolder;
 
         [Header("Configuration")] [Required] public CameraBobConfig cameraBobConfig;
         [Required] public CameraBobConfig weaponBobConfig;
@@ -102,6 +104,8 @@ namespace Player.Looking
 
             leanPoint.rotation = rot;
             cameraHolder.rotation = Quaternion.Euler(_cameraRotation.x, _cameraRotation.y, 0);
+            if(!itemHolder) return;
+            itemHolder.localRotation =Quaternion.Euler(itemHolder.localRotation.eulerAngles.x, itemHolder.localRotation.eulerAngles.x, leanPoint.rotation.eulerAngles.z);
         }
 
 

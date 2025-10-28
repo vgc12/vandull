@@ -12231,10 +12231,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Multi-Scene-Managers
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1857682777278078593, guid: 02cab11ff2df99741a850759643cc22b, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5854326063105661942, guid: 02cab11ff2df99741a850759643cc22b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1747055339}
   m_SourcePrefab: {fileID: 100100000, guid: 02cab11ff2df99741a850759643cc22b, type: 3}
 --- !u!43 &1232987364
 Mesh:
@@ -16483,6 +16487,23 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &1747055337 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5854326063105661942, guid: 02cab11ff2df99741a850759643cc22b, type: 3}
+  m_PrefabInstance: {fileID: 1221183695}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1747055339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1747055337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 121551dbe0ecc6843b7f001c89cc778d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DependencyInjection.RuntimeResolver
 --- !u!43 &1802951880
 Mesh:
   m_ObjectHideFlags: 0
@@ -23973,6 +23994,7 @@ MonoBehaviour:
   aimTransform: {fileID: 163794506834554778}
   muzzleTransform: {fileID: 8772120433304801426}
   reloadAnimation: {fileID: 11400000, guid: 1064aa38f4155854d9b2458af2f5624a, type: 2}
+  quickReloadAnimation: {fileID: 11400000, guid: 535b5573f534d454e87f748597f96611, type: 2}
 --- !u!1 &447045926704256695
 GameObject:
   m_ObjectHideFlags: 0
@@ -61326,7 +61348,8 @@ MonoBehaviour:
   cameraHolder: {fileID: 5930314567478455158}
   orientation: {fileID: 6564655105902687862}
   leanPoint: {fileID: 3868673833035437308}
-  cameraBobConfig: {fileID: 11400000, guid: 12210434bcdcfd149a0f549aebfac199, type: 2}
+  itemHolder: {fileID: 9027380198398651734}
+  cameraBobConfig: {fileID: 11400000, guid: eea7876ad17ec05408b95f43431f2d52, type: 2}
   weaponBobConfig: {fileID: 11400000, guid: 62303dc1d984c33489c163013768404c, type: 2}
 --- !u!1 &5712685985055333280
 GameObject:
@@ -88763,7 +88786,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Npcs.Shared.ReloadHandler
   leftHand: {fileID: 9077251200861630086}
-  timescale: 0.25
+  timescale: 1
   currentGun: {fileID: 0}
 --- !u!114 &8556907120554991498
 MonoBehaviour:
@@ -88797,6 +88820,7 @@ MonoBehaviour:
   aimTransform: {fileID: 1962071525225253746}
   muzzleTransform: {fileID: 6714447370911913081}
   reloadAnimation: {fileID: 11400000, guid: 1064aa38f4155854d9b2458af2f5624a, type: 2}
+  quickReloadAnimation: {fileID: 0}
 --- !u!54 &8560449551842581335
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -274,7 +274,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 361925474742037374}
-  - component: {fileID: 1857682777278078593}
+  - component: {fileID: 4170080047703943508}
   m_Layer: 0
   m_Name: Runtime Resolver
   m_TagString: Untagged
@@ -297,7 +297,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2195876760258528341}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1857682777278078593
+--- !u!114 &4170080047703943508
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -306,6 +306,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 5854326063105661942}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a92424d16d94b56a36ba5dcd9ece02d, type: 3}
+  m_Script: {fileID: 11500000, guid: 121551dbe0ecc6843b7f001c89cc778d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DependencyInjection.RuntimeResolver
