@@ -22,11 +22,13 @@ namespace Items.Guns.Ammo
         public Magazine CurrentMagazine { get; }
 
         void StartReload();
+
+        void StartQuickReload();
+
         void ConsumeAmmo();
 
         void DropMagazine();
 
         void EquipNewMagazine();
-        void StartQuickReload();
     }
 }

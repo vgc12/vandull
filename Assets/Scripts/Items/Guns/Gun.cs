@@ -53,7 +53,7 @@ namespace Items.Guns
         public ITrailSystem TrailSystem { get; private set; }
 
         public IFireModeSystem FireModeSystem { get; private set; }
-        
+
 
         public bool IsAiming => AimingSystem.IsAiming;
         public bool IsReloading => AmmoSystem.IsReloading;
@@ -95,10 +95,8 @@ namespace Items.Guns
 
         public void StartReload(bool quickReload)
         {
-            if (quickReload)
-            {
-                AmmoSystem.StartQuickReload();
-            }
+            AimingSystem.StopAiming();
+            if (quickReload) AmmoSystem.StartQuickReload();
             AmmoSystem.StartReload();
         }
 

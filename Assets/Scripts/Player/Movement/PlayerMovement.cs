@@ -29,7 +29,6 @@ namespace Player.Movement
         private GroundChecker _groundChecker;
 
         private RaycastHit _slopeHit;
-        
 
 
         public Rigidbody Rigidbody { get; private set; }
@@ -45,7 +44,7 @@ namespace Player.Movement
         public bool CrouchPressed { get; private set; }
 
         public Transform PlayerModel => playerModel;
-        
+
         public bool IsAiming { get; set; }
 
 
@@ -58,7 +57,8 @@ namespace Player.Movement
         public void UnCrouch()
         {
             if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
-            _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.InitialHeight, config.InitialCrouchCameraPosition));
+            _crouchCoroutine =
+                StartCoroutine(SetPlayerHeight(config.InitialHeight, config.InitialCrouchCameraPosition));
         }
 
 
@@ -103,7 +103,7 @@ namespace Player.Movement
 
         [Inject] private readonly IPlayerInput _input;
 
-        private void Start()
+        private void Awake()
         {
             _groundChecker = GetComponent<GroundChecker>();
 
@@ -116,7 +116,7 @@ namespace Player.Movement
             _input.Sprint += OnSprintInput;
 
             _input.Move += OnMoveInput;
-            
+
             _input.Aim += OnAimInput;
 
             playerModel.localScale = new Vector3(1, config.InitialHeight, 1);

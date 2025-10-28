@@ -11,10 +11,10 @@ namespace Player
 
         public RigBuilder rigBuilder;
 
-        public Transform LeftHandTarget { get; set; }
-        public Transform LeftHandHint { get; set; }
-        public Transform RightHandTarget { get; set; }
-        public Transform RightHandHint { get; set; }
+        public Transform LeftHandTarget;
+        public Transform LeftHandHint;
+        public Transform RightHandTarget;
+        public Transform RightHandHint;
 
         public bool LeftHandFollowItemTarget { get; set; } = true;
         public bool RightHandFollowItemTarget { get; set; } = true;

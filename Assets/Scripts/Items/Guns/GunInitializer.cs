@@ -130,7 +130,7 @@ namespace Items.Guns
 
                 var fireModes = _fireModeConfig.CreateFireModes(_gun, _eventHandlers.ShotFiredHandlers);
                 var fireModeSystem = _factories.CreateFireModeSystem(fireModes);
-
+                _gun.Owner = _factories.GetOwner();
                 return new GunSystems
                 {
                     TrailSystem = trailSystem,
@@ -140,7 +140,6 @@ namespace Items.Guns
                     RecoilSystem = recoilSystem,
                     ItemAnimationSystem = animationSystem
                 };
-                _gun.Owner = _factories.GetOwner();
             }
 
             private void WireUpEvents(GunSystems systems)
