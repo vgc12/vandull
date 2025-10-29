@@ -60,7 +60,7 @@ namespace Items.Guns.Firing
 
         private IEnumerator AutomaticFireRoutine()
         {
-            while (!IsOutOfAmmo)
+            while (!_gun.AmmoSystem.OutOfAmmo)
             {
                 if (CanFire) PerformShot();
 

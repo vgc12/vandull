@@ -1,6 +1,5 @@
 ﻿using Attributes;
 using UnityEngine;
-using UnityEngine.Audio;
 
 namespace Items.Guns
 {
@@ -10,7 +9,7 @@ namespace Items.Guns
         [Required] public AudioClip shoot;
         [Required] public AudioClip outOfAmmoClick;
         [Required] public AudioClip reload;
-        [Required]   public AudioMixerGroup audioMixerGroup;
-        [Required]public Vector2 pitchRange;
+        [Required] public AudioClip equip;
+        [Required] public Vector2 pitchRange;
     }
 }

@@ -5,79 +5,145 @@ using UnityEngine;
 
 namespace Items
 {
+    /// <summary>
+    ///     Base class for all equippable items in the game.
+    ///     Handles equipment state, IK targets, animations, and ownership.
+    /// </summary>
     public abstract class Item : MonoBehaviour, IEquippable
     {
-        [SerializeField] private string itemName;
+        #region Identification
 
-        public Transform leftHandTarget;
+        /// <summary>
+        ///     Display name of the item.
+        /// </summary>
+        [SerializeField] [Tooltip("Display name of the item")]
+        private string itemName;
 
-        public Transform leftHandHint;
+        #endregion
 
-        public Transform rightHandTarget;
+        #region Animation
 
-        public Transform rightHandHint;
+        /// <summary>
+        ///     Animation data for holding this item (idle, walking, running animations).
+        /// </summary>
+        [SerializeField]
+        [Required]
+        [Tooltip("Animation data for holding this item (idle, walking, running animations)")]
+        public ItemAnimation holdingItemAnimation;
 
-        [Required] public ItemAnimation holdingItemAnimation;
+        #endregion
 
+        #region Systems
+
+        /// <summary>
+        ///     System responsible for managing item animations and transitions.
+        /// </summary>
         public IItemAnimationSystem ItemAnimationSystem;
-        
-        public IItemAudioSystem AudioSystem;
 
-        public OwnerStatus Owner { get; set; }
+        #endregion
 
+        #region Unity Lifecycle
 
-        public bool IsEquipped { get; protected set; }
-
+        /// <summary>
+        ///     Updates the item each frame if it is currently equipped.
+        /// </summary>
         public void Update()
         {
             if (IsEquipped) OnUpdate();
         }
 
+        #endregion
 
-        public virtual void OnDestroy()
-        {
-        }
+        #region Abstract Methods
 
-        public virtual void Equip()
-        {
-            gameObject.SetActive(true);
-            IsEquipped = true;
-            if (Owner == OwnerStatus.Player) EventBus<ItemEquippedEvent>.Raise(new ItemEquippedEvent(this));
-        }
-
-
-        public virtual void UnEquip()
-        {
-            gameObject.SetActive(false);
-            IsEquipped = false;
-            if (Owner == OwnerStatus.Player) EventBus<ItemUnequippedEvent>.Raise(new ItemUnequippedEvent(this));
-        }
-
+        /// <summary>
+        ///     Called every frame while the item is equipped.
+        ///     Override to implement item-specific update logic.
+        /// </summary>
         protected abstract void OnUpdate();
 
+        #endregion
+
+        #region Lifecycle
+
+        /// <summary>
+        ///     Despawns and destroys this item from the game world.
+        /// </summary>
         public virtual void Despawn()
         {
             if (gameObject != null) Destroy(gameObject);
         }
-    }
 
-    public class ItemEquippedEvent : IEvent
-    {
-        public ItemEquippedEvent(Item item)
+        #endregion
+
+        #region IK Targets
+
+        /// <summary>
+        ///     Target transform for the left hand IK position.
+        /// </summary>
+        [SerializeField] [Tooltip("Target transform for the left hand IK position")]
+        public Transform leftHandTarget;
+
+        /// <summary>
+        ///     Hint transform for the left hand IK elbow positioning.
+        /// </summary>
+        [SerializeField] [Tooltip("Hint transform for the left hand IK elbow positioning")]
+        public Transform leftHandHint;
+
+        /// <summary>
+        ///     Target transform for the right hand IK position.
+        /// </summary>
+        [SerializeField] [Tooltip("Target transform for the right hand IK position")]
+        public Transform rightHandTarget;
+
+        /// <summary>
+        ///     Hint transform for the right hand IK elbow positioning.
+        /// </summary>
+        [SerializeField] [Tooltip("Hint transform for the right hand IK elbow positioning")]
+        public Transform rightHandHint;
+
+        #endregion
+
+        #region State
+
+        /// <summary>
+        ///     Gets or sets who currently owns this item (Player, AI, or None).
+        /// </summary>
+        public OwnerStatus Owner { get; set; }
+
+        /// <summary>
+        ///     Gets whether this item is currently equipped and active.
+        /// </summary>
+        public bool IsEquipped { get; protected set; }
+
+        #endregion
+
+        #region Equipment
+
+        /// <summary>
+        ///     Equips the item, making it active and visible.
+        ///     Raises an ItemEquippedEvent if owned by the player.
+        /// </summary>
+        public virtual void Equip()
         {
-            Item = item;
+            gameObject.SetActive(true);
+            IsEquipped = true;
+
+            if (Owner == OwnerStatus.Player) EventBus<ItemEquippedEvent>.Raise(new ItemEquippedEvent(this));
         }
 
-        public Item Item { get; }
-    }
-
-    public class ItemUnequippedEvent : IEvent
-    {
-        public ItemUnequippedEvent(Item item)
+        /// <summary>
+        ///     Unequips the item, making it inactive and hidden.
+        ///     Raises an ItemUnequippedEvent if owned by the player.
+        /// </summary>
+        public virtual void UnEquip()
         {
-            Item = item;
+            gameObject.SetActive(false);
+            IsEquipped = false;
+
+            if (Owner == OwnerStatus.Player) EventBus<ItemUnequippedEvent>.Raise(new ItemUnequippedEvent(this));
         }
 
-        public Item Item { get; }
+        #endregion
     }
 }

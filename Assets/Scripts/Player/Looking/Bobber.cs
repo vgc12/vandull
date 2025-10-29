@@ -88,8 +88,6 @@ namespace Player.Looking
 
         private void Update()
         {
-            _logger.LogWarning(
-                $"CurrentSetting: {_currentSetting != null} Rigidbody: {_rigidbody != null} CurrentStateType: {_currentStateType != null}");
             if (!ShouldBob())
             {
                 StopBobbing();

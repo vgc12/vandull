@@ -63,7 +63,7 @@ namespace Items.Guns.Firing
 
         private IEnumerator FireBurst()
         {
-            for (var i = 0; i < _burstCount && !IsOutOfAmmo; i++)
+            for (var i = 0; i < _burstCount && !_gun.AmmoSystem.OutOfAmmo; i++)
             {
                 if (CanFire) PerformShot();
 

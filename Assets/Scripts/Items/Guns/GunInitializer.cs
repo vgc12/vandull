@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DependencyInjection;
 using Items.Guns.Aiming;
 using Items.Guns.Ammo;
 using Items.Guns.Firing;
@@ -145,19 +144,6 @@ namespace Items.Guns
 
             private void WireUpEvents(GunSystems systems)
             {
-                // Wire ammo events to all fire modes
-                systems.AmmoSystem.OnOutOfAmmo += () =>
-                {
-                    foreach (var fireMode in systems.FireModeSystem.AvailableFireModes)
-                        fireMode.OnOutOfAmmo();
-                };
-
-                systems.AmmoSystem.OnReloadComplete += _ =>
-                {
-                    foreach (var fireMode in systems.FireModeSystem.AvailableFireModes)
-                        fireMode.OnReloadEnded();
-                };
-
                 // Add custom ammo out handlers
                 _eventHandlers.WireAmmoOutHandlers(systems.AmmoSystem);
             }
@@ -240,7 +226,6 @@ namespace Items.Guns
             private OwnerStatus _owner;
             private Func<IRecoilSystem> _recoilSystemFactory;
             private Func<ITrailSystem> _trailSystemFactory;
-            private Func<IItemAudioSystem> _audioSystemFactory;
 
             public SystemFactories(Gun gun)
             {
@@ -315,13 +300,6 @@ namespace Items.Guns
                 return _animationSystemFactory != null
                     ? _animationSystemFactory()
                     : new PlayerGunAnimationSystem();
-            }
-            
-            public IItemAudioSystem CreateAudioSystem()
-            {
-                return _audioSystemFactory != null
-                    ? _audioSystemFactory()
-                    : new GunAudioSystem(_gun);
             }
 
             private void SetDefaultFactories()
@@ -400,42 +378,5 @@ namespace Items.Guns
         }
 
         #endregion
-    }
-
-    public class GunAudioSystem : IItemAudioSystem
-    {
-        private AudioClip _gunAudioClip;
-        private readonly AudioSource[] _gunShotPool = new AudioSource[5];
-        private int _currentAudioSourceIndex = 0;
-        public GunAudioSystem(Gun gun)
-        {
-            RuntimeResolver.Instance.TryResolve<IAudioManager>(out var audioManager);
-            AudioManager = audioManager;
-            _gunAudioClip = gun.audioSettings.shoot;
-            InitializeGunShotPool(gun);
-        }
-
-        private void InitializeGunShotPool(Gun gun)
-        {
-            for (int i = 0; i < _gunShotPool.Length; i++)
-            {
-                var audioSource = new GameObject($"GunShotAudioSource_{i}").AddComponent<AudioSource>();
-                audioSource.clip = _gunAudioClip;
-                audioSource.outputAudioMixerGroup = gun.audioSettings.audioMixerGroup;
-                audioSource.pitch = UnityEngine.Random.Range(
-                    gun.audioSettings.pitchRange.x,
-                    gun.audioSettings.pitchRange.y);
-                audioSource.spatialBlend = 1.0f; // 3D sound
-                _gunShotPool[i] = audioSource;
-            }
-        }
-
-
-        public void Update()
-        {
-            
-        }
-
-        public IAudioManager AudioManager { get; set; }
     }
 }

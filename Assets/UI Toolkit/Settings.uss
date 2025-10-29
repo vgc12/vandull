@@ -15,7 +15,7 @@
     margin-top: 2px;
     margin-right: 4px;
     margin-bottom: 2px;
-    margin-left: 4px;
+    margin-left: 20px;
     -unity-text-align: upper-left;
 }
 

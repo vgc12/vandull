@@ -5,7 +5,7 @@
         <ui:VisualElement name="settings-container" style="flex-grow: 1; flex-shrink: 0; height: 100%; align-items: center; align-content: flex-end; align-self: center; justify-content: center; width: 100%; color: rgb(0, 0, 0); background-color: rgb(14, 14, 14);">
             <ui:TabView name="settings-tabs" style="flex-grow: 1; align-items: flex-start; height: auto; max-height: 80%; flex-shrink: 0; width: 100%; background-size: 100% 80%; background-color: rgba(10, 10, 10, 0); -unity-text-align: upper-left; align-self: flex-start;">
                 <ui:Tab label="Controls" name="controls-tab" style="flex-grow: 0; width: 100%; min-width: auto; flex-direction: column; align-items: center; align-content: flex-start; align-self: auto; flex-shrink: 0; max-height: 100%; background-color: rgba(0, 0, 0, 0);">
-                    <ui:VisualElement style="flex-grow: 0; flex-shrink: 0; align-items: flex-end; align-self: flex-start; max-height: 100%; width: 100%;">
+                    <ui:VisualElement name="VisualElement" style="flex-grow: 0; flex-shrink: 0; align-items: flex-end; align-self: flex-start; max-height: 100%; width: 100%;">
                         <ui:ScrollView mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="AlwaysVisible" name="scroll-view" style="flex-grow: 0; flex-shrink: 1; flex-direction: row-reverse; flex-wrap: nowrap; max-height: none; height: 100%; width: 100%; min-width: 520px; align-self: flex-start;">
                             <ui:VisualElement name="options" style="flex-grow: 1; align-items: stretch; align-self: flex-start; flex-shrink: 0; justify-content: flex-start; background-size: 520px 100%; width: 100%;">
                                 <ui:Label text="MOUSE SETTINGS" name="label" class="settings-header" style="-unity-font-style: bold; margin-bottom: 15px;" />
@@ -202,31 +202,33 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:Tab>
-                <ui:Tab label="Audio" name="audio-tab">
-                    <ui:VisualElement style="padding: 20px;">
-                        <ui:Label text="Audio" style="font-size: 24px; -unity-font-style: bold; margin-bottom: 15px;" />
-                        <ui:VisualElement style="margin-bottom: 15px;">
-                            <ui:Label text="Master Volume" style="margin-bottom: 5px;" />
-                            <ui:Slider name="master-volume-slider" high-value="1" low-value="0" value="1" show-input-field="true" />
-                        </ui:VisualElement>
-                        <ui:VisualElement style="margin-bottom: 15px;">
-                            <ui:Label text="Music Volume" style="margin-bottom: 5px;" />
-                            <ui:Slider name="music-volume-slider" high-value="1" low-value="0" value="0.8" show-input-field="true" />
-                        </ui:VisualElement>
-                        <ui:VisualElement style="margin-bottom: 15px;">
-                            <ui:Label text="SFX Volume" style="margin-bottom: 5px;" />
-                            <ui:Slider name="sfx-volume-slider" high-value="1" low-value="0" value="1" show-input-field="true" />
-                        </ui:VisualElement>
-                        <ui:VisualElement style="margin-bottom: 15px;">
-                            <ui:Label text="Voice Volume" style="margin-bottom: 5px;" />
-                            <ui:Slider name="voice-volume-slider" high-value="1" low-value="0" value="1" show-input-field="true" />
-                        </ui:VisualElement>
-                        <ui:VisualElement style="margin-bottom: 10px;">
-                            <ui:Toggle name="mute-toggle" label="Mute All" />
-                        </ui:VisualElement>
-                        <ui:VisualElement style="margin-bottom: 10px;">
-                            <ui:Label text="Audio Output" style="margin-bottom: 5px;" />
-                            <ui:DropdownField name="audio-output-dropdown" choices="Default,Headphones,Speakers" index="0" />
+                <ui:Tab label="Audio" name="audio-tab" style="align-items: center; flex-shrink: 0; width: 100%; max-height: 100%;">
+                    <ui:VisualElement name="VisualElement" style="flex-grow: 0; flex-shrink: 0; align-items: flex-end; align-self: flex-start; max-height: 100%; width: 100%;">
+                        <ui:ScrollView mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="AlwaysVisible" name="scroll-view" style="flex-grow: 0; flex-shrink: 1; flex-direction: row-reverse; flex-wrap: nowrap; max-height: none; height: 100%; width: 100%; min-width: 520px; align-self: flex-start; margin-top: 17px;">
+                            <ui:Label text="Volume" name="volume-label" class="settings-header" />
+                            <ui:VisualElement name="options" style="flex-grow: 1; align-items: stretch; align-self: flex-start; flex-shrink: 0; justify-content: flex-start; background-size: 520px 100%; width: 100%;">
+                                <ui:VisualElement name="main" style="flex-direction: row; margin-bottom: 5px; width: 100%;">
+                                    <ui:Label text="Main" name="label" class="settings-label" style="width: 150px; flex-grow: 0;" />
+                                    <ui:Slider name="slider" high-value="100" low-value="0" value="1000" show-input-field="true" style="width: auto; align-content: flex-start; align-self: flex-end; flex-grow: 1; padding-right: 13%; flex-direction: row; margin-right: 0; margin-left: 0;" />
+                                </ui:VisualElement>
+                                <ui:VisualElement name="ui" style="flex-direction: row; margin-bottom: 5px; width: 100%;">
+                                    <ui:Label text="UI" name="label" class="settings-label" style="width: 150px; flex-grow: 0;" />
+                                    <ui:Slider name="slider" high-value="100" low-value="0" value="100" show-input-field="true" style="width: auto; align-content: flex-start; align-self: flex-end; flex-grow: 1; padding-right: 13%; flex-direction: row; margin-right: 0; margin-left: 0;" />
+                                </ui:VisualElement>
+                                <ui:VisualElement name="dialogue" style="flex-direction: row; margin-bottom: 5px; width: 100%;">
+                                    <ui:Label text="Dialogue" name="label" class="settings-label" style="width: 150px; flex-grow: 0;" />
+                                    <ui:Slider name="slider" high-value="100" low-value="0" value="100" show-input-field="true" style="width: auto; align-content: flex-start; align-self: flex-end; flex-grow: 1; padding-right: 13%; flex-direction: row; margin-right: 0; margin-left: 0;" />
+                                </ui:VisualElement>
+                                <ui:VisualElement name="sound-effects" style="flex-direction: row; margin-bottom: 5px; width: 100%;">
+                                    <ui:Label text="Sound Effects" name="label" class="settings-label" style="width: 150px; flex-grow: 0;" />
+                                    <ui:Slider name="slider" high-value="100" low-value="0" value="1000" show-input-field="true" style="width: auto; align-content: flex-start; align-self: flex-end; flex-grow: 1; padding-right: 13%; flex-direction: row; margin-right: 0; margin-left: 0;" />
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                        </ui:ScrollView>
+                        <ui:VisualElement name="VisualElement" style="flex-direction: row; width: 100%; background-color: rgba(10, 10, 10, 0); padding-right: 0%; margin-top: 17px; position: relative; bottom: 0; right: 0; left: auto; top: 0; justify-content: flex-end; align-content: flex-start; align-self: flex-end; align-items: auto; flex-shrink: 0;">
+                            <ui:Button name="reset-button" text="Reset to Default" class="settings-button" style="padding: 10px 20px; min-width: 20px; min-height: 20px;" />
+                            <ui:Button name="apply-button" text="Apply" class="settings-button" style="margin-right: 5px; padding: 10px 20px; margin-left: 5px; min-width: 20px; min-height: 20px;" />
+                            <ui:Button name="close-button" text="Close" class="settings-button" style="padding: 10px 20px; margin-left: 5px; margin-right: 0; min-width: 20px; min-height: 20px;" />
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:Tab>

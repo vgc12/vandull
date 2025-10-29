@@ -18,8 +18,7 @@ namespace Player.Looking
             Left = 1,
             None = 0
         }
-
-        [Required] public ObjectSwayer objectSwayer;
+        
 
         private Vector2 _mouseDelta;
 

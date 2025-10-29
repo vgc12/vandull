@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Audio;
 using EventBus;
 using General;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace Items.Guns.Firing
         protected readonly MonoBehaviour Behaviour;
         protected readonly RaycastHit[] HitResults = new RaycastHit[10];
         protected readonly Transform Transform;
-        protected bool IsOutOfAmmo;
+
 
         protected float LastFireTime;
 
@@ -33,11 +34,10 @@ namespace Items.Guns.Firing
 
         public abstract void ExecuteFireCommand(FireCommand command);
 
-        public virtual bool CanFire => Time.time > LastFireTime + _gun.firingSettings.fireRate && !IsOutOfAmmo;
+        public virtual bool CanFire =>
+            Time.time > LastFireTime + _gun.firingSettings.fireRate && !_gun.AmmoSystem.OutOfAmmo;
 
         public Action<ShotFiredEvent> OnShotFired { get; set; }
-
-        public abstract void Fire();
 
 
         public abstract void StopFire();
@@ -46,19 +46,18 @@ namespace Items.Guns.Firing
         {
         }
 
-        public void OnOutOfAmmo()
-        {
-            IsOutOfAmmo = true;
-        }
+        public abstract void Fire();
 
-        public void OnReloadEnded()
-        {
-            IsOutOfAmmo = false;
-        }
 
         protected void PerformShot()
         {
-            if (!CanFire) return;
+            if (!CanFire)
+            {
+                AudioManager.Instance.PlaySfx(_gun.audioSettings.outOfAmmoClick, MuzzleTransform.position);
+                return;
+            }
+
+            AudioManager.Instance.PlaySfx(_gun.audioSettings.shoot, MuzzleTransform.position);
 
             LastFireTime = Time.time;
             PerformRaycast();
