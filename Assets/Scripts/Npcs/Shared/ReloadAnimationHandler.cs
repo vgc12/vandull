@@ -9,8 +9,8 @@ namespace Npcs.Shared
     {
         [SerializeField] private GameObject leftHand;
 
-        public float timescale = 1f;
-        public Gun currentGun;
+     
+        private Gun _currentGun;
 
 
         private void Awake()
@@ -22,45 +22,40 @@ namespace Npcs.Shared
 
         private void Start()
         {
-            currentGun = GetComponentsInChildren<Gun>().First(g => g.IsEquipped);
-        }
-
-        private void Update()
-        {
-            Time.timeScale = timescale;
+            _currentGun = GetComponentsInChildren<Gun>().First(g => g.IsEquipped);
         }
 
         private void OnPlayerEquippedNewItem(PlayerEquippedNewItemEvent obj)
         {
-            if (obj.Item is Gun gun) currentGun = gun;
+            if (obj.Item is Gun gun) _currentGun = gun;
         }
 
         public void ShowGunMagazine()
         {
-            if (!currentGun || currentGun.AmmoSystem.CurrentMagazine == null) return;
+            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null) return;
 
-            currentGun.AmmoSystem.CurrentMagazine.gameObject.SetActive(true);
+            _currentGun.AmmoSystem.CurrentMagazine.gameObject.SetActive(true);
         }
 
         public void HideGunMagazine()
         {
-            if (!currentGun || currentGun.AmmoSystem.CurrentMagazine == null) return;
+            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null) return;
 
-            currentGun.AmmoSystem.CurrentMagazine.UnEquip();
+            _currentGun.AmmoSystem.CurrentMagazine.UnEquip();
         }
 
         public void DropMagazine()
         {
-            if (!currentGun || currentGun.AmmoSystem.CurrentMagazine == null) return;
+            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null) return;
 
-            currentGun.AmmoSystem.CurrentMagazine.Drop();
+            _currentGun.AmmoSystem.CurrentMagazine.Drop();
         }
 
         public void EquipNewMagazine()
         {
-            if (!currentGun) return;
+            if (!_currentGun) return;
 
-            currentGun.AmmoSystem.EquipNewMagazine();
+            _currentGun.AmmoSystem.EquipNewMagazine();
         }
     }
 }

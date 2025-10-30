@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5dbbabfbae54c1a9eb1eeca93628fd1, type: 3}
   m_Name: Default
   m_EditorClassIdentifier: Assembly-CSharp::Audio.AudioCategory
-  mixerGroup: {fileID: 8416839249157007914, guid: 10a4c4dfd549cad479166ee6f262b2f0, type: 2}
+  mixerGroup: {fileID: 24300002, guid: 10a4c4dfd549cad479166ee6f262b2f0, type: 2}
   spatialBlend: 1
   rolloffMode: 0
   minDistance: 1

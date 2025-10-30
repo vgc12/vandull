@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 669ec7d49f8e4ab389d5e86be85ee668, type: 3}
   m_Name: MP5 - Audio Settings
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.AudioSettings
-  shoot: {fileID: 0}
+  shoot: {fileID: 8300000, guid: 53071806d459ca3438716486550d5ec4, type: 3}
   outOfAmmoClick: {fileID: 0}
   reload: {fileID: 0}
+  equip: {fileID: 0}
+  pitchRange: {x: 0.5, y: 1.5}
