@@ -2,7 +2,7 @@
 
 namespace Items.Guns.Ammo
 {
-    public interface IAmmoSystem : IGunSystem
+    public interface IAmmoSystem : IItemSystem
     {
         // When the magazine is empty but may have chambered round
 
@@ -18,9 +18,17 @@ namespace Items.Guns.Ammo
         public Action<ReloadEvent> OnReloadComplete { get; set; }
 
         public Action OnOutOfAmmo { get; set; }
+
+        public Magazine CurrentMagazine { get; }
+
         void StartReload();
+
+        void StartQuickReload();
+
         void ConsumeAmmo();
 
         void DropMagazine();
+
+        void EquipNewMagazine();
     }
 }

@@ -10,9 +10,8 @@ namespace Items.Guns.Firing
         private Coroutine _autoFireCoroutine;
         private bool _fireButtonHeld;
 
-        public AutomaticFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
-            Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour, muzzleTransform, onShotFiredSubscribers)
+        public AutomaticFireMode(Gun gun, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(gun, onShotFiredSubscribers)
         {
         }
 
@@ -61,11 +60,11 @@ namespace Items.Guns.Firing
 
         private IEnumerator AutomaticFireRoutine()
         {
-            while (!IsOutOfAmmo)
+            while (!_gun.AmmoSystem.OutOfAmmo)
             {
                 if (CanFire) PerformShot();
 
-                yield return new WaitForSeconds(Config.firingSettings.fireRate);
+                yield return new WaitForSeconds(_gun.firingSettings.fireRate);
             }
 
             _autoFireCoroutine = null;

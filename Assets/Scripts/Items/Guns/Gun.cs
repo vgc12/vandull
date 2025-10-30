@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Attributes;
-using EventBus;
 using General.Extensions;
 using Items.Guns.Aiming;
 using Items.Guns.Ammo;
@@ -11,35 +10,199 @@ using UnityEngine;
 
 namespace Items.Guns
 {
+    /// <summary>
+    ///     Main gun component that manages all gun-related systems including firing, aiming, ammo, recoil, and trails.
+    ///     Inherits from Item to integrate with the inventory system.
+    /// </summary>
     public sealed class Gun : Item
     {
-        [Header("Gun Components")] public GunConfig gunConfig;
+        #region Components
 
-        [SerializeField] [Required] private GunInitializer initializer;
+        /// <summary>
+        ///     Initializer responsible for creating and wiring up all gun systems.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Initializer responsible for creating and wiring up all gun systems")]
+        private GunInitializer initializer;
 
-        [Required] public Transform magazinePosition;
+        #endregion
 
-        [Required] public Transform hipFireTransform;
+        #region Private Fields
 
-        [Required] public Transform recoilTransform;
+        /// <summary>
+        ///     Cached reference to the player's recoil transform.
+        /// </summary>
+        private Transform _recoilTransform;
 
-        [Required] public Transform aimTransform;
+        #endregion
 
-        [Required] public Transform muzzleTransform;
+        #region Reload
 
-        [Required] public Transform leftHandTransform;
+        /// <summary>
+        ///     Initiates a reload sequence, stopping any active aim.
+        /// </summary>
+        /// <param name="quickReload">If true, performs a quick reload animation.</param>
+        public void StartReload(bool quickReload)
+        {
+            AimingSystem.StopAiming();
+            if (quickReload) AmmoSystem.StartQuickReload();
+            AmmoSystem.StartReload();
+        }
 
+        #endregion
+
+        #region Settings
+
+        /// <summary>
+        ///     Configuration for available fire modes (semi-auto, burst, full-auto).
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Configuration for available fire modes (semi-auto, burst, full-auto)")]
+        public FireModeSettings fireModeSettings;
+
+        /// <summary>
+        ///     General firing behavior settings including fire rate and spread.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("General firing behavior settings including fire rate and spread")]
+        public FiringSettings firingSettings;
+
+        /// <summary>
+        ///     Aiming down sights configuration including FOV and speed.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Aiming down sights configuration including FOV and speed")]
+        public AimSettings aimSettings;
+
+        /// <summary>
+        ///     Damage values and falloff configuration.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Damage values and falloff configuration")]
+        public DamageSettings damageSettings;
+
+        /// <summary>
+        ///     Ammunition capacity, reload times, and magazine settings.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Ammunition capacity, reload times, and magazine settings")]
+        public AmmoSettings ammoSettings;
+
+        /// <summary>
+        ///     Recoil pattern and intensity configuration.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Recoil pattern and intensity configuration")]
+        public RecoilSettings recoilSettings;
+
+        /// <summary>
+        ///     Visual bullet trail settings including color and lifetime.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Visual bullet trail settings including color and lifetime")]
+        public TrailSettings trailSettings;
+
+        /// <summary>
+        ///     Audio clips for firing, reloading, and other gun sounds.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Audio clips for firing, reloading, and other gun sounds")]
+        public AudioSettings audioSettings;
+
+        #endregion
+
+        #region Transform References
+
+        /// <summary>
+        ///     Position where the magazine model attaches during reload animations.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Position where the magazine model attaches during reload animations")]
+        public Transform magazinePosition;
+
+        /// <summary>
+        ///     Transform used for gun positioning when firing from the hip.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Transform used for gun positioning when firing from the hip")]
+        public Transform hipFireTransform;
+
+        /// <summary>
+        ///     Transform used for gun positioning when aiming down sights.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Transform used for gun positioning when aiming down sights")]
+        public Transform aimTransform;
+
+        /// <summary>
+        ///     Position where bullets spawn and muzzle flash appears.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Position where bullets spawn and muzzle flash appears")]
+        public Transform muzzleTransform;
+
+        #endregion
+
+        #region Animations
+
+        /// <summary>
+        ///     Standard reload animation for this weapon.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Standard reload animation for this weapon")]
+        public ItemAnimation reloadAnimation;
+
+        /// <summary>
+        ///     Faster reload animation (may retain ammo in magazine).
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Faster reload animation (may retain ammo in magazine)")]
+        public ItemAnimation quickReloadAnimation;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        ///     Gets the transform used for applying recoil to the camera/player view.
+        ///     Lazily finds and caches the PlayerRecoilObject on first access.
+        /// </summary>
+        public Transform RecoilTransform
+        {
+            get
+            {
+                _recoilTransform ??= FindFirstObjectByType<PlayerRecoilObject>().transform;
+                return _recoilTransform;
+            }
+        }
+
+        /// <summary>
+        ///     System responsible for handling aim down sights transitions and positioning.
+        /// </summary>
         public IAimingSystem AimingSystem { get; private set; }
+
+        /// <summary>
+        ///     System responsible for ammunition tracking, reloading, and magazine management.
+        /// </summary>
         public IAmmoSystem AmmoSystem { get; private set; }
+
+        /// <summary>
+        ///     System responsible for applying recoil patterns to the player's view.
+        /// </summary>
         public IRecoilSystem RecoilSystem { get; private set; }
+
+        /// <summary>
+        ///     System responsible for rendering visual bullet trails.
+        /// </summary>
         public ITrailSystem TrailSystem { get; private set; }
 
+        /// <summary>
+        ///     System responsible for managing fire modes and executing fire commands.
+        /// </summary>
         public IFireModeSystem FireModeSystem { get; private set; }
 
-
+        /// <summary>
+        ///     Gets whether the player is currently aiming down sights.
+        /// </summary>
         public bool IsAiming => AimingSystem.IsAiming;
+
+        /// <summary>
+        ///     Gets whether the gun is currently in a reload animation.
+        /// </summary>
         public bool IsReloading => AmmoSystem.IsReloading;
 
+        #endregion
+
+        #region Unity Lifecycle
+
+        /// <summary>
+        ///     Initializes all gun systems and performs initial aim state setup.
+        /// </summary>
         private void Awake()
         {
             var systems = initializer.CreateGunSystems(this);
@@ -50,29 +213,34 @@ namespace Items.Guns
             RecoilSystem = systems.RecoilSystem;
             TrailSystem = systems.TrailSystem;
             FireModeSystem = systems.FireModeSystem;
+            ItemAnimationSystem = systems.ItemAnimationSystem;
 
+            // Initialize aim state
             AimingSystem.StartAiming();
             AimingSystem.StopAiming();
         }
 
-        public override void OnDestroy()
+        /// <summary>
+        ///     Cleans up event subscriptions when the gun is destroyed.
+        /// </summary>
+        public void OnDestroy()
         {
-            base.OnDestroy();
-            /*
-            foreach (var fireMode in FireModeSystem?.AvailableFireModes)
+            // Unsubscribe from fire mode events
+            if (FireModeSystem?.AvailableFireModes != null)
+                foreach (var fireMode in FireModeSystem.AvailableFireModes)
+                    fireMode.OnShotFired = null;
+
+            // Unsubscribe from ammo events
+            if (AmmoSystem != null)
             {
-                foreach (var del in fireMode.OnShotFired.GetInvocationList())
-                {
-                    fireMode.OnShotFired-= (Action<ShotFiredEvent>)del;
-                }
+                AmmoSystem.OnOutOfAmmo = null;
+                AmmoSystem.OnReloadComplete = null;
             }
-            */
-            foreach (var fireMode in FireModeSystem?.AvailableFireModes) fireMode.OnShotFired = null;
-            AmmoSystem.OnOutOfAmmo = null;
-            AmmoSystem.OnReloadComplete = null;
         }
 
-
+        /// <summary>
+        ///     Updates all gun systems each frame.
+        /// </summary>
         protected override void OnUpdate()
         {
             RecoilSystem?.Update();
@@ -82,109 +250,137 @@ namespace Items.Guns
             TrailSystem?.Update();
         }
 
-        public void StartReload()
-        {
-            AmmoSystem.StartReload();
-        }
+        #endregion
 
+        #region Aiming
+
+        /// <summary>
+        ///     Starts the aim down sights transition if not reloading or unequipped.
+        /// </summary>
         public void StartAiming()
         {
             if (IsReloading || !IsEquipped) return;
             AimingSystem.StartAiming();
         }
 
+        /// <summary>
+        ///     Stops the aim down sights transition if the gun is equipped.
+        /// </summary>
         public void StopAiming()
         {
             if (!IsEquipped) return;
             AimingSystem.StopAiming();
         }
 
+        #endregion
 
+        #region Fire Modes
+
+        /// <summary>
+        ///     Gets a read-only list of available fire modes for this weapon.
+        /// </summary>
+        /// <returns>List of available fire types (semi-auto, burst, full-auto, etc.).</returns>
         public IReadOnlyList<FireType> GetAvailableFireModes()
         {
-            return gunConfig.fireModeSettings.availableFireModes;
+            return fireModeSettings.availableFireModes;
         }
 
-
-        public void ExecuteSingleShot()
-        {
-            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.SingleShot);
-        }
-
-        public void StartAutomaticFire()
-        {
-            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StartAutomaticFire);
-        }
-
-        public void StopAutomaticFire()
-        {
-            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StopAutomaticFire);
-        }
-
-
+        /// <summary>
+        ///     Cycles to the next available fire mode.
+        /// </summary>
         public void CycleFireMode()
         {
             FireModeSystem.CycleFireMode();
         }
 
+        #endregion
 
-        public void Drop()
+        #region Firing
+
+        /// <summary>
+        ///     Executes a single shot using the current fire mode.
+        /// </summary>
+        public void ExecuteSingleShot()
         {
-            transform.GetOrAdd<Rigidbody>();
-
-            var colliderCount = transform.GetComponentsInChildren<Collider>();
-            if (colliderCount.Length == 0)
-                transform.GetOrAdd<BoxCollider>();
-
-            transform.SetParent(null);
-
-            AmmoSystem.DropMagazine();
+            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.SingleShot);
         }
 
+        /// <summary>
+        ///     Starts continuous automatic fire using the current fire mode.
+        /// </summary>
+        public void StartAutomaticFire()
+        {
+            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StartAutomaticFire);
+        }
+
+        /// <summary>
+        ///     Stops continuous automatic fire.
+        /// </summary>
+        public void StopAutomaticFire()
+        {
+            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StopAutomaticFire);
+        }
+
+        /// <summary>
+        ///     Immediately stops all firing activity.
+        /// </summary>
         public void StopFiring()
         {
             FireModeSystem.CurrentFireSystem.StopFire();
         }
 
+        #endregion
+
+        #region Item Management
+
+        /// <summary>
+        ///     Drops the gun into the world, adding physics components and ejecting the magazine.
+        /// </summary>
+        public void Drop()
+        {
+            // Add physics components
+            transform.GetOrAdd<Rigidbody>();
+
+            // Ensure there's a collider
+            var colliderCount = transform.GetComponentsInChildren<Collider>();
+            if (colliderCount.Length == 0) transform.GetOrAdd<BoxCollider>();
+
+            // Detach from parent
+            transform.SetParent(null);
+
+            // Drop the magazine
+            AmmoSystem.DropMagazine();
+        }
+
+        /// <summary>
+        ///     Called when the gun is equipped by the player.
+        ///     Resets position and stops any active states.
+        /// </summary>
         public override void Equip()
         {
             base.Equip();
             AimingSystem.ResetPosition();
+
             if (AimingSystem != null) StopAiming();
 
             if (FireModeSystem != null) StopFiring();
         }
 
+        /// <summary>
+        ///     Called when the gun is unequipped by the player.
+        ///     Resets position and stops any active states.
+        /// </summary>
         public override void UnEquip()
         {
             AimingSystem.ResetPosition();
+
             if (AimingSystem != null) StopAiming();
 
             if (FireModeSystem != null) StopFiring();
 
-
             base.UnEquip();
         }
-    }
 
-    public class ShotHitEvent : IEvent
-    {
-        public RaycastHit Hit;
-
-        public ShotHitEvent(RaycastHit hit)
-        {
-            Hit = hit;
-        }
-    }
-
-
-    public interface IFireModeSystem : IGunSystem
-    {
-        IFireSystem CurrentFireSystem { get; }
-        IReadOnlyList<IFireSystem> AvailableFireModes { get; }
-
-        void SetCurrentFireMode(FireType fireType);
-
-        void CycleFireMode();
+        #endregion
     }
 }

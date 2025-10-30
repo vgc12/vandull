@@ -9,5 +9,7 @@ namespace Items.Guns
         [Required] public AudioClip shoot;
         [Required] public AudioClip outOfAmmoClick;
         [Required] public AudioClip reload;
+        [Required] public AudioClip equip;
+        [Required] public Vector2 pitchRange;
     }
 }

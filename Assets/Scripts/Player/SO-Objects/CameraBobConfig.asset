@@ -30,3 +30,21 @@ MonoBehaviour:
     horizontalAmplitude: 0.05
     verticalAmplitude: 0.07
     speedCurve: 1.7
+  aimWalkConfig:
+    frequency: 1
+    maxSpeed: 5
+    horizontalAmplitude: 0.0001
+    verticalAmplitude: 0.0001
+    speedCurve: 0.0001
+  aimCrouchWalkConfig:
+    frequency: 1
+    maxSpeed: 5
+    horizontalAmplitude: 0.0001
+    verticalAmplitude: 0.0001
+    speedCurve: 0.0001
+  sprintAimConfig:
+    frequency: 1
+    maxSpeed: 5
+    horizontalAmplitude: 0.0001
+    verticalAmplitude: 0.0001
+    speedCurve: 0.0001

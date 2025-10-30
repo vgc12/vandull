@@ -6,8 +6,8 @@ namespace Items.Guns.Recoil
     {
         private readonly Vector3 _basePosition;
         private readonly Quaternion _baseRotation;
-        private readonly MonoBehaviour _behaviour;
-        private readonly GunConfig _config;
+
+        private readonly Gun _gun;
         private readonly Transform _recoilTransform;
 
         private int _consecutiveShots;
@@ -16,15 +16,14 @@ namespace Items.Guns.Recoil
         private float _lastShotTime;
         private Vector3 _targetSpreadOffset;
 
-        public EnemyRecoilSystem(GunConfig config, Transform recoilTransform, MonoBehaviour behaviour)
+        public EnemyRecoilSystem(Gun gun)
         {
-            _config = config;
-            _recoilTransform = recoilTransform;
-            _behaviour = behaviour;
+            _gun = gun;
+            _recoilTransform = gun.RecoilTransform;
 
 
-            _basePosition = recoilTransform.localPosition;
-            _baseRotation = recoilTransform.localRotation;
+            _basePosition = _recoilTransform.localPosition;
+            _baseRotation = _recoilTransform.localRotation;
         }
 
         public Vector3 CurrentRecoil { get; private set; }
@@ -52,10 +51,10 @@ namespace Items.Guns.Recoil
         public void Update()
         {
             // Update progressive spread decay
-            if (_config.recoilSettings.useProgressiveRecoil && Time.time > _lastShotTime + 0.5f)
+            if (_gun.recoilSettings.useProgressiveRecoil && Time.time > _lastShotTime + 0.5f)
             {
                 _currentSpreadMultiplier = Mathf.Lerp(_currentSpreadMultiplier, 1f,
-                    Time.deltaTime * _config.recoilSettings.recoilDecayRate);
+                    Time.deltaTime * _gun.recoilSettings.recoilDecayRate);
 
                 if (Time.time > _lastShotTime + 2f)
                     _consecutiveShots = 0;

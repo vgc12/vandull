@@ -27,6 +27,8 @@ namespace Items.Guns
             _input.Aim += OnAim;
 
             _input.Reload += OnReload;
+            
+            _input.QuickReload += OnQuickReload;
 
 
             _input.Attack += Use;
@@ -62,11 +64,18 @@ namespace Items.Guns
             else if (context.canceled) gun.StopAutomaticFire();
         }
 
+        public void OnQuickReload()
+        {
+            if (_currentItem == null) return;
+
+            _currentGun.StartReload(true);
+        }
+        
         public void OnReload()
         {
             if (_currentItem == null) return;
 
-            _currentGun.StartReload();
+            _currentGun.StartReload(false);
         }
 
 

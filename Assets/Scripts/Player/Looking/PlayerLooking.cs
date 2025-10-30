@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Player.Looking
 {
-    [RequireComponent(typeof(GroundChecker), typeof(Bobber), typeof(Rigidbody))]
+    [RequireComponent(typeof(GroundChecker), typeof(Rigidbody))]
     public class PlayerLooking : MonoBehaviour
     {
         #region Variables
@@ -18,8 +18,7 @@ namespace Player.Looking
             Left = 1,
             None = 0
         }
-
-        [Required] public ObjectSwayer objectSwayer;
+        
 
         private Vector2 _mouseDelta;
 
@@ -30,8 +29,6 @@ namespace Player.Looking
 
         private Rigidbody _rigidbody;
 
-        public Bobber Bobber { get; private set; }
-        [Required] public Bobber weaponBobber;
 
         [Header("Configuration")] [Required] [SerializeField]
         private PlayerLookingConfig config;
@@ -46,8 +43,9 @@ namespace Player.Looking
 
         [SerializeField] [Required] private Transform leanPoint;
 
-        [Header("Configuration")] [Required] public CameraBobConfig cameraBobConfig;
-        [Required] public CameraBobConfig weaponBobConfig;
+        [SerializeField] private Transform itemHolder;
+
+        [Header("Configuration")] [Required] public CameraBobConfig weaponBobConfig;
 
         #endregion
 
@@ -56,7 +54,6 @@ namespace Player.Looking
         private void Start()
         {
             InitializeControls();
-            Bobber = GetComponent<Bobber>();
         }
 
 
@@ -102,6 +99,9 @@ namespace Player.Looking
 
             leanPoint.rotation = rot;
             cameraHolder.rotation = Quaternion.Euler(_cameraRotation.x, _cameraRotation.y, 0);
+            if (!itemHolder) return;
+            itemHolder.localRotation = Quaternion.Euler(itemHolder.localRotation.eulerAngles.x,
+                itemHolder.localRotation.eulerAngles.x, leanPoint.rotation.eulerAngles.z);
         }
 
 

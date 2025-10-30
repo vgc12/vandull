@@ -4,7 +4,6 @@ using System.Linq;
 using Attributes;
 using EventBus;
 using Items.Guns;
-using Npcs.Shared;
 using Player;
 using Reflex.Attributes;
 using UnityEngine;
@@ -17,8 +16,6 @@ namespace Items
     public class ItemHandler : MonoBehaviour
     {
         [SerializeField] public List<Gun> gunObjects = new();
-
-        [SerializeField] [Required] private ArmAnimationController armAnimationController;
 
         [SerializeField] [Required] private RigHandler rigHandler;
 
@@ -101,12 +98,6 @@ namespace Items
             rigHandler.RightHandTarget = EquippedItem.rightHandTarget;
             rigHandler.RightHandHint = EquippedItem.rightHandHint;
             rigHandler.RebuildRigs();
-
-            //rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
-            // rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
-//            animator.SetLayerWeight((int)EquippedItem.gripType, 1);
-
-            armAnimationController.PlayAnimation(EquippedItem.gripType);
         }
     }
 }

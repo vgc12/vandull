@@ -15,8 +15,7 @@ namespace Items.Guns
         {
             RuntimeResolver.Instance.TryResolve(out _logger);
             var builder = new Builder(gun);
-            return builder.ForPlayer(_logger).AddItemEquippedHandler(() =>
-                EventBus<PlayerEquippedNewItemEvent>.Raise(new PlayerEquippedNewItemEvent(gun))).Build();
+            return builder.ForPlayer(_logger).Build();
         }
     }
 

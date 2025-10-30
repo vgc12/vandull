@@ -1,33 +1,30 @@
-﻿using StateMachine;
+﻿using EventBus;
+using StateMachine;
 
 namespace Player.States
 {
     public class WalkState : BaseState
     {
         private readonly PlayerStateMachine _sm;
+        private readonly PlayerMovementEnteredEvent _stateEntered;
+        private readonly PlayerMovementExitedEvent _stateExited;
 
         public WalkState(PlayerStateMachine sm)
         {
             _sm = sm;
+            _stateEntered = new PlayerMovementEnteredEvent(_sm.PlayerMovement.Rigidbody, typeof(WalkState));
+            _stateExited = new PlayerMovementExitedEvent(_sm.PlayerMovement.Rigidbody, typeof(WalkState));
         }
 
         public override void Enter()
         {
+            EventBus<PlayerMovementEnteredEvent>.Raise(_stateEntered);
         }
 
         public override void Update()
         {
             _sm.PlayerMovement.ApplyDrag();
             _sm.PlayerLooking.Look();
-            var weaponEffects = _sm.PlayerLooking.weaponBobber;
-            var config = _sm.PlayerMovement.IsAiming ?
-                _sm.PlayerLooking.weaponBobConfig.aimWalkConfig
-                : _sm.PlayerLooking.weaponBobConfig.walkConfig;
-            weaponEffects.Bob(config,
-                _sm.PlayerMovement.Rigidbody.linearVelocity);
-            var cameraEffects = _sm.PlayerLooking.Bobber;
-            cameraEffects.Bob(_sm.PlayerLooking.cameraBobConfig.walkConfig,
-                _sm.PlayerMovement.Rigidbody.linearVelocity);
             _sm.PlayerLooking.Lean();
         }
 
@@ -39,6 +36,7 @@ namespace Player.States
 
         public override void Exit()
         {
+            EventBus<PlayerMovementExitedEvent>.Raise(_stateExited);
         }
     }
 }

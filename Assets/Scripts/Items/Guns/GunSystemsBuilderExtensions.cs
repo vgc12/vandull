@@ -9,7 +9,8 @@ namespace Items.Guns
         {
             return builder
                 .AddShotFiredHandler(e => logger.Log($"Player fired at {e.ShootPoint}"))
-                .AddAmmoOutHandler(() => logger.Log("Player out of ammo!"));
+                .AddAmmoOutHandler(() => logger.Log("Player out of ammo!"))
+                .WithOwnerStatus(OwnerStatus.Player);
         }
 
 
@@ -18,5 +19,12 @@ namespace Items.Guns
         {
             return builder.WithTrailSystem(() => new TrailSystem(customTrailSettings));
         }
+    }
+
+    public enum OwnerStatus
+    {
+        Player,
+        Enemy,
+        Neutral
     }
 }

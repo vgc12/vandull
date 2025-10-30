@@ -41,7 +41,7 @@ namespace UI
 
         public VisualElement Root { get; private set; }
 
-        private void Awake()
+        protected override void Awake()
         {
             _document = GetComponent<UIDocument>();
             Root = _document.rootVisualElement;

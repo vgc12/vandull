@@ -3,4 +3,8 @@
     public interface IEvent
     {
     }
+
+    public readonly ref struct Event
+    {
+    }
 }

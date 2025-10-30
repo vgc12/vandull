@@ -27,9 +27,16 @@ namespace Singletons
 
 
                 if (instance != null) return instance;
+                try
+                {
+                    var go = new GameObject(typeof(T).Name + " Auto-Generated");
+                    instance = go.AddComponent<T>();
+                }
+                catch (Exception _)
+                {
+                    // ignored
+                }
 
-                var go = new GameObject(typeof(T).Name + " Auto-Generated");
-                instance = go.AddComponent<T>();
                 return instance;
             }
         }

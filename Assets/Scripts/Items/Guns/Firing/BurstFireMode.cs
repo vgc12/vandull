@@ -11,12 +11,11 @@ namespace Items.Guns.Firing
         private readonly float _burstDelay;
         private Coroutine _burstFireCoroutine;
 
-        public BurstFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
-            Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour, muzzleTransform, onShotFiredSubscribers)
+        public BurstFireMode(Gun gun, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(gun, onShotFiredSubscribers)
         {
-            _burstCount = Config.firingSettings.burstCount;
-            _burstDelay = Config.firingSettings.burstDelay;
+            _burstCount = _gun.firingSettings.burstCount;
+            _burstDelay = _gun.firingSettings.burstDelay;
         }
 
 
@@ -64,14 +63,14 @@ namespace Items.Guns.Firing
 
         private IEnumerator FireBurst()
         {
-            for (var i = 0; i < _burstCount && !IsOutOfAmmo; i++)
+            for (var i = 0; i < _burstCount && !_gun.AmmoSystem.OutOfAmmo; i++)
             {
                 if (CanFire) PerformShot();
 
                 if (i < _burstCount - 1) yield return new WaitForSeconds(_burstDelay);
             }
 
-            yield return new WaitForSeconds(Config.firingSettings.fireRate - _burstDelay);
+            yield return new WaitForSeconds(_gun.firingSettings.fireRate - _burstDelay);
             _burstFireCoroutine = null;
         }
     }
