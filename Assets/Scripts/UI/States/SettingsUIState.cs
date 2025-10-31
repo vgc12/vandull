@@ -24,7 +24,7 @@ namespace UI.States
         private string _currentActionName;
         private int _currentBindingIndex;
 
-        private InputActionAsset _inputActions;
+        private InputManager _inputActions;
 
         // UI Elements
         private VisualElement _inputOverlay;
@@ -61,10 +61,10 @@ namespace UI.States
 
         private void InitializeInputSystem()
         {
-            if (!RuntimeResolver.Instance.TryResolve<InputManager>(out var inputManager))
+            if (!RuntimeResolver.Instance.TryResolve(out _inputActions))
                 Logger.LogError("Could not find input manager in scene!");
 
-            _inputActions = inputManager.InputActions.asset;
+           
             
             // Cache composite actions
             CacheAction("move", "Player/Move");
@@ -84,7 +84,7 @@ namespace UI.States
 
         private void CacheAction(string key, string actionPath)
         {
-            var action = _inputActions?.FindAction(actionPath);
+            var action = _inputActions.InputActions.asset.FindAction(actionPath);
             if (action != null) _actionMap[key] = action;
         }
 
@@ -277,7 +277,6 @@ private void StartCompositeRebind(string actionName, int bindingIndex, Button bu
         private void StartRebind(string actionName, int bindingIndex, Button button)
         {
             if (!_actionMap.TryGetValue(actionName, out var action)) return;
-
             // Disable the action while rebinding
             action.Disable();
 
@@ -300,6 +299,7 @@ private void StartCompositeRebind(string actionName, int bindingIndex, Button bu
                 .OnCancel(operation => OnRebindCancelled())
                 .Start();
         }
+        
 
         private void OnRebindComplete(Button button)
         {
@@ -321,6 +321,7 @@ private void StartCompositeRebind(string actionName, int bindingIndex, Button bu
 
             CleanupRebind();
         }
+        
         private void UpdateCompositePartButtons(InputAction action, string partName, string uiElementName)
         {
             var container = RootPageElement.Q<VisualElement>(uiElementName);

@@ -605,9 +605,9 @@ AnimationClip:
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
         time: 1.5833334
-        value: {x: -0.003157, y: 0.006222, z: 0.000464}
-        inSlope: {x: -0.0039456207, y: 0.0027704765, z: 0}
-        outSlope: {x: -0.0039456207, y: 0.0027704765, z: 0}
+        value: {x: -0.00378, y: 0.00622, z: 0.0006}
+        inSlope: {x: 0, y: 0.0027864764, z: 0}
+        outSlope: {x: 0, y: 0.0027864764, z: 0}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
@@ -2263,9 +2263,9 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1.5833334
-        value: -0.003157
-        inSlope: -0.0039456207
-        outSlope: -0.0039456207
+        value: -0.00378
+        inSlope: 0
+        outSlope: 0
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
@@ -2329,9 +2329,9 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1.5833334
-        value: 0.006222
-        inSlope: 0.0027704765
-        outSlope: 0.0027704765
+        value: 0.00622
+        inSlope: 0.0027864764
+        outSlope: 0.0027864764
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
@@ -2395,7 +2395,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1.5833334
-        value: 0.000464
+        value: 0.0006
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -3250,4 +3250,18 @@ AnimationClip:
     flags: 0
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
-  m_Events: []
+  m_Events:
+  - time: 0.25
+    functionName: PlayMagazineRemovedSound
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.4666667
+    functionName: PlayMagazineInsertedSound
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
