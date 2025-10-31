@@ -5,6 +5,7 @@ using Attributes;
 using Cysharp.Threading.Tasks;
 using EventBus;
 using Singletons;
+using UI.States;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Pool;
@@ -63,7 +64,7 @@ namespace Audio
 
             // Set playback parameters
             audioSource.clip = clip;
-            audioSource.volume = volume * masterVolume;
+            audioSource.volume = volume;
             audioSource.pitch = pitch;
             audioSource.loop = loop;
             pooledSource.transform.position = position;
@@ -85,8 +86,8 @@ namespace Audio
         /// </summary>
         private void InitializeAudioManager()
         {
-            _audioSettingsChangedBinding = new EventBinding<AudioSettingsChangedEvent>(OnAudioSettingsChanged);
-            EventBus<AudioSettingsChangedEvent>.Register(_audioSettingsChangedBinding);
+            _audioSettingsChangedBinding = new EventBinding<SettingsUIState.AudioSettingsChangedEvent>(OnAudioSettingsChanged);
+            EventBus<SettingsUIState.AudioSettingsChangedEvent>.Register(_audioSettingsChangedBinding);
 
             // Create parent for pooled objects
             _poolParent = new GameObject("AudioSourcePool").transform;
@@ -105,7 +106,7 @@ namespace Audio
             _musicSource.outputAudioMixerGroup = musicMixerGroup;
             _musicSource.loop = true;
             _musicSource.playOnAwake = false;
-            _musicSource.volume = musicVolume;
+            _musicSource.volume = 1f;
             _musicSource.spatialBlend = 0f;
 
             // Initialize object pool
@@ -127,7 +128,7 @@ namespace Audio
             Debug.Log($"AudioManager initialized with {audioCategories.Length} categories");
         }
 
-        private void OnAudioSettingsChanged(AudioSettingsChangedEvent obj)
+        private void OnAudioSettingsChanged(SettingsUIState.AudioSettingsChangedEvent obj)
         {
             SetVolume(musicMixerGroup, obj.MusicVolume);
 
@@ -149,15 +150,11 @@ namespace Audio
 
         [SerializeField] [Tooltip("Maximum number of AudioSources that can exist")]
         private int maxPoolSize = 40;
-
-        [Header("Master Volume")] [SerializeField] [Range(0f, 1f)] [Tooltip("Master volume multiplier for all sounds")]
-        private float masterVolume = 1f;
+        
 
         [Header("Music (Non-Pooled)")] [SerializeField] [Tooltip("Mixer group for background music")]
         private AudioMixerGroup musicMixerGroup;
-
-        [SerializeField] [Range(0f, 1f)] [Tooltip("Default volume for music")]
-        private float musicVolume = 0.7f;
+        
 
         [Header("Debug")] [SerializeField] private AudioCategory defaultCategory;
 
@@ -170,7 +167,7 @@ namespace Audio
         private Dictionary<string, AudioCategory> _categoryLookup;
         private AudioSource _musicSource;
         private Transform _poolParent;
-        private EventBinding<AudioSettingsChangedEvent> _audioSettingsChangedBinding;
+        private EventBinding<SettingsUIState.AudioSettingsChangedEvent> _audioSettingsChangedBinding;
 
         #endregion
 
@@ -247,7 +244,7 @@ namespace Audio
         /// </summary>
         public PooledAudioSource PlayVoice(AudioClip clip, Vector3 position, float volume = 1f)
         {
-            return PlaySound(clip, "Voice", position, volume);
+            return PlaySound(clip, "Dialogue", position, volume);
         }
 
         /// <summary>
@@ -306,7 +303,7 @@ namespace Audio
             _musicSource.Play();
 
             // Fade in new music
-            await FadeIn(_musicSource, musicVolume * masterVolume, fadeInDuration, ct);
+            await FadeIn(_musicSource, 1f, fadeInDuration, ct);
         }
 
         /// <summary>
@@ -432,10 +429,10 @@ namespace Audio
         {
             get
             {
-                if (_audioSource == null)
+                if (!_audioSource)
                 {
                     _audioSource = GetComponent<AudioSource>();
-                    if (_audioSource == null)
+                    if (!_audioSource)
                     {
                         _audioSource = gameObject.AddComponent<AudioSource>();
                         _audioSource.playOnAwake = false;

@@ -18,10 +18,5 @@ namespace General.Game
             GameManager = gameManager;
             RuntimeResolver.Instance.TryResolve(out Logger);
         }
-
-        public override void Enter()
-        {
-            base.Enter();
-        }
     }
 }

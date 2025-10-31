@@ -81,7 +81,7 @@ namespace Player.Looking
             _leanDirection = (LeanDirection)value;
         }
 
-        public void OnMouseMove(Vector2 direction)
+        private void OnMouseMove(Vector2 direction)
         {
             _mouseDelta = direction;
         }
