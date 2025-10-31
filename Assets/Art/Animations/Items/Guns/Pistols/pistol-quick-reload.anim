@@ -166,9 +166,9 @@ AnimationClip:
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
         time: 1.2
-        value: {x: -13.665, y: 355.462, z: -250.442}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
+        value: {x: 2.071, y: 317.115, z: -246.381}
+        inSlope: {x: -41.732403, y: 114.22442, z: 0}
+        outSlope: {x: -41.732403, y: 114.22442, z: 0}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
@@ -434,9 +434,9 @@ AnimationClip:
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
         time: 1.2
-        value: {x: -0.0036502026, y: 0.0065683094, z: 0.00019870039}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
+        value: {x: -0.003389, y: 0.006804, z: 0.000753}
+        inSlope: {x: -0.0012537731, y: 0, z: 0}
+        outSlope: {x: -0.0012537731, y: 0, z: 0}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
@@ -1687,9 +1687,9 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1.2
-        value: -0.0036502026
-        inSlope: 0
-        outSlope: 0
+        value: -0.003389
+        inSlope: -0.0012537731
+        outSlope: -0.0012537731
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
@@ -1735,7 +1735,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1.2
-        value: 0.0065683094
+        value: 0.006804
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1783,7 +1783,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1.2
-        value: 0.00019870039
+        value: 0.000753
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1831,9 +1831,9 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1.2
-        value: -13.665
-        inSlope: 0
-        outSlope: 0
+        value: 2.071
+        inSlope: -41.732403
+        outSlope: -41.732403
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
@@ -1879,9 +1879,9 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1.2
-        value: 355.462
-        inSlope: 0
-        outSlope: 0
+        value: 317.115
+        inSlope: 114.22442
+        outSlope: 114.22442
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
@@ -1927,7 +1927,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1.2
-        value: -250.442
+        value: -246.381
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -2392,7 +2392,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: HandRigs/LeftHand/LeftHand_target
+    path: WeaponBobTransform
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -2404,7 +2404,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: HandRigs/LeftHand/LeftHand_target
+    path: WeaponBobTransform
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -2416,7 +2416,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: HandRigs/LeftHand/LeftHand_target
+    path: WeaponBobTransform
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -2500,7 +2500,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: WeaponBobTransform
+    path: HandRigs/LeftHand/LeftHand_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -2512,7 +2512,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: WeaponBobTransform
+    path: HandRigs/LeftHand/LeftHand_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -2524,7 +2524,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: WeaponBobTransform
+    path: HandRigs/LeftHand/LeftHand_target
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -2533,6 +2533,20 @@ AnimationClip:
   m_Events:
   - time: 0.25
     functionName: DropMagazine
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.25
+    functionName: PlayMagazineRemovedSound
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.0833334
+    functionName: PlayMagazineInsertedSound
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
