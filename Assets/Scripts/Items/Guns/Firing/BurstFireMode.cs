@@ -49,7 +49,6 @@ namespace Items.Guns.Firing
         private void StartBurstFire()
         {
             if (_burstFireCoroutine != null) return;
-            if (!CanFire) return;
 
             _burstFireCoroutine = Behaviour.StartCoroutine(FireBurst());
         }
@@ -63,9 +62,10 @@ namespace Items.Guns.Firing
 
         private IEnumerator FireBurst()
         {
-            for (var i = 0; i < _burstCount && !_gun.AmmoSystem.OutOfAmmo; i++)
+            for (var i = 0; i < _burstCount; i++)
             {
-                if (CanFire) PerformShot();
+                PerformShot();
+
 
                 if (i < _burstCount - 1) yield return new WaitForSeconds(_burstDelay);
             }

@@ -88148,8 +88148,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Npcs.Shared.ReloadHandler
   leftHand: {fileID: 9077251200861630086}
-  timescale: 1
-  currentGun: {fileID: 0}
 --- !u!114 &8556907120554991498
 MonoBehaviour:
   m_ObjectHideFlags: 0

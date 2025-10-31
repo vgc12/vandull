@@ -1,15 +1,32 @@
-﻿using Attributes;
+﻿using System;
+using Attributes;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Items.Guns
 {
     [CreateAssetMenu(fileName = "AudioSettings", menuName = "Guns/AudioSettings", order = 1)]
     public class AudioSettings : ScriptableObject
     {
-        [Required] public AudioClip shoot;
-        [Required] public AudioClip outOfAmmoClick;
-        [Required] public AudioClip reload;
-        [Required] public AudioClip equip;
-        [Required] public Vector2 pitchRange;
+        public GunAudioClip fire;
+        public GunAudioClip dryFire;
+        public GunAudioClip boltPullBack;
+        public GunAudioClip boltRelease;
+        public GunAudioClip magRemoved;
+        public GunAudioClip magInserted;
+        public GunAudioClip equip;
+
+
+        [Serializable]
+        public class GunAudioClip
+        {
+            [Required] public AudioClip clip;
+            public Vector2 pitchRange = new(1f, 1f);
+
+            public float RandomPitch => Random.Range(
+                pitchRange.x,
+                pitchRange.y
+            );
+        }
     }
 }

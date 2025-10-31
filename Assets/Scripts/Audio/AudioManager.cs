@@ -227,11 +227,11 @@ namespace Audio
         #region Public API - Convenience Methods by Category
 
         /// <summary>
-        ///     Plays a 3D sound effect using the "SFX" category.
+        ///     Plays a 3D sound effect using the "SoundEffects" category.
         /// </summary>
         public PooledAudioSource PlaySfx(AudioClip clip, Vector3 position, float volume = 1f, float pitch = 1f)
         {
-            return PlaySound(clip, "SFX", position, volume, pitch);
+            return PlaySound(clip, "SoundEffects", position, volume, pitch);
         }
 
         /// <summary>

@@ -1,7 +1,9 @@
 ﻿using System.Linq;
+using Audio;
 using EventBus;
 using Items.Guns;
 using UnityEngine;
+using AudioSettings = Items.Guns.AudioSettings;
 
 namespace Npcs.Shared
 {
@@ -9,9 +11,9 @@ namespace Npcs.Shared
     {
         [SerializeField] private GameObject leftHand;
 
-     
         private Gun _currentGun;
 
+        private bool GunPresent => _currentGun && _currentGun.AmmoSystem.CurrentMagazine;
 
         private void Awake()
         {
@@ -30,32 +32,50 @@ namespace Npcs.Shared
             if (obj.Item is Gun gun) _currentGun = gun;
         }
 
-        public void ShowGunMagazine()
-        {
-            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null) return;
-
-            _currentGun.AmmoSystem.CurrentMagazine.gameObject.SetActive(true);
-        }
-
         public void HideGunMagazine()
         {
-            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null) return;
-
+            if (!GunPresent) return;
             _currentGun.AmmoSystem.CurrentMagazine.UnEquip();
         }
 
         public void DropMagazine()
         {
-            if (!_currentGun || _currentGun.AmmoSystem.CurrentMagazine == null) return;
-
+            if (!GunPresent) return;
             _currentGun.AmmoSystem.CurrentMagazine.Drop();
         }
 
         public void EquipNewMagazine()
         {
             if (!_currentGun) return;
-
             _currentGun.AmmoSystem.EquipNewMagazine();
+        }
+
+
+        public void PlayMagazineRemovedSound()
+        {
+            PlayGunSound(_currentGun?.audioSettings.magRemoved);
+        }
+
+        public void PlayMagazineInsertedSound()
+        {
+            PlayGunSound(_currentGun?.audioSettings.magInserted);
+        }
+
+        public void PlayBoltPulledBackSound()
+        {
+            PlayGunSound(_currentGun?.audioSettings.boltPullBack);
+        }
+
+        public void PlayBoltReleasedSound()
+        {
+            PlayGunSound(_currentGun?.audioSettings.boltRelease);
+        }
+
+        private void PlayGunSound(AudioSettings.GunAudioClip sound)
+        {
+            if (!GunPresent || !sound.clip) return;
+
+            AudioManager.Instance.PlaySfx(sound.clip, leftHand.transform.position, pitch: sound.RandomPitch);
         }
     }
 }

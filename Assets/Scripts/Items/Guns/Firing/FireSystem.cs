@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using Audio;
+using DependencyInjection;
 using EventBus;
 using General;
 using UnityEngine;
+using ILogger = General.Logging.ILogger;
 
 namespace Items.Guns.Firing
 {
     public abstract class BaseFireMode : IFireSystem
     {
         protected readonly Gun _gun;
+        private readonly ILogger _logger;
         protected readonly MonoBehaviour Behaviour;
         protected readonly RaycastHit[] HitResults = new RaycastHit[10];
         protected readonly Transform Transform;
@@ -24,18 +27,20 @@ namespace Items.Guns.Firing
             Transform = gun.transform;
             Behaviour = gun;
             MuzzleTransform = gun.muzzleTransform;
-
+            _logger = RuntimeResolver.Instance.Resolve<ILogger>();
             if (onShotFiredSubscribers == null) return;
             foreach (var subscriber in onShotFiredSubscribers) OnShotFired += subscriber;
         }
 
         public Transform MuzzleTransform { get; }
 
+        public virtual bool FireRateTimeElapsed =>
+            Time.time > LastFireTime + _gun.firingSettings.fireRate;
+
 
         public abstract void ExecuteFireCommand(FireCommand command);
 
-        public virtual bool CanFire =>
-            Time.time > LastFireTime + _gun.firingSettings.fireRate && !_gun.AmmoSystem.OutOfAmmo;
+        public virtual bool OutOfAmmo => _gun.AmmoSystem.OutOfAmmo;
 
         public Action<ShotFiredEvent> OnShotFired { get; set; }
 
@@ -51,13 +56,19 @@ namespace Items.Guns.Firing
 
         protected void PerformShot()
         {
-            if (!CanFire)
+            var sound = _gun.audioSettings.fire;
+            if (OutOfAmmo || !FireRateTimeElapsed)
             {
-                AudioManager.Instance.PlaySfx(_gun.audioSettings.outOfAmmoClick, MuzzleTransform.position);
+                if (!FireRateTimeElapsed) return;
+
+                LastFireTime = Time.time;
+                sound = _gun.audioSettings.dryFire;
+                AudioManager.Instance.PlaySfx(sound.clip, MuzzleTransform.position, pitch: sound.RandomPitch);
+
                 return;
             }
 
-            AudioManager.Instance.PlaySfx(_gun.audioSettings.shoot, MuzzleTransform.position);
+            AudioManager.Instance.PlaySfx(sound.clip, MuzzleTransform.position, pitch: sound.RandomPitch);
 
             LastFireTime = Time.time;
             PerformRaycast();
@@ -72,7 +83,6 @@ namespace Items.Guns.Firing
                     ~LayerMask.GetMask("Ignore Raycast")))
             {
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
-
 
                 ApplyDamage(hit);
             }
