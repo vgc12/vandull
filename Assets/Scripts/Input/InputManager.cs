@@ -46,6 +46,7 @@ namespace Player.Input
             _controlsChangedEventBinding =
                 new EventBinding<SettingsUIState.ControlSettingsChangedEvent>(OnControlsChanged);
             EventBus<SettingsUIState.ControlSettingsChangedEvent>.Register(_controlsChangedEventBinding);
+            
         }
 
         public PlayerInputActions InputActions { get; private set; }

@@ -5,115 +5,59 @@ using EventBus;
 using Player.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.DualShock;
+using UnityEngine.InputSystem.Switch;
+using UnityEngine.InputSystem.XInput;
 using UnityEngine.UIElements;
 
 namespace UI.States
 {
+    [Serializable]
+    public class KeyIconMapping
+    {
+        public string inputPath;
+        public string iconName;
+
+        public KeyIconMapping(string inputPath, string iconName)
+        {
+            this.inputPath = inputPath;
+            this.iconName = iconName;
+        }
+    }
+
     public class SettingsUIState : UIBaseState
     {
         private readonly Dictionary<string, InputActionReference> _actionMap = new();
 
         // Current device type detection
-        private string _currentDeviceFolder = "Keyboard & Mouse";
+        private string _currentDeviceFolder = "Xbox Series";
+        private readonly KeyIconMappingConfig _keyIconMappingConfig = new();
 
-        // Icon mapping for keyboard and controller inputs
-        private readonly Dictionary<string, string> _keyIconMap = new()
+        // Configuration for composite actions
+        private readonly Dictionary<string, Dictionary<string, string>> _compositeConfig = new()
         {
-            // Keyboard - Letters
-            { "<Keyboard>/a", "A_Key_Light" },
-            { "<Keyboard>/b", "B_Key_Light" },
-            { "<Keyboard>/c", "C_Key_Light" },
-            { "<Keyboard>/d", "D_Key_Light" },
-            { "<Keyboard>/e", "E_Key_Light" },
-            { "<Keyboard>/f", "F_Key_Light" },
-            { "<Keyboard>/g", "G_Key_Light" },
-            { "<Keyboard>/h", "H_Key_Light" },
-            { "<Keyboard>/i", "I_Key_Light" },
-            { "<Keyboard>/j", "J_Key_Light" },
-            { "<Keyboard>/k", "K_Key_Light" },
-            { "<Keyboard>/l", "L_Key_Light" },
-            { "<Keyboard>/m", "M_Key_Light" },
-            { "<Keyboard>/n", "N_Key_Light" },
-            { "<Keyboard>/o", "O_Key_Light" },
-            { "<Keyboard>/p", "P_Key_Light" },
-            { "<Keyboard>/q", "Q_Key_Light" },
-            { "<Keyboard>/r", "R_Key_Light" },
-            { "<Keyboard>/s", "S_Key_Light" },
-            { "<Keyboard>/t", "T_Key_Light" },
-            { "<Keyboard>/u", "U_Key_Light" },
-            { "<Keyboard>/v", "V_Key_Light" },
-            { "<Keyboard>/w", "W_Key_Light" },
-            { "<Keyboard>/x", "X_Key_Light" },
-            { "<Keyboard>/y", "Y_Key_Light" },
-            { "<Keyboard>/z", "Z_Key_Light" },
-            
-            // Keyboard - Numbers
-            { "<Keyboard>/1", "1_Key_Light" },
-            { "<Keyboard>/2", "2_Key_Light" },
-            { "<Keyboard>/3", "3_Key_Light" },
-            { "<Keyboard>/4", "4_Key_Light" },
-            { "<Keyboard>/5", "5_Key_Light" },
-            { "<Keyboard>/6", "6_Key_Light" },
-            { "<Keyboard>/7", "7_Key_Light" },
-            { "<Keyboard>/8", "8_Key_Light" },
-            { "<Keyboard>/9", "9_Key_Light" },
-            { "<Keyboard>/0", "0_Key_Light" },
-            
-            // Keyboard - Special Keys
-            { "<Keyboard>/space", "Space_Key_Light" },
-            { "<Keyboard>/leftShift", "Shift_Key_Light" },
-            { "<Keyboard>/rightShift", "Shift_Key_Light" },
-            { "<Keyboard>/leftCtrl", "Ctrl_Key_Light" },
-            { "<Keyboard>/rightCtrl", "Ctrl_Key_Light" },
-            { "<Keyboard>/leftAlt", "Alt_Key_Light" },
-            { "<Keyboard>/rightAlt", "Alt_Key_Light" },
-            { "<Keyboard>/escape", "Esc_Key_Light" },
-            { "<Keyboard>/enter", "Enter_Key_Light" },
-            { "<Keyboard>/tab", "Tab_Key_Light" },
-            { "<Keyboard>/backspace", "Backspace_Key_Light" },
-            
-            // Keyboard - Arrows
-            { "<Keyboard>/upArrow", "Arrow_Up_Key_Light" },
-            { "<Keyboard>/downArrow", "Arrow_Down_Key_Light" },
-            { "<Keyboard>/leftArrow", "Arrow_Left_Key_Light" },
-            { "<Keyboard>/rightArrow", "Arrow_Right_Key_Light" },
-            
-            // Mouse
-            { "<Mouse>/leftButton", "Left_Click_Light" },
-            { "<Mouse>/rightButton", "Right_Click_Light" },
-            { "<Mouse>/middleButton", "Middle_Click_Light" },
-            
-            // Gamepad - Face Buttons (Generic mapping)
-            { "<Gamepad>/buttonSouth", "Button_South" },
-            { "<Gamepad>/buttonEast", "Button_East" },
-            { "<Gamepad>/buttonWest", "Button_West" },
-            { "<Gamepad>/buttonNorth", "Button_North" },
-            
-            // Gamepad - Shoulders
-            { "<Gamepad>/leftShoulder", "Left_Bumper" },
-            { "<Gamepad>/rightShoulder", "Right_Bumper" },
-            { "<Gamepad>/leftTrigger", "Left_Trigger" },
-            { "<Gamepad>/rightTrigger", "Right_Trigger" },
-            
-            // Gamepad - Sticks
-            { "<Gamepad>/leftStick", "LS_Button_Light" },
-            { "<Gamepad>/rightStick", "RS_Button_Light" },
-            { "<Gamepad>/leftStickPress", "LS_Click_Light" },
-            { "<Gamepad>/rightStickPress", "RS_Click_Light" },
-            
-            // Gamepad - D-Pad
-            { "<Gamepad>/dpad/up", "DPad_Up" },
-            { "<Gamepad>/dpad/down", "DPad_Down" },
-            { "<Gamepad>/dpad/left", "DPad_Left" },
-            { "<Gamepad>/dpad/right", "DPad_Right" },
-            
-            // Gamepad - Menu Buttons
-            { "<Gamepad>/start", "Start_Button_Light" },
-            { "<Gamepad>/select", "Select_Button_Light" }
+            ["move"] = new Dictionary<string, string>
+            {
+                ["up"] = "move-forward",
+                ["down"] = "move-backward",
+                ["left"] = "move-left",
+                ["right"] = "move-right"
+            },
+            ["lean"] = new Dictionary<string, string>
+            {
+                ["negative"] = "lean-left",
+                ["positive"] = "lean-right"
+            },
+            ["switch-item"] = new Dictionary<string, string>
+            {
+                ["positive"] = "cycle-forward",
+                ["negative"] = "cycle-backward"
+            }
         };
 
         // Settings storage
-        private readonly Dictionary<string, (string primary, string secondary)> _keyBindings = new();
+        // <Action name , binding path>
+        private readonly Dictionary<string, string> _keyBindings = new();
         private SliderInt _ambientVolumeSlider;
 
         private Button _applyButton;
@@ -122,6 +66,18 @@ namespace UI.States
         private string _currentActionName;
         private AudioSettingsChangedEvent _currentAudioSettings;
         private int _currentBindingIndex;
+
+
+        public enum ControlScheme
+        {
+            KeyboardMouse,
+            Gamepad
+        }
+
+        private ControlScheme _currentControlScheme = ControlScheme.KeyboardMouse;
+        private Tab _keyboardMouseTab;
+        private Tab _gamepadTab;
+
 
         private ControlSettingsChangedEvent _currentControlSettings;
         private SliderInt _dialogueVolumeSlider;
@@ -152,9 +108,54 @@ namespace UI.States
         public SettingsUIState(VisualElement root, UIStateMachine stateMachine, UIStateType stateType) : base(root,
             stateMachine, stateType)
         {
-            InitializeInputSystem();
             CacheUIElements();
+            InitializeInputSystem();
             SetupEventListeners();
+            UpdateAllButtonTexts();
+        }
+
+        private void SetupDeviceChangeCallbacks()
+        {
+            // Subscribe to device change events
+            InputSystem.onActionChange += OnActionChange;
+        }
+
+        private void OnActionChange(object obj, InputActionChange change)
+        {
+            // Detect when actions are being used (which indicates active device)
+            if (change == InputActionChange.ActionPerformed)
+                if (obj is InputAction action)
+                {
+                    var device = action.activeControl?.device;
+                    if (device != null) UpdateCurrentDeviceFromControl(device);
+                }
+        }
+
+        private void UpdateCurrentDeviceFromControl(InputDevice device)
+        {
+            var oldScheme = _currentControlScheme;
+
+            if (device is Gamepad)
+            {
+                _currentControlScheme = ControlScheme.Gamepad;
+
+                // Detect specific gamepad type
+                if (device is DualShockGamepad)
+                    _currentDeviceFolder = "PS5";
+                else if (device is XInputController)
+                    _currentDeviceFolder = "Xbox Series";
+                else if (device is SwitchProControllerHID)
+                    _currentDeviceFolder = "Switch";
+                else
+                    _currentDeviceFolder = "Xbox Series"; // Default gamepad
+            }
+
+            // Update UI if scheme changed
+            if (oldScheme != _currentControlScheme) OnControlSchemeChanged();
+        }
+
+        private void OnControlSchemeChanged()
+        {
             UpdateAllButtonTexts();
         }
 
@@ -214,6 +215,10 @@ namespace UI.States
                 RootPageElement.Query<VisualElement>("ambient").Children<SliderInt>("slider").First();
             _uiVolumeSlider = RootPageElement.Query<VisualElement>("ui").Children<SliderInt>("slider").First();
 
+            _keyboardMouseTab = RootPageElement.Q<Tab>("keyboard-binds-tab");
+            _gamepadTab = RootPageElement.Q<Tab>("controller-binds-tab");
+
+
             RetrieveSettings();
 
             _currentControlSettings = new ControlSettingsChangedEvent(this);
@@ -228,34 +233,6 @@ namespace UI.States
             // get settings from file
         }
 
-        private string GetDeviceFolderFromPath(string bindingPath)
-        {
-            if (string.IsNullOrEmpty(bindingPath)) return "Keyboard & Mouse";
-
-            // Detect device type from binding path
-            if (bindingPath.Contains("<Keyboard>") || bindingPath.Contains("<Mouse>"))
-                return "Keyboard & Mouse";
-            
-            if (bindingPath.Contains("<DualShockGamepad>") || bindingPath.Contains("<PS"))
-                return "PS5";
-            
-            if (bindingPath.Contains("<XInputController>") || bindingPath.Contains("<XboxOne"))
-                return "Xbox Series";
-            
-            if (bindingPath.Contains("<SwitchPro"))
-                return "Switch";
-            
-            // Check for Steam Deck specific device
-            if (bindingPath.Contains("<SteamDeck>"))
-                return "Steam Deck";
-            
-            // Default to Xbox for generic gamepad
-            if (bindingPath.Contains("<Gamepad>"))
-                return "Xbox Series";
-
-            return "Keyboard & Mouse";
-        }
-
         private void SetupEventListeners()
         {
             // Setup composite movement bindings (WASD composite has multiple bindings per direction)
@@ -263,6 +240,8 @@ namespace UI.States
 
             // Setup composite lean bindings (1D Axis)
             SetupCompositeBindings("lean");
+
+            SetupCompositeBindings("switch-item");
 
             // Setup individual action bindings
             SetupBindingButtons("jump");
@@ -278,6 +257,9 @@ namespace UI.States
             _applyButton.clicked += ApplySettings;
             _resetButton.clicked += ResetToDefaults;
             _closeButton.clicked += UIStateMachine.SettingsBackButtonClicked;
+
+            _keyboardMouseTab.selected += _ => _currentControlScheme = ControlScheme.KeyboardMouse;
+            _gamepadTab.selected += _ => _currentControlScheme = ControlScheme.Gamepad;
         }
 
         private void SetupCompositeBindings(string actionName)
@@ -285,141 +267,115 @@ namespace UI.States
             if (!_actionMap.TryGetValue(actionName, out var reference)) return;
             reference.action.Disable();
 
-            if (actionName == "move")
-            {
-                // Move has a Dpad composite with up/down/left/right parts
-                // Each part can have MULTIPLE bindings (W and UpArrow for up, etc.)
-                SetupMultipleCompositePartBindings(actionName, "up", "move-forward");
-                SetupMultipleCompositePartBindings(actionName, "down", "move-backward");
-                SetupMultipleCompositePartBindings(actionName, "left", "move-left");
-                SetupMultipleCompositePartBindings(actionName, "right", "move-right");
-            }
-            else if (actionName == "lean")
-            {
-                // Lean has a 1DAxis composite with negative/positive parts
-                SetupMultipleCompositePartBindings(actionName, "negative", "lean-left");
-                SetupMultipleCompositePartBindings(actionName, "positive", "lean-right");
-            }
+            if (!_compositeConfig.TryGetValue(actionName, out var parts)) return;
+
+            foreach (var (partName, uiElementName) in parts)
+                SetupCompositePartBindings(actionName, partName, uiElementName);
         }
 
-        private void SetupMultipleCompositePartBindings(string actionName, string partName, string uiElementName)
+        private void SetupCompositePartBindings(string actionName, string partName, string uiElementName)
         {
-            var container = RootPageElement.Q<VisualElement>(uiElementName);
-            if (container == null) return;
-
-            var buttonsContainer = container.Q<VisualElement>("buttons");
-            if (buttonsContainer == null) return;
-
-            var primaryButton = buttonsContainer.Q<Button>("primary");
-            var secondaryButton = buttonsContainer.Q<Button>("secondary");
-
             if (!_actionMap.TryGetValue(actionName, out var action)) return;
 
-            // Find ALL binding indices for this composite part
+            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, uiElementName);
+            UpdateButtonWithIcon(keyboardButton, _keyBindings.GetValueOrDefault(actionName, ""));
+            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, uiElementName);
+            UpdateButtonWithIcon(controllerButton, _keyBindings.GetValueOrDefault(actionName, ""),
+                _currentDeviceFolder);
+
             var partIndices = FindCompositePartIndices(action, partName);
             if (partIndices.Count == 0) return;
 
-            // Primary button gets the first binding
-            if (partIndices.Count > 0 && primaryButton != null)
-                primaryButton.clicked += () => StartCompositeRebind(actionName, partIndices[0], primaryButton);
+            // Setup click handlers for primary binding (first index)
+            if (keyboardButton != null)
+                keyboardButton.clicked += () => StartRebind(actionName, partIndices[0], keyboardButton);
 
-            // Secondary button gets the second binding (if it exists)
-            if (partIndices.Count > 1 && secondaryButton != null)
-                secondaryButton.clicked += () => StartCompositeRebind(actionName, partIndices[1], secondaryButton);
+            if (controllerButton != null)
+                controllerButton.clicked += () => StartRebind(actionName, partIndices[0], controllerButton);
         }
 
         private List<int> FindCompositePartIndices(InputAction action, string partName)
         {
             var indices = new List<int>();
 
-            // Find all composite bindings first
             for (var i = 0; i < action.bindings.Count; i++)
             {
                 if (!action.bindings[i].isComposite) continue;
-                // Search for all parts with the matching name after this composite
+
+                // Search for all parts with matching name after this composite
                 for (var j = i + 1; j < action.bindings.Count; j++)
                 {
                     var binding = action.bindings[j];
 
-                    // Stop if we hit another composite or a non-part binding
+                    // Stop if we hit another composite or non-part binding
                     if (binding.isComposite || !binding.isPartOfComposite)
                         break;
 
-                    if (binding.name.Equals(partName, StringComparison.OrdinalIgnoreCase)) indices.Add(j);
+                    if (binding.name.Equals(partName, StringComparison.OrdinalIgnoreCase))
+                        indices.Add(j);
                 }
             }
 
             return indices;
         }
 
-        private void StartCompositeRebind(string actionName, int bindingIndex, Button button)
-        {
-            if (!_actionMap.TryGetValue(actionName, out var action)) return;
-
-            // Disable the action while rebinding
-            action.action.Disable();
-
-            // Show overlay
-            if (_inputOverlay != null)
-            {
-                _inputOverlay.style.display = DisplayStyle.Flex;
-                var bindingName = action.action.bindings[bindingIndex].name;
-                _waitingText.text = $"Press a key for {bindingName}...";
-            }
-
-            _currentActionName = actionName;
-            _currentBindingIndex = bindingIndex;
-
-            // Start the rebinding operation for the specific composite part
-            _rebindOperation = action.action.PerformInteractiveRebinding(bindingIndex)
-                .WithCancelingThrough("<Keyboard>/escape")
-                .WithCancelingThrough("<Gamepad>/buttonEast")
-                .OnMatchWaitForAnother(0.1f)
-                .OnComplete(operation => OnRebindComplete(button))
-                .OnCancel(operation => OnRebindCancelled())
-                .Start();
-        }
-
         private void SetupBindingButtons(string actionName)
         {
-            var container = RootPageElement.Q<VisualElement>(actionName);
-            if (container == null) return;
+            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, actionName);
+            UpdateButtonWithIcon(keyboardButton, _keyBindings.GetValueOrDefault(actionName, ""));
+            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, actionName);
+            UpdateButtonWithIcon(controllerButton, _keyBindings.GetValueOrDefault(actionName, ""),
+                _currentDeviceFolder);
 
-            var buttonsContainer = container.Q<VisualElement>("buttons");
-            if (buttonsContainer == null) return;
-
-            var primaryButton = buttonsContainer.Q<Button>("primary");
-            var secondaryButton = buttonsContainer.Q<Button>("secondary");
-
-            primaryButton.clicked += () => StartRebind(actionName, 0, primaryButton);
-            secondaryButton.clicked += () => StartRebind(actionName, 1, secondaryButton);
+            keyboardButton.clicked += () => StartRebind(actionName, 0, keyboardButton);
+            controllerButton.clicked += () => StartRebind(actionName, 0, controllerButton);
         }
 
         private void StartRebind(string actionName, int bindingIndex, Button button)
         {
             if (!_actionMap.TryGetValue(actionName, out var reference)) return;
-            // Disable the action while rebinding
+
             reference.action.Disable();
 
-            // Show overlay
             if (_inputOverlay != null)
             {
                 _inputOverlay.style.display = DisplayStyle.Flex;
-                _waitingText.text = $"Press a key for {actionName.Replace("-", " ")}...";
+
+                // Get display text - use binding name for composites, action name for simple bindings
+                var binding = reference.action.bindings[bindingIndex];
+                var displayText = binding.isPartOfComposite
+                    ? binding.name
+                    : actionName.Replace("-", " ");
+
+                _waitingText.text = $"Press a key for {displayText}...";
             }
 
             _currentActionName = actionName;
             _currentBindingIndex = bindingIndex;
 
-            // Start the rebinding operation
-            _rebindOperation = reference.action.PerformInteractiveRebinding(bindingIndex)
-                .WithControlsExcluding("Mouse")
-                .WithCancelingThrough("<Keyboard>/escape")
-                .WithCancelingThrough("<Gamepad>/buttonEast")
+            // Create rebinding operation with control scheme filtering
+            var rebindOp = reference.action.PerformInteractiveRebinding(bindingIndex)
                 .OnMatchWaitForAnother(0.1f)
                 .OnComplete(operation => OnRebindComplete(button))
-                .OnCancel(operation => OnRebindCancelled())
-                .Start();
+                .OnCancel(operation => OnRebindCancelled());
+
+            // Filter based on current control scheme
+            if (_currentControlScheme == ControlScheme.KeyboardMouse)
+                // Only allow keyboard and mouse inputs
+                rebindOp
+                    .WithControlsExcluding("<Gamepad>")
+                    .WithControlsExcluding("<XInputController>")
+                    .WithControlsExcluding("<DualShockGamepad>")
+                    .WithControlsExcluding("<SwitchProController>")
+                    .WithCancelingThrough("<Keyboard>/escape");
+            else // Gamepad
+                // Only allow gamepad inputs
+                rebindOp
+                    .WithControlsExcluding("<Keyboard>")
+                    .WithControlsExcluding("<Mouse>")
+                    .WithCancelingThrough("<Gamepad>/buttonEast"); // B/Circle button
+
+            _rebindOperation = rebindOp.Start();
         }
 
 
@@ -434,58 +390,49 @@ namespace UI.States
             UpdateButtonWithIcon(button, bindingPath);
 
             // Store the binding
-            if (!_keyBindings.ContainsKey(_currentActionName)) _keyBindings[_currentActionName] = (null, null);
+            _keyBindings.TryAdd(_currentActionName, bindingPath);
 
-            var current = _keyBindings[_currentActionName];
-            if (_currentBindingIndex == 0)
-                _keyBindings[_currentActionName] = (bindingPath, current.secondary);
-            else
-                _keyBindings[_currentActionName] = (current.primary, bindingPath);
+
+            _keyBindings[_currentActionName] = bindingPath;
 
             reference.action.Enable();
             CleanupRebind();
         }
 
-        private void UpdateButtonWithIcon(Button button, string bindingPath)
+        private void UpdateButtonWithIcon(Button button, string bindingPath, string deviceFolder = "Keyboard & Mouse")
         {
             // Clear existing content
             button.Clear();
             button.text = "";
-            
+
             if (string.IsNullOrEmpty(bindingPath))
             {
                 button.text = "None";
                 return;
             }
 
-            // Determine device folder based on binding path
-            string deviceFolder = GetDeviceFolderFromPath(bindingPath);
 
             // Try to load icon from Resources
-            if (_keyIconMap.TryGetValue(bindingPath, out var iconName))
+            var name = _keyIconMappingConfig.GetIconName(bindingPath);
+            if (name != default)
             {
                 // Build full path: UI/Icons/Light/{DeviceFolder}/{IconName}
-                string iconPath = $"UI/Icons/Light/{deviceFolder}/{iconName}";
-                
-                var texture = Resources.LoadAsync<Texture2D>(iconPath);
-                texture.completed += _ =>
-                {
-                    if (texture.asset != null)
-                    {
-                        var image = new Image
-                        {
-                            image = texture.asset as Texture2D,
-                            scaleMode = ScaleMode.ScaleToFit
-                        };
-                        image.AddToClassList("key-icon");
-                        button.Add(image);
-                        return;
-                    }
+                var iconPath = $"UI/Icons/{deviceFolder}/{name}";
 
-                    Debug.LogWarning($"Icon not found at path: {iconPath} for binding: {bindingPath}");
-                    // Fallback to text if icon not found
-                    button.text = GetBindingDisplayString(bindingPath);
-                };
+                var texture = Resources.Load<Texture2D>(iconPath);
+
+
+                if (texture != null)
+                {
+                    var image = texture;
+                    // image.AddToClassList("key-icon");
+                    button.style.backgroundImage = new StyleBackground(image);
+                    return;
+                }
+
+                Debug.LogWarning($"Icon not found at path: {iconPath} for binding: {bindingPath}");
+                // Fallback to text if icon not found
+                button.text = GetBindingDisplayString(bindingPath);
             }
             else
             {
@@ -494,49 +441,28 @@ namespace UI.States
             }
         }
 
-        private void UpdateCompositePartButtons(InputAction action, string partName, string uiElementName)
-        {
-            var container = RootPageElement.Q<VisualElement>(uiElementName);
-            if (container == null) return;
-
-            var buttonsContainer = container.Q<VisualElement>("buttons");
-            if (buttonsContainer == null) return;
-
-            var primaryButton = buttonsContainer.Q<Button>("primary");
-            var secondaryButton = buttonsContainer.Q<Button>("secondary");
-
-            var partIndices = FindCompositePartIndices(action, partName);
-
-            // Update primary button with first binding
-            if (partIndices.Count > 0 && primaryButton != null)
-                UpdateButtonWithIcon(primaryButton, action.bindings[partIndices[0]].effectivePath);
-
-            // Update secondary button with second binding
-            if (partIndices.Count > 1 && secondaryButton != null)
-                UpdateButtonWithIcon(secondaryButton, action.bindings[partIndices[1]].effectivePath);
-            else if (secondaryButton != null)
-            {
-                secondaryButton.Clear();
-                secondaryButton.text = "None";
-            }
-        }
-
         private void UpdateCompositeButtonTexts(string actionName)
         {
             if (!_actionMap.TryGetValue(actionName, out var action)) return;
+            if (!_compositeConfig.TryGetValue(actionName, out var parts)) return;
 
-            if (actionName == "move")
-            {
-                UpdateCompositePartButtons(action, "up", "move-forward");
-                UpdateCompositePartButtons(action, "down", "move-backward");
-                UpdateCompositePartButtons(action, "left", "move-left");
-                UpdateCompositePartButtons(action, "right", "move-right");
-            }
-            else if (actionName == "lean")
-            {
-                UpdateCompositePartButtons(action, "negative", "lean-left");
-                UpdateCompositePartButtons(action, "positive", "lean-right");
-            }
+            foreach (var (partName, uiElementName) in parts) UpdateCompositePartButton(action, partName, uiElementName);
+        }
+
+        private void UpdateCompositePartButton(InputAction action, string partName, string uiElementName)
+        {
+            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, uiElementName);
+            UpdateButtonWithIcon(keyboardButton, action.bindings[0].effectivePath);
+            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, uiElementName);
+            UpdateButtonWithIcon(controllerButton, action.bindings[0].effectivePath, _currentDeviceFolder);
+
+            var partIndices = FindCompositePartIndices(action, partName);
+
+            // Update button with first binding
+            if (partIndices.Count > 0 && keyboardButton != null)
+                UpdateButtonWithIcon(keyboardButton, action.bindings[partIndices[0]].effectivePath);
+            if (partIndices.Count > 0 && controllerButton != null)
+                UpdateButtonWithIcon(controllerButton, action.bindings[partIndices[0]].effectivePath);
         }
 
         private void OnRebindCancelled()
@@ -565,7 +491,7 @@ namespace UI.States
         private void UpdateAllButtonTexts()
         {
             foreach (var kvp in _actionMap)
-                if (kvp.Key == "move" || kvp.Key == "lean")
+                if (kvp.Key == "move" || kvp.Key == "lean" || kvp.Key == "switch-item")
                     UpdateCompositeButtonTexts(kvp.Key);
                 else
                     UpdateButtonText(kvp.Key);
@@ -573,23 +499,23 @@ namespace UI.States
 
         private void UpdateButtonText(string actionName)
         {
-            var container = RootPageElement.Q<VisualElement>(actionName);
-            if (container == null) return;
-
-            var buttonsContainer = container.Q<VisualElement>("buttons");
-            if (buttonsContainer == null) return;
-
-            var primaryButton = buttonsContainer.Q<Button>("primary");
-            var secondaryButton = buttonsContainer.Q<Button>("secondary");
-
             var reference = _actionMap[actionName];
             if (reference.action.bindings.Count <= 0) return;
-            
+
+            var primaryButton = GetBindButtonsUnderTab(_keyboardMouseTab, actionName);
+
             if (primaryButton != null)
                 UpdateButtonWithIcon(primaryButton, reference.action.bindings[0].effectivePath);
+        }
 
-            if (reference.action.bindings.Count > 1 && secondaryButton != null)
-                UpdateButtonWithIcon(secondaryButton, reference.action.bindings[1].effectivePath);
+        private static Button GetBindButtonsUnderTab(Tab t, string actionName)
+        {
+            var container = t.Q<VisualElement>(actionName);
+
+            var buttonsContainer = container.Q<VisualElement>("buttons");
+
+            var primaryButton = buttonsContainer.Q<Button>("primary");
+            return primaryButton;
         }
 
         private string GetBindingDisplayString(string bindingPath)
@@ -724,7 +650,7 @@ namespace UI.States
         [Serializable]
         private class SerializableBindings
         {
-            public Dictionary<string, (string primary, string secondary)> Bindings;
+            public Dictionary<string, string> Bindings;
         }
     }
 }
