@@ -38,8 +38,6 @@ namespace Items.Guns.Firing
             Time.time > LastFireTime + _gun.firingSettings.fireRate;
 
 
-        public abstract void ExecuteFireCommand(FireCommand command);
-
         public virtual bool OutOfAmmo => _gun.AmmoSystem.OutOfAmmo;
 
         public Action<ShotFiredEvent> OnShotFired { get; set; }
@@ -57,14 +55,12 @@ namespace Items.Guns.Firing
         protected void PerformShot()
         {
             var sound = _gun.audioSettings.fire;
-            if (OutOfAmmo || !FireRateTimeElapsed)
+            if (!FireRateTimeElapsed || _gun.AmmoSystem.IsReloading) return;
+            if (OutOfAmmo)
             {
-                if (!FireRateTimeElapsed) return;
-
                 LastFireTime = Time.time;
                 sound = _gun.audioSettings.dryFire;
                 AudioManager.Instance.PlaySfx(sound.clip, MuzzleTransform.position, pitch: sound.RandomPitch);
-
                 return;
             }
 

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Attributes;
+using EventBus;
 using General.Extensions;
 using Items.Guns.Aiming;
 using Items.Guns.Ammo;
@@ -191,6 +192,8 @@ namespace Items.Guns
         /// </summary>
         public bool IsAiming => AimingSystem.IsAiming;
 
+        public override bool CanBeSwappedFrom => !IsReloading;
+
         /// <summary>
         ///     Gets whether the gun is currently in a reload animation.
         /// </summary>
@@ -250,6 +253,19 @@ namespace Items.Guns
             TrailSystem?.Update();
         }
 
+        /// <summary>
+        ///     This method is called when the gun is used (fired).
+        /// </summary>
+        public override void Use()
+        {
+            Fire();
+        }
+
+        public override void StopUse()
+        {
+            StopFiring();
+        }
+
         #endregion
 
         #region Aiming
@@ -297,34 +313,15 @@ namespace Items.Guns
 
         #region Firing
 
-        /// <summary>
-        ///     Executes a single shot using the current fire mode.
-        /// </summary>
-        public void ExecuteSingleShot()
+        private void Fire()
         {
-            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.SingleShot);
-        }
-
-        /// <summary>
-        ///     Starts continuous automatic fire using the current fire mode.
-        /// </summary>
-        public void StartAutomaticFire()
-        {
-            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StartAutomaticFire);
-        }
-
-        /// <summary>
-        ///     Stops continuous automatic fire.
-        /// </summary>
-        public void StopAutomaticFire()
-        {
-            FireModeSystem.CurrentFireSystem.ExecuteFireCommand(FireCommand.StopAutomaticFire);
+            FireModeSystem.CurrentFireSystem.Fire();
         }
 
         /// <summary>
         ///     Immediately stops all firing activity.
         /// </summary>
-        public void StopFiring()
+        private void StopFiring()
         {
             FireModeSystem.CurrentFireSystem.StopFire();
         }
@@ -358,12 +355,16 @@ namespace Items.Guns
         /// </summary>
         public override void Equip()
         {
-            base.Equip();
+            gameObject.SetActive(true);
+            IsEquipped = true;
             AimingSystem.ResetPosition();
+            if (ItemAnimationSystem != null && holdingItemAnimation != null && Owner == OwnerStatus.Player)
+                ItemAnimationSystem.PlayAnimation(holdingItemAnimation);
 
             if (AimingSystem != null) StopAiming();
 
             if (FireModeSystem != null) StopFiring();
+            EventBus<ItemEquippedEvent>.Raise(new ItemEquippedEvent(this));
         }
 
         /// <summary>

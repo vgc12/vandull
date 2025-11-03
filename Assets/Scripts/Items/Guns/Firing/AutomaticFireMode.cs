@@ -13,26 +13,9 @@ namespace Items.Guns.Firing
         {
         }
 
-
-        public override void ExecuteFireCommand(FireCommand command)
-        {
-            switch (command)
-            {
-                case FireCommand.SingleShot:
-                    break;
-                case FireCommand.StartAutomaticFire:
-                    StartAutomaticFire();
-                    break;
-                case FireCommand.StopAutomaticFire:
-                    StopFire();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(command), command, null);
-            }
-        }
-
         public override void Fire()
         {
+            StartAutomaticFire();
         }
 
 

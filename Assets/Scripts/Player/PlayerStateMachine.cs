@@ -77,7 +77,12 @@ namespace Player
         }
 
         public bool Invulnerable => invulnerable;
-        public float Health => health;
+
+        public float Health
+        {
+            get => health;
+            set => health = value;
+        }
 
         public bool IsDead { get; private set; }
 

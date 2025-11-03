@@ -40,8 +40,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  positionRecoil: {x: 0, y: 0.011, z: 0}
-  rotationRecoil: {x: -7, y: 1.7, z: 0}
+  positionRecoil: {x: 0, y: 0.02, z: 0}
+  rotationRecoil: {x: -30, y: 1.7, z: 0}
   physicalRecoilSpeed: 20
   physicalReturnSpeed: 14.89
   useProgressiveRecoil: 1

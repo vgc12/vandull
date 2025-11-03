@@ -15,9 +15,29 @@ namespace Player
         public Transform LeftHandHint;
         public Transform RightHandTarget;
         public Transform RightHandHint;
+        [SerializeField] private bool _leftHandFollowItemTarget = true;
+        [SerializeField] private bool _rightHandFollowItemTarget = true;
 
-        public bool LeftHandFollowItemTarget { get; set; } = true;
-        public bool RightHandFollowItemTarget { get; set; } = true;
+
+        public bool LeftHandFollowItemTarget
+        {
+            get => _leftHandFollowItemTarget;
+            set
+            {
+                RebuildRigs();
+                _leftHandFollowItemTarget = value;
+            }
+        }
+
+        public bool RightHandFollowItemTarget
+        {
+            get => _rightHandFollowItemTarget;
+            set
+            {
+                RebuildRigs();
+                _rightHandFollowItemTarget = value;
+            }
+        }
 
 
         private void Update()

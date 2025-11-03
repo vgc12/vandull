@@ -22,10 +22,9 @@ namespace Npcs.States.Enemy
 
         public override void Update()
         {
-            _enemy.Gun.StartAutomaticFire();
             _enemy.HandleMovementBlendTree();
 
-            var aimPoint = _enemy.AimPoint;
+
             var sensor = _enemy.PlayerSensor;
 
             _enemy.Gun.StartAiming();
@@ -33,13 +32,21 @@ namespace Npcs.States.Enemy
 
             _enemy.HandleTacticalMovement();
 
-            if (_gun.AmmoSystem.OutOfAmmo) _gun.AmmoSystem.StartReload();
+            if (_gun.AmmoSystem.OutOfAmmo)
+            {
+                _gun.AmmoSystem.StartReload();
+                _gun.StopUse();
+            }
+            else
+            {
+                _gun.Use();
+            }
         }
 
         public override void Exit()
         {
             _gun.StopAiming();
-            _gun.StopAutomaticFire();
+            _gun.StopUse();
         }
     }
 }

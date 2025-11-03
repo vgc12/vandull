@@ -86,7 +86,8 @@ namespace Audio
         /// </summary>
         private void InitializeAudioManager()
         {
-            _audioSettingsChangedBinding = new EventBinding<SettingsUIState.AudioSettingsChangedEvent>(OnAudioSettingsChanged);
+            _audioSettingsChangedBinding =
+                new EventBinding<SettingsUIState.AudioSettingsChangedEvent>(OnAudioSettingsChanged);
             EventBus<SettingsUIState.AudioSettingsChangedEvent>.Register(_audioSettingsChangedBinding);
 
             // Create parent for pooled objects
@@ -130,9 +131,8 @@ namespace Audio
 
         private void OnAudioSettingsChanged(SettingsUIState.AudioSettingsChangedEvent obj)
         {
-            SetVolume(musicMixerGroup, obj.MusicVolume);
-
-            foreach (var category in audioCategories) SetVolume(category.mixerGroup, obj.MusicVolume);
+            foreach (var category in audioCategories)
+                SetVolume(category.mixerGroup, obj.GetVolumeForCategory(category.name));
         }
 
         #endregion
@@ -150,11 +150,11 @@ namespace Audio
 
         [SerializeField] [Tooltip("Maximum number of AudioSources that can exist")]
         private int maxPoolSize = 40;
-        
+
 
         [Header("Music (Non-Pooled)")] [SerializeField] [Tooltip("Mixer group for background music")]
         private AudioMixerGroup musicMixerGroup;
-        
+
 
         [Header("Debug")] [SerializeField] private AudioCategory defaultCategory;
 
@@ -184,6 +184,7 @@ namespace Audio
         private void OnDestroy()
         {
             _audioPool?.Clear();
+            EventBus<SettingsUIState.AudioSettingsChangedEvent>.Deregister(_audioSettingsChangedBinding);
         }
 
         #endregion
@@ -338,11 +339,12 @@ namespace Audio
         #region Volume Control
 
         /// <summary>
-        ///     Sets the master volume for all sounds.
+        ///     Sets the volume for a specific mixer group (0-100 scale).
         /// </summary>
         public void SetVolume(AudioMixerGroup mixerGroup, float volume)
         {
-            mixerGroup.audioMixer.SetFloat("Volume", Mathf.Log10(Mathf.Clamp01(volume * .01f)) * 20f);
+            var name = mixerGroup.name + "Volume";
+            mixerGroup.audioMixer.SetFloat(name, volume > 0 ? 20f * Mathf.Log10(volume / 100f) : -80f);
         }
 
         /// <summary>

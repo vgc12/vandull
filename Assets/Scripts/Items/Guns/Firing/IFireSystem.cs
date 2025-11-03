@@ -11,10 +11,8 @@ namespace Items.Guns.Firing
 
     public interface IFireSystem : IItemSystem
     {
-        bool OutOfAmmo { get; }
-
         Action<ShotFiredEvent> OnShotFired { get; set; }
-        void ExecuteFireCommand(FireCommand command);
         void StopFire();
+        void Fire();
     }
 }

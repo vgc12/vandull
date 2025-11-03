@@ -1,5 +1,4 @@
-﻿using Player.Input;
-using Reflex.Core;
+﻿using Reflex.Core;
 using UnityEngine;
 
 namespace DependencyInjection
@@ -8,7 +7,7 @@ namespace DependencyInjection
     {
         public void InstallBindings(ContainerBuilder builder)
         {
-            builder.AddSingleton(typeof(InputManager),typeof(InputManager), typeof(IInputService), typeof(IPlayerInput), typeof(IUIInput));
+            //   builder.AddSingleton(typeof(InputManager),typeof(InputManager), typeof(IInputService), typeof(IPlayerInput), typeof(IUIInput));
         }
     }
 }

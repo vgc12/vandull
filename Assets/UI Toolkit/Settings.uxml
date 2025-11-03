@@ -121,14 +121,14 @@
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="cycle-forward" class="binding-row" style="flex-direction: row;">
-                                                <ui:Label text="Move Right" class="action-label settings-label" style="flex-grow: 0;" />
+                                                <ui:Label text="Cycle Forward" class="action-label settings-label" style="flex-grow: 0;" />
                                                 <ui:VisualElement name="buttons" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
                                                     <ui:Button name="secondary" text="↑" class="key-button alt settings-button settings-keybind-button" style="flex-direction: column;" />
                                                     <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="cycle-backward" class="binding-row" style="flex-direction: row;">
-                                                <ui:Label text="Move Right" class="action-label settings-label" style="flex-grow: 0;" />
+                                                <ui:Label text="Cycle Backward" class="action-label settings-label" style="flex-grow: 0;" />
                                                 <ui:VisualElement name="buttons" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
                                                     <ui:Button name="secondary" text="↑" class="key-button alt settings-button settings-keybind-button" style="flex-direction: column;" />
                                                     <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />

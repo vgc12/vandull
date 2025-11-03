@@ -8,6 +8,7 @@ namespace Items.Guns
     {
         public string displayName;
         public string animationStateName;
+        public int layer;
 
         [NonSerialized] private int? _animationHash;
 

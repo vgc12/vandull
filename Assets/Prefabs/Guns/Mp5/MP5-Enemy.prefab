@@ -120,11 +120,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.Gun
   itemName: Mp5
+  holdingItemAnimation: {fileID: 11400000, guid: cc2307d9925961a45aba4a137bcf3f15, type: 2}
   leftHandTarget: {fileID: 2115159816559813730}
   leftHandHint: {fileID: 1820570430246102540}
   rightHandTarget: {fileID: 6355225748275541218}
   rightHandHint: {fileID: 2634522382937967782}
-  holdingItemAnimation: {fileID: 11400000, guid: cc2307d9925961a45aba4a137bcf3f15, type: 2}
+  initializer: {fileID: 11400000, guid: cbec0967e3fa7114791dfbbcfd7a6d1a, type: 2}
   fireModeSettings: {fileID: 11400000, guid: dd4a23ee97b95b343a40e9ed3b004771, type: 2}
   firingSettings: {fileID: 11400000, guid: 9b137968b1f446c4b9e24bcea5f32d3b, type: 2}
   aimSettings: {fileID: 11400000, guid: e0268525b73ba0c4f93a98805aa62fd3, type: 2}
@@ -133,12 +134,12 @@ MonoBehaviour:
   recoilSettings: {fileID: 11400000, guid: 2c6557c36f87fef44a74bfdd227b39d0, type: 2}
   trailSettings: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
   audioSettings: {fileID: 11400000, guid: bc7176d49264459468d51cf2dbd1b7f4, type: 2}
-  initializer: {fileID: 11400000, guid: 0f14420893b86f042b49ddeab2b5c77a, type: 2}
   magazinePosition: {fileID: 3011610769070258118}
   hipFireTransform: {fileID: 1464096231153687956}
   aimTransform: {fileID: 1097656138221027893}
   muzzleTransform: {fileID: 337561970672924207}
   reloadAnimation: {fileID: 11400000, guid: 2f4945bcdc2fea54fa0067f1e42bb08e, type: 2}
+  quickReloadAnimation: {fileID: 0}
 --- !u!1 &1290389462501554581
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,8 +512,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5624896266975471451}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.39336914, y: -0.5217803, z: -0.5716319, w: 0.49622875}
-  m_LocalPosition: {x: -0.1143, y: -0.0008, z: 0.1481}
+  m_LocalRotation: {x: -0.21687879, y: -0.616402, z: -0.6942234, w: 0.3017716}
+  m_LocalPosition: {x: 0.023827583, y: 0.01859558, z: 0.27913213}
   m_LocalScale: {x: 0.08333329, y: 0.08333331, z: 0.08333332}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -684,8 +685,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6508436242368721470}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.58070487, y: -0.4071309, z: -0.43401453, w: 0.5555697}
-  m_LocalPosition: {x: 0.162, y: -0.014, z: -0.118}
+  m_LocalRotation: {x: 0.5235254, y: -0.4714753, z: -0.5045503, w: 0.49906045}
+  m_LocalPosition: {x: 0.024, y: -0.0515, z: -0.119}
   m_LocalScale: {x: 0.099999964, y: 0.099999994, z: 0.099999994}
   m_ConstrainProportionsScale: 0
   m_Children: []

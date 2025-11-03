@@ -16,6 +16,7 @@ namespace Player.Input
     {
         private readonly EventBinding<SettingsUIState.ControlSettingsChangedEvent> _controlsChangedEventBinding;
         private readonly float _crouchInputBuffer = 0.002f;
+        private readonly float _doubleTapWindow = 0.3f;
         private readonly EventBinding<UIStateSwitchedEvent> _uiStateChangedEventBinding;
 
         private bool _aimToggled;
@@ -23,17 +24,16 @@ namespace Player.Input
         private SettingsUIState.ControlSettingsChangedEvent _currentControlSettings;
         private float _lastAimInputTime;
         private float _lastCrouchInputTime;
-        private float _lastSprintInputTime;
-
-        [Inject] private ILogger _logger;
-
-        private bool _sprintToggled;
-        private UIStateType _uiState;
 
         // Double-tap reload fields
         private float _lastReloadTapTime;
+        private float _lastSprintInputTime;
+
+        [Inject] private ILogger _logger;
         private CancellationTokenSource _reloadCts;
-        private readonly float _doubleTapWindow = 0.3f;
+
+        private bool _sprintToggled;
+        private UIStateType _uiState;
 
         public InputManager()
         {
@@ -209,7 +209,7 @@ namespace Player.Input
         {
             if (!context.started) return;
 
-            float timeSinceLastTap = Time.time - _lastReloadTapTime;
+            var timeSinceLastTap = Time.time - _lastReloadTapTime;
 
             if (timeSinceLastTap <= _doubleTapWindow)
             {
@@ -217,7 +217,7 @@ namespace Player.Input
                 _reloadCts?.Cancel();
                 _reloadCts?.Dispose();
                 _reloadCts = null;
-                
+
                 QuickReload.Invoke();
                 _lastReloadTapTime = 0; // Reset to prevent triple-tap issues
             }
@@ -227,26 +227,9 @@ namespace Player.Input
                 _reloadCts?.Cancel();
                 _reloadCts?.Dispose();
                 _reloadCts = new CancellationTokenSource();
-                
+
                 DelayedReload(_reloadCts.Token).Forget();
                 _lastReloadTapTime = Time.time;
-            }
-        }
-
-        private async UniTaskVoid DelayedReload(CancellationToken ct)
-        {
-            try
-            {
-                await UniTask.Delay(TimeSpan.FromSeconds(_doubleTapWindow), cancellationToken: ct);
-                
-                if (!ct.IsCancellationRequested)
-                {
-                    Reload.Invoke();
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when double tap occurs - do nothing
             }
         }
 
@@ -319,6 +302,20 @@ namespace Player.Input
             if (context.performed) TrackedDeviceOrientation.Invoke(context.ReadValue<Quaternion>());
         }
 
+        private async UniTaskVoid DelayedReload(CancellationToken ct)
+        {
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(_doubleTapWindow), cancellationToken: ct);
+
+                if (!ct.IsCancellationRequested) Reload.Invoke();
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when double tap occurs - do nothing
+            }
+        }
+
         private void OnControlsChanged(SettingsUIState.ControlSettingsChangedEvent obj)
         {
             _currentControlSettings = obj;
@@ -340,7 +337,7 @@ namespace Player.Input
         {
             EventBus<UIStateSwitchedEvent>.Deregister(_uiStateChangedEventBinding);
             InputActions?.Disable();
-            
+
             // Clean up cancellation token
             _reloadCts?.Cancel();
             _reloadCts?.Dispose();

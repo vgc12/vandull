@@ -11,8 +11,6 @@ using UnityEngine.UIElements;
 
 namespace UI
 {
-    // Command enum for all UI actions
-
     [RequireComponent(typeof(UIDocument))]
     public class UIStateMachine : PersistentSingleton<UIStateMachine>
     {
@@ -41,8 +39,12 @@ namespace UI
 
         public VisualElement Root { get; private set; }
 
-        protected override void Awake()
+
+        private void Start()
         {
+            _input.InGameCancel += () => ProcessCommand(UICommand.Back);
+            _input.InMenuCancel += () => ProcessCommand(UICommand.Back);
+
             _document = GetComponent<UIDocument>();
             Root = _document.rootVisualElement;
 
@@ -54,15 +56,10 @@ namespace UI
             InitializeStateMachine();
         }
 
-        private void Start()
-        {
-            _input.InGameCancel += () => ProcessCommand(UICommand.Back);
-            _input.InMenuCancel += () => ProcessCommand(UICommand.Back);
-        }
-
         private void Update()
         {
             _stateMachine.Update();
+            ResetCommand();
         }
 
         private void FixedUpdate()
@@ -132,7 +129,7 @@ namespace UI
             _stateMachine.AddAnyTransition(_loadingState, () => LevelManager.Instance.IsLoading);
 
             _stateMachine.AddTransition(_loadingState, _inGameState,
-                () =>  LevelManager.Instance.IsLevelActive);
+                () => LevelManager.Instance.IsLevelActive);
 
             _stateMachine.AddTransition(_inGameState, _pausedState,
                 () => IsCommand(UICommand.Back));
@@ -166,7 +163,10 @@ namespace UI
             _stateMachine.AddTransition(_quitMenuState, _mainMenuState,
                 () => IsCommand(UICommand.QuitToMenu) && !LevelManager.Instance.IsLevelActive);
 
-            _stateMachine.SetStateAndEnter(_mainMenuState);
+            if (LevelManager.Instance.IsLevelActive)
+                _stateMachine.SetStateAndEnter(_inGameState);
+            else
+                _stateMachine.SetStateAndEnter(_mainMenuState);
         }
 
 

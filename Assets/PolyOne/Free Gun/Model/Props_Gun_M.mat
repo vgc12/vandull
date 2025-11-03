@@ -136,6 +136,7 @@ Material:
     - _GlossyReflections: 1
     - _HighNormalSoftness: 0.1
     - _HighNormalThreshold: 0.678
+    - _LSDEffect: 0
     - _Metallic: 0
     - _Mode: 0
     - _NormalReplacementValue: 1

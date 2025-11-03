@@ -16,7 +16,7 @@ namespace Items.Guns
             return builder.WithCustomFireMode(FireType.Automatic,
                     () => new EnemyAutomaticFireMode(gun))
                 .WithRecoilSystem(() =>
-                    new EnemyRecoilSystem(gun))
+                    new NullRecoilSystem())
                 .WithAimingSystem(() => new EnemyAimingSystem(gun.aimTransform,
                     FindFirstObjectByType<PlayerMovement>().GetComponentInChildren<Collider>().transform))
                 .WithAnimationSystem(() => new EnemyGunAnimationSystem())

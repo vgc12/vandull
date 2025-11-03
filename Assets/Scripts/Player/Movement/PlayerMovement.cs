@@ -51,6 +51,7 @@ namespace Player.Movement
         public void Crouch()
         {
             if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
+            Debug.Log(_input);
             _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.CrouchHeight, config.CrouchCameraPosition));
         }
 

@@ -4,9 +4,9 @@ namespace General.Extensions
 {
     public static class AnimatorExtensions
     {
-        public static float GetAnimationLength(this Animator animator, int animationHash, int index = 0)
+        public static float GetAnimationLength(this Animator animator, int animationHash, int layerIndex = 0)
         {
-            var clipInfos = animator.GetCurrentAnimatorClipInfo(index);
+            var clipInfos = animator.GetCurrentAnimatorClipInfo(layerIndex);
 
             foreach (var clipInfo in clipInfos)
                 if (Animator.StringToHash(clipInfo.clip.name) == animationHash)

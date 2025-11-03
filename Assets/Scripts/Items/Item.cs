@@ -54,16 +54,6 @@ namespace Items
 
         #endregion
 
-        #region Abstract Methods
-
-        /// <summary>
-        ///     Called every frame while the item is equipped.
-        ///     Override to implement item-specific update logic.
-        /// </summary>
-        protected abstract void OnUpdate();
-
-        #endregion
-
         #region Lifecycle
 
         /// <summary>
@@ -72,6 +62,24 @@ namespace Items
         public virtual void Despawn()
         {
             if (gameObject != null) Destroy(gameObject);
+        }
+
+        #endregion
+
+        #region Abstract Methods
+
+        /// <summary>
+        ///     Called every frame while the item is equipped.
+        ///     Override to implement item-specific update logic.
+        /// </summary>
+        protected abstract void OnUpdate();
+
+        public virtual void Use()
+        {
+        }
+
+        public virtual void StopUse()
+        {
         }
 
         #endregion
@@ -115,6 +123,11 @@ namespace Items
         ///     Gets whether this item is currently equipped and active.
         /// </summary>
         public bool IsEquipped { get; protected set; }
+
+        /// <summary>
+        ///     Indicates if the item can be swapped to another item.
+        /// </summary>
+        public abstract bool CanBeSwappedFrom { get; }
 
         #endregion
 

@@ -435,6 +435,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Multi-Scene-Managers
       objectReference: {fileID: 0}
+    - target: {fileID: 8457952392294985501, guid: 02cab11ff2df99741a850759643cc22b, type: 3}
+      propertyPath: audioCategories.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8457952392294985501, guid: 02cab11ff2df99741a850759643cc22b, type: 3}
+      propertyPath: 'audioCategories.Array.data[4]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 559f1de3628c9cc499e2231d66e95e2b, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

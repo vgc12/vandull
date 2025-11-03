@@ -21,7 +21,7 @@ namespace Items
 
         private List<Item> _inventory = new();
 
-        [Inject] public ILogger _logger;
+        [Inject] public ILogger Logger;
 
         public Item EquippedItem { get; private set; }
 
@@ -53,13 +53,13 @@ namespace Items
         private void LogPrefabs()
         {
             Debug.Log("Current Prefabs:");
-            foreach (var prefab in gunObjects) _logger.Log(prefab.name);
+            foreach (var prefab in gunObjects) Logger.Log(prefab.name);
         }
 
         private void LogInventory()
         {
             Debug.Log("Current Inventory:");
-            foreach (var item in _inventory) _logger.Log(item.name + (item == EquippedItem ? " (Equipped)" : ""));
+            foreach (var item in _inventory) Logger.Log(item.name + (item == EquippedItem ? " (Equipped)" : ""));
         }
 
         public void SetUpItems()
@@ -78,6 +78,9 @@ namespace Items
 
         public void SwitchItem(int direction)
         {
+            // Something is preventing item swap (i.e reloading, mid grenade throw, etc)
+            if (!EquippedItem.CanBeSwappedFrom) return;
+
             if (_inventory.Count == 0) return;
             var currentIndex = _inventory.IndexOf(EquippedItem);
             var nextIndex = Math.Abs((currentIndex + direction) % gunObjects.Count);

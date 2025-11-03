@@ -32,10 +32,11 @@ namespace Npcs.Shared
             if (obj.Item is Gun gun) _currentGun = gun;
         }
 
-        public void HideGunMagazine()
+        public void UnEquipMagazine()
         {
             if (!GunPresent) return;
-            _currentGun.AmmoSystem.CurrentMagazine.UnEquip();
+
+            _currentGun.AmmoSystem.RemoveCurrentMagazine();
         }
 
         public void DropMagazine()

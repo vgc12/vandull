@@ -27,7 +27,7 @@ namespace Items.Guns
             _input.Aim += OnAim;
 
             _input.Reload += OnReload;
-            
+
             _input.QuickReload += OnQuickReload;
 
 
@@ -56,12 +56,7 @@ namespace Items.Guns
 
         private void Use((bool started, bool performed, bool canceled) context)
         {
-            if (_currentItem is not Gun gun) return;
-            if (context.started)
-                gun.ExecuteSingleShot();
-            else if (context.performed)
-                gun.StartAutomaticFire();
-            else if (context.canceled) gun.StopAutomaticFire();
+            _currentItem?.Use();
         }
 
         public void OnQuickReload()
@@ -70,7 +65,7 @@ namespace Items.Guns
 
             _currentGun.StartReload(true);
         }
-        
+
         public void OnReload()
         {
             if (_currentItem == null) return;
@@ -87,18 +82,14 @@ namespace Items.Guns
 
         private void OnItemSwitched(ItemSwitchedEvent obj)
         {
+            if (!obj.NewItem || obj.NewItem.Owner != OwnerStatus.Player) return;
             _currentItem = obj.NewItem;
             // Important that this gets toggled off, when item is switched
 
             if (obj.NewItem is Gun newGun)
-            {
-                if (_currentGun != null) _currentGun.StopAiming();
                 _currentGun = newGun;
-            }
             else
-            {
                 _currentGun = null;
-            }
         }
 
         public void OnAim(bool value)
