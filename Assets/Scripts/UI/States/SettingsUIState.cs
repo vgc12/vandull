@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DependencyInjection;
 using EventBus;
 using Player.Input;
@@ -121,17 +122,18 @@ namespace UI.States
         {
             // Subscribe to device change events
             InputSystem.onActionChange += OnActionChange;
+            
         }
 
         private void OnActionChange(object obj, InputActionChange change)
         {
             // Detect when actions are being used (which indicates active device)
-            if (change == InputActionChange.ActionPerformed)
-                if (obj is InputAction action)
-                {
-                    var device = action.activeControl?.device;
-                    if (device != null) UpdateCurrentDeviceFromControl(device);
-                }
+            if (change != InputActionChange.ActionPerformed) return;
+            if (obj is InputAction action)
+            {
+                var device = action.activeControl?.device;
+                if (device != null) UpdateCurrentDeviceFromControl(device);
+            }
         }
 
         private void UpdateCurrentDeviceFromControl(InputDevice device)
@@ -257,9 +259,9 @@ namespace UI.States
             SetupBindingButtons("sprint");
             SetupBindingButtons("reload");
 
-
             SetUpFocusElements();
 
+            
             // Setup control buttons
             _cancelRebindButton.clicked += CancelRebind;
             _applyButton.clicked += ApplySettings;
@@ -270,12 +272,22 @@ namespace UI.States
                 UIStateMachine.BackButtonClicked();
             };
             _controlsScrollView.RegisterCallback<FocusInEvent>(OnScrollViewFocusIn);
+            foreach (var element in _controlsScrollView.Children())
+            {
+                element.RegisterCallback<FocusInEvent>(evt =>
+                {
+                    _controlsScrollView.ScrollTo(element);  
+                });
+            }
             _inputActions.InMenuCancel += OnCancel;
 
             _keyboardMouseTab.selected += _ => _currentControlScheme = ControlScheme.KeyboardMouse;
             _gamepadTab.selected += _ => _currentControlScheme = ControlScheme.Gamepad;
+            _controlsScrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
+ 
         }
-
+        private VisualElement[] _focusableElements;
+        private int _currentFocusIndex = -1;
         private void SetUpFocusElements()
         {
             var allElements = RootPageElement.Query<VisualElement>().Where(e => e.focusable).ToList();
@@ -289,7 +301,6 @@ namespace UI.States
                     parent.AddToClassList("settings-element-focused");
                     foreach (var visualElement in parent.Children())
                         visualElement.AddToClassList("settings-element-focused");
-                    ScrollToElement(element);
                 });
 
                 element.RegisterCallback<FocusOutEvent>(evt =>
@@ -297,29 +308,17 @@ namespace UI.States
                     parent.RemoveFromClassList("settings-element-focused");
                     foreach (var visualElement in parent.Children())
                         visualElement.RemoveFromClassList("settings-element-focused");
+                    
                 });
+
+                if (element.focusable)
+                {
+                    
+                }
             }
+            
         }
-        private void ScrollToElement(VisualElement element)
-        {
-            // Check if element is inside the scroll view
-            if (!IsChildOf(element, _controlsScrollView)) return;
-    
-            // Use ScrollTo to bring the element into view
-            _controlsScrollView.ScrollTo(element);
-        }
-        
-        
-        private bool IsChildOf(VisualElement child, VisualElement potentialParent)
-        {
-            var current = child;
-            while (current != null)
-            {
-                if (current == potentialParent) return true;
-                current = current.parent;
-            }
-            return false;
-        }
+       
         private void OnCancel()
         {
             if (!IsActive) return;
