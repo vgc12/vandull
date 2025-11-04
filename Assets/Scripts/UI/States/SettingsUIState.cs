@@ -9,6 +9,7 @@ using UnityEngine.InputSystem.DualShock;
 using UnityEngine.InputSystem.Switch;
 using UnityEngine.InputSystem.XInput;
 using UnityEngine.UIElements;
+using ILogger = General.Logging.ILogger;
 
 namespace UI.States
 {
@@ -27,11 +28,13 @@ namespace UI.States
 
     public class SettingsUIState : UIBaseState
     {
-        private readonly Dictionary<string, InputActionReference> _actionMap = new();
+        public enum ControlScheme
+        {
+            KeyboardMouse,
+            Gamepad
+        }
 
-        // Current device type detection
-        private string _currentDeviceFolder = "Xbox Series";
-        private readonly KeyIconMappingConfig _keyIconMappingConfig = new();
+        private readonly Dictionary<string, InputActionReference> _actionMap = new();
 
         // Configuration for composite actions
         private readonly Dictionary<string, Dictionary<string, string>> _compositeConfig = new()
@@ -55,32 +58,27 @@ namespace UI.States
             }
         };
 
-        // Settings storage
-        // <Action name , binding path>
-        private readonly Dictionary<string, string> _keyBindings = new();
+        private readonly KeyIconMappingConfig _keyIconMappingConfig = new();
+        private readonly ILogger _logger = RuntimeResolver.Instance.Resolve<ILogger>();
         private SliderInt _ambientVolumeSlider;
 
         private Button _applyButton;
         private Button _cancelRebindButton;
         private Button _closeButton;
+        private ScrollView _controlsScrollView;
         private string _currentActionName;
         private AudioSettingsChangedEvent _currentAudioSettings;
         private int _currentBindingIndex;
 
-
-        public enum ControlScheme
-        {
-            KeyboardMouse,
-            Gamepad
-        }
-
         private ControlScheme _currentControlScheme = ControlScheme.KeyboardMouse;
-        private Tab _keyboardMouseTab;
-        private Tab _gamepadTab;
 
 
         private ControlSettingsChangedEvent _currentControlSettings;
+
+        // Current device type detection
+        private string _currentDeviceFolder = "Xbox Series";
         private SliderInt _dialogueVolumeSlider;
+        private Tab _gamepadTab;
 
         private InputManager _inputActions;
 
@@ -88,6 +86,9 @@ namespace UI.States
         private VisualElement _inputOverlay;
         private Toggle _invertXToggle;
         private Toggle _invertYToggle;
+
+        private bool _isScrollViewFocused;
+        private Tab _keyboardMouseTab;
 
         //Audio Sliders
         private SliderInt _mainVolumeSlider;
@@ -112,7 +113,9 @@ namespace UI.States
             InitializeInputSystem();
             SetupEventListeners();
             UpdateAllButtonTexts();
+            SetupDeviceChangeCallbacks();
         }
+
 
         private void SetupDeviceChangeCallbacks()
         {
@@ -205,6 +208,8 @@ namespace UI.States
             _toggleSprintToggle = RootPageElement.Query<VisualElement>("toggle-sprint").Children<Toggle>().First();
             _toggleAimToggle = RootPageElement.Query<VisualElement>("toggle-aim").Children<Toggle>().First();
 
+            _controlsScrollView = RootPageElement.Q<ScrollView>("controls-scroll-view");
+
             _mainVolumeSlider = RootPageElement.Query<VisualElement>("main").Children<SliderInt>("slider").First();
             _musicVolumeSlider = RootPageElement.Query<VisualElement>("music").Children<SliderInt>("slider").First();
             _sfxVolumeSlider = RootPageElement.Query<VisualElement>("sound-effects").Children<SliderInt>("slider")
@@ -252,22 +257,105 @@ namespace UI.States
             SetupBindingButtons("sprint");
             SetupBindingButtons("reload");
 
+
+            SetUpFocusElements();
+
             // Setup control buttons
             _cancelRebindButton.clicked += CancelRebind;
             _applyButton.clicked += ApplySettings;
             _resetButton.clicked += ResetToDefaults;
-            _closeButton.clicked += UIStateMachine.SettingsBackButtonClicked;
+            _closeButton.clicked += () =>
+            {
+                CanExit = true;
+                UIStateMachine.BackButtonClicked();
+            };
+            _controlsScrollView.RegisterCallback<FocusInEvent>(OnScrollViewFocusIn);
+            _inputActions.InMenuCancel += OnCancel;
 
             _keyboardMouseTab.selected += _ => _currentControlScheme = ControlScheme.KeyboardMouse;
             _gamepadTab.selected += _ => _currentControlScheme = ControlScheme.Gamepad;
         }
 
+        private void SetUpFocusElements()
+        {
+            var allElements = RootPageElement.Query<VisualElement>().Where(e => e.focusable).ToList();
+
+            foreach (var element in allElements)
+            {
+                var parent = element.parent;
+                if (parent == null) continue;
+                element.RegisterCallback<FocusInEvent>(evt =>
+                {
+                    parent.AddToClassList("settings-element-focused");
+                    foreach (var visualElement in parent.Children())
+                        visualElement.AddToClassList("settings-element-focused");
+                    ScrollToElement(element);
+                });
+
+                element.RegisterCallback<FocusOutEvent>(evt =>
+                {
+                    parent.RemoveFromClassList("settings-element-focused");
+                    foreach (var visualElement in parent.Children())
+                        visualElement.RemoveFromClassList("settings-element-focused");
+                });
+            }
+        }
+        private void ScrollToElement(VisualElement element)
+        {
+            // Check if element is inside the scroll view
+            if (!IsChildOf(element, _controlsScrollView)) return;
+    
+            // Use ScrollTo to bring the element into view
+            _controlsScrollView.ScrollTo(element);
+        }
+        
+        
+        private bool IsChildOf(VisualElement child, VisualElement potentialParent)
+        {
+            var current = child;
+            while (current != null)
+            {
+                if (current == potentialParent) return true;
+                current = current.parent;
+            }
+            return false;
+        }
+        private void OnCancel()
+        {
+            if (!IsActive) return;
+            if (_rebindOperation != null)
+            {
+                CancelRebind();
+            }
+            else if (_isScrollViewFocused)
+            {
+                _applyButton.focusable = true;
+                _resetButton.focusable = true;
+                _closeButton.focusable = true;
+                _applyButton.Focus();
+                _isScrollViewFocused = false;
+            }
+            else if (!_isScrollViewFocused)
+            {
+                CanExit = true;
+            }
+        }
+
+        private void OnScrollViewFocusIn(FocusInEvent evt)
+        {
+            CanExit = false;
+            _applyButton.focusable = false;
+            _resetButton.focusable = false;
+            _closeButton.focusable = false;
+            _isScrollViewFocused = true;
+        }
+
         private void SetupCompositeBindings(string actionName)
         {
             if (!_actionMap.TryGetValue(actionName, out var reference)) return;
-            reference.action.Disable();
 
             if (!_compositeConfig.TryGetValue(actionName, out var parts)) return;
+            reference.action.Disable();
 
             foreach (var (partName, uiElementName) in parts)
                 SetupCompositePartBindings(actionName, partName, uiElementName);
@@ -275,23 +363,44 @@ namespace UI.States
 
         private void SetupCompositePartBindings(string actionName, string partName, string uiElementName)
         {
-            if (!_actionMap.TryGetValue(actionName, out var action)) return;
+            if (!_actionMap.TryGetValue(actionName, out var reference)) return;
 
-            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, uiElementName);
-            UpdateButtonWithIcon(keyboardButton, _keyBindings.GetValueOrDefault(actionName, ""));
-            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, uiElementName);
-            UpdateButtonWithIcon(controllerButton, _keyBindings.GetValueOrDefault(actionName, ""),
-                _currentDeviceFolder);
-
-            var partIndices = FindCompositePartIndices(action, partName);
+            var partIndices = FindCompositePartIndices(reference.action, partName);
             if (partIndices.Count == 0) return;
 
-            // Setup click handlers for primary binding (first index)
-            if (keyboardButton != null)
-                keyboardButton.clicked += () => StartRebind(actionName, partIndices[0], keyboardButton);
+            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, uiElementName);
+            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, uiElementName);
 
-            if (controllerButton != null)
-                controllerButton.clicked += () => StartRebind(actionName, partIndices[0], controllerButton);
+            // Find the correct binding index for each control scheme among the part indices
+            var keyboardBindingIndex = FindBindingIndexForScheme(reference.action, partIndices, "Keyboard&Mouse");
+            var gamepadBindingIndex = FindBindingIndexForScheme(reference.action, partIndices, "Gamepad");
+
+            // Update buttons with icons
+            if (keyboardBindingIndex >= 0)
+                UpdateButtonWithIcon(keyboardButton, reference.action.bindings[keyboardBindingIndex].effectivePath);
+
+            if (gamepadBindingIndex >= 0)
+                UpdateButtonWithIcon(controllerButton, reference.action.bindings[gamepadBindingIndex].effectivePath,
+                    _currentDeviceFolder);
+
+            // Setup click handlers
+            if (keyboardButton != null && keyboardBindingIndex >= 0)
+                keyboardButton.clicked += () => StartRebind(actionName, keyboardBindingIndex, keyboardButton);
+
+            if (controllerButton != null && gamepadBindingIndex >= 0)
+                controllerButton.clicked += () => StartRebind(actionName, gamepadBindingIndex, controllerButton);
+        }
+
+        private int FindBindingIndexForScheme(InputAction action, List<int> partIndices, string bindingGroup)
+        {
+            foreach (var index in partIndices)
+            {
+                var binding = action.bindings[index];
+                if (binding.groups != null && binding.groups.Contains(bindingGroup))
+                    return index;
+            }
+
+            return -1;
         }
 
         private List<int> FindCompositePartIndices(InputAction action, string partName)
@@ -321,14 +430,27 @@ namespace UI.States
 
         private void SetupBindingButtons(string actionName)
         {
-            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, actionName);
-            UpdateButtonWithIcon(keyboardButton, _keyBindings.GetValueOrDefault(actionName, ""));
-            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, actionName);
-            UpdateButtonWithIcon(controllerButton, _keyBindings.GetValueOrDefault(actionName, ""),
-                _currentDeviceFolder);
+            if (!_actionMap.TryGetValue(actionName, out var reference)) return;
 
-            keyboardButton.clicked += () => StartRebind(actionName, 0, keyboardButton);
-            controllerButton.clicked += () => StartRebind(actionName, 0, controllerButton);
+            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, actionName);
+            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, actionName);
+
+            // Use GetBindingIndex with group filter
+            var keyboardBindingIndex = reference.action.GetBindingIndex(InputBinding.MaskByGroup("Keyboard&Mouse"));
+            var gamepadBindingIndex = reference.action.GetBindingIndex(InputBinding.MaskByGroup("Gamepad"));
+
+            if (keyboardBindingIndex >= 0)
+                UpdateButtonWithIcon(keyboardButton, reference.action.bindings[keyboardBindingIndex].effectivePath);
+
+            if (gamepadBindingIndex >= 0)
+                UpdateButtonWithIcon(controllerButton, reference.action.bindings[gamepadBindingIndex].effectivePath,
+                    _currentDeviceFolder);
+
+            if (keyboardBindingIndex >= 0)
+                keyboardButton.clicked += () => StartRebind(actionName, keyboardBindingIndex, keyboardButton);
+
+            if (gamepadBindingIndex >= 0)
+                controllerButton.clicked += () => StartRebind(actionName, gamepadBindingIndex, controllerButton);
         }
 
         private void StartRebind(string actionName, int bindingIndex, Button button)
@@ -384,16 +506,11 @@ namespace UI.States
             // Get the new binding
             var reference = _actionMap[_currentActionName];
             var bindingPath = reference.action.bindings[_currentBindingIndex].effectivePath;
-            Debug.Log($"Rebinding complete {bindingPath}" + _inputActions.InputActions.bindings);
+            _logger.Log($"Rebinding complete {bindingPath}" + _inputActions.InputActions.bindings);
 
             // Update button with icon or text
             UpdateButtonWithIcon(button, bindingPath);
 
-            // Store the binding
-            _keyBindings.TryAdd(_currentActionName, bindingPath);
-
-
-            _keyBindings[_currentActionName] = bindingPath;
 
             reference.action.Enable();
             CleanupRebind();
@@ -430,7 +547,8 @@ namespace UI.States
                     return;
                 }
 
-                Debug.LogWarning($"Icon not found at path: {iconPath} for binding: {bindingPath}");
+
+                _logger.LogWarning($"Icon not found at path: {iconPath} for binding: {bindingPath}");
                 // Fallback to text if icon not found
                 button.text = GetBindingDisplayString(bindingPath);
             }
@@ -451,18 +569,12 @@ namespace UI.States
 
         private void UpdateCompositePartButton(InputAction action, string partName, string uiElementName)
         {
-            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, uiElementName);
-            UpdateButtonWithIcon(keyboardButton, action.bindings[0].effectivePath);
-            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, uiElementName);
-            UpdateButtonWithIcon(controllerButton, action.bindings[0].effectivePath, _currentDeviceFolder);
+            GetBindButtonsUnderTab(_keyboardMouseTab, uiElementName);
 
-            var partIndices = FindCompositePartIndices(action, partName);
+            GetBindButtonsUnderTab(_gamepadTab, uiElementName);
 
-            // Update button with first binding
-            if (partIndices.Count > 0 && keyboardButton != null)
-                UpdateButtonWithIcon(keyboardButton, action.bindings[partIndices[0]].effectivePath);
-            if (partIndices.Count > 0 && controllerButton != null)
-                UpdateButtonWithIcon(controllerButton, action.bindings[partIndices[0]].effectivePath);
+
+            FindCompositePartIndices(action, partName);
         }
 
         private void OnRebindCancelled()
@@ -499,13 +611,21 @@ namespace UI.States
 
         private void UpdateButtonText(string actionName)
         {
-            var reference = _actionMap[actionName];
+            if (!_actionMap.TryGetValue(actionName, out var reference)) return;
             if (reference.action.bindings.Count <= 0) return;
 
-            var primaryButton = GetBindButtonsUnderTab(_keyboardMouseTab, actionName);
+            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, actionName);
+            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, actionName);
 
-            if (primaryButton != null)
-                UpdateButtonWithIcon(primaryButton, reference.action.bindings[0].effectivePath);
+            var keyboardBindingIndex = reference.action.GetBindingIndex(InputBinding.MaskByGroup("Keyboard&Mouse"));
+            var gamepadBindingIndex = reference.action.GetBindingIndex(InputBinding.MaskByGroup("Gamepad"));
+
+            if (keyboardButton != null && keyboardBindingIndex >= 0)
+                UpdateButtonWithIcon(keyboardButton, reference.action.bindings[keyboardBindingIndex].effectivePath);
+
+            if (controllerButton != null && gamepadBindingIndex >= 0)
+                UpdateButtonWithIcon(controllerButton, reference.action.bindings[gamepadBindingIndex].effectivePath,
+                    _currentDeviceFolder);
         }
 
         private static Button GetBindButtonsUnderTab(Tab t, string actionName)
@@ -554,10 +674,8 @@ namespace UI.States
         {
             foreach (var reference in _actionMap.Values) reference.action.RemoveAllBindingOverrides();
 
-            _keyBindings.Clear();
-
             UpdateAllButtonTexts();
-            Debug.Log("Reset to defaults!");
+            _logger.Log("Reset to defaults!");
         }
 
 

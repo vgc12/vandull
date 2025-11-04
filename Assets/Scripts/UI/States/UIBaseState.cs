@@ -37,8 +37,13 @@ namespace UI.States
             RuntimeResolver.Instance.TryResolve(out Logger);
         }
 
+        public bool IsActive { get; protected set; }
+
+        public virtual bool CanExit { get; protected set; } = true;
+
         public override void Enter()
         {
+            IsActive = true;
             RootPageElement.style.display = DisplayStyle.Flex;
             ChangeMouseState();
             EventBus<UIStateSwitchedEvent>.Raise(new UIStateSwitchedEvent(StateType));
@@ -47,6 +52,7 @@ namespace UI.States
 
         public override void Exit()
         {
+            IsActive = false;
             RootPageElement.style.display = DisplayStyle.None;
             UIStateMachine.ResetCommand();
         }

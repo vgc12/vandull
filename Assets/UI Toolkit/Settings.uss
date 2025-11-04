@@ -1,3 +1,7 @@
+.unity-tab-view__content-viewport .unity-repeat-button {
+    display: none;
+}
+
 .unity-text-field {
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
@@ -20,7 +24,7 @@
 }
 
 .unity-toggle:focus .unity-toggle__label {
-    color: rgb(255, 0, 0);
+    color: rgb(255, 255, 255);
 }
 
 .unity-text-field__input {
@@ -87,6 +91,24 @@
     margin-bottom: 0;
     color: rgb(255, 255, 255);
     background-color: rgb(153, 0, 0);
+    -unity-font-definition: url("project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&guid=83ac249aaefaf3b42a3de0b92f763dee&type=3#BungeeHairline-Regular");
+    font-size: 20px;
+    align-items: flex-start;
+    align-self: flex-start;
+    align-content: flex-start;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.unity-tab__header:focus {
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-top: 0;
+    margin-bottom: 0;
+    color: rgb(255, 255, 255);
+    background-color: rgb(41, 41, 41);
     -unity-font-definition: url("project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&guid=83ac249aaefaf3b42a3de0b92f763dee&type=3#BungeeHairline-Regular");
     font-size: 20px;
     align-items: flex-start;
@@ -214,16 +236,6 @@
     margin-left: 4px;
 }
 
-.settings-label {
-    margin-right: 0;
-    color: rgb(255, 255, 255);
-    font-size: 12px;
-    text-overflow: ellipsis;
-    flex-grow: 1;
-    -unity-text-align: middle-left;
-    -unity-font-definition: url("project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&guid=83ac249aaefaf3b42a3de0b92f763dee&type=3#BungeeHairline-Regular");
-}
-
 .settings-text-field {
     color: rgb(255, 255, 255);
 }
@@ -235,7 +247,24 @@
     flex-shrink: 0;
 }
 
-.settings-button:hover {
+.settings-label {
+    color: rgb(255, 255, 255);
+}
+
+.settings-button:active {
+    color: rgb(255, 255, 255);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    font-size: 11px;
+    align-self: flex-start;
+    align-items: flex-end;
+    background-color: rgb(255, 0, 0);
+    -unity-font-definition: url("project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&guid=83ac249aaefaf3b42a3de0b92f763dee&type=3#BungeeHairline-Regular");
+}
+
+.settings-button:focus {
     color: rgb(255, 255, 255);
     border-left-color: rgb(255, 0, 0);
     border-right-color: rgb(255, 0, 0);
@@ -248,9 +277,7 @@
     font-size: 11px;
     align-self: flex-start;
     align-items: flex-end;
-    background-color: rgb(255, 0, 0);
-    min-height: 30px;
-    min-width: 30px;
+    background-color: rgb(36, 36, 36);
     -unity-font-definition: url("project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&guid=83ac249aaefaf3b42a3de0b92f763dee&type=3#BungeeHairline-Regular");
 }
 
@@ -319,21 +346,7 @@
     width: 100%;
 }
 
-.settings-button :hover {
-    color: rgb(255, 255, 255);
-    border-left-color: rgb(255, 0, 0);
-    border-right-color: rgb(255, 0, 0);
-    border-top-color: rgb(255, 0, 0);
-    border-bottom-color: rgb(255, 0, 0);
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    border-bottom-left-radius: 5px;
-    font-size: 11px;
-    align-self: flex-start;
-    align-items: flex-end;
-    background-color: rgb(255, 0, 0);
-    min-height: 45px;
-    min-width: 45px;
-    -unity-font-definition: url("project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&guid=83ac249aaefaf3b42a3de0b92f763dee&type=3#BungeeHairline-Regular");
+.settings-element-focused {
+    background-color: rgb(36, 36, 36);
+    color: red;
 }

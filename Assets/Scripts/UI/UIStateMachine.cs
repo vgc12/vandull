@@ -4,7 +4,6 @@ using Levels.Strategies;
 using Player.Input;
 using Reflex.Attributes;
 using Singletons;
-using StateMachine;
 using UI.States;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -15,25 +14,24 @@ namespace UI
     public class UIStateMachine : PersistentSingleton<UIStateMachine>
     {
         private UIDocument _document;
-        private IState _inGameSettingsState;
-        private IState _inGameState;
+        private UIBaseState _inGameState;
 
         [Inject] private IInputService _input;
 
         private EventBinding<LevelLostEvent> _levelLostEventBinding;
-        private IState _levelSelectState;
+        private UIBaseState _levelSelectState;
         private EventBinding<LevelWonEvent> _levelWonEventBinding;
-        private IState _loadingState;
-        private IState _mainMenuSettingsState;
+        private UIBaseState _loadingState;
+        private UIBaseState _mainMenuSettingsState;
 
-        private IState _mainMenuState;
-        private IState _missionLostState;
-        private IState _missionWonState;
-        private IState _pausedState;
+        private UIBaseState _mainMenuState;
+        private UIBaseState _missionLostState;
+        private UIBaseState _missionWonState;
+        private UIBaseState _pausedState;
 
         // Single command queue instead of multiple booleans
         private UICommand _pendingCommand = UICommand.None;
-        private IState _quitMenuState;
+        private UIBaseState _quitMenuState;
 
         private StateMachine.StateMachine _stateMachine;
 
@@ -97,7 +95,6 @@ namespace UI
 
             _inGameState = new InGameUIState(Root.Q<VisualElement>("in-game"), this);
             var settingsElement = Root.Q<VisualElement>("settings");
-            _inGameSettingsState = new InGameSettingsUIState(settingsElement, this);
             _mainMenuSettingsState = new MainMenuUISettingsState(settingsElement, this);
             _pausedState = new PausedUIState(Root.Q<VisualElement>("paused"), this);
 
@@ -138,13 +135,13 @@ namespace UI
             _stateMachine.AddTransition(_inGameState, _missionLostState,
                 () => IsCommand(UICommand.LevelLost));
 
+            _stateMachine.AddTransition(_mainMenuSettingsState, _pausedState, () =>
+                LevelManager.Instance.IsLevelActive && IsCommand(UICommand.Back) && _mainMenuSettingsState.CanExit);
             _stateMachine.AddTransition(_mainMenuSettingsState, _mainMenuState,
-                () => IsCommand(UICommand.Back));
+                () => IsCommand(UICommand.Back) && _mainMenuSettingsState.CanExit);
 
-            _stateMachine.AddTransition(_inGameSettingsState, _pausedState,
-                () => IsCommand(UICommand.Back));
 
-            _stateMachine.AddTransition(_pausedState, _inGameSettingsState,
+            _stateMachine.AddTransition(_pausedState, _mainMenuSettingsState,
                 () => IsCommand(UICommand.OpenSettings));
             _stateMachine.AddTransition(_pausedState, _quitMenuState,
                 () => IsCommand(UICommand.OpenQuitMenu));
@@ -161,7 +158,7 @@ namespace UI
             _stateMachine.AddTransition(_quitMenuState, _pausedState,
                 () => IsCommand(UICommand.Back) && LevelManager.Instance.IsLevelActive);
             _stateMachine.AddTransition(_quitMenuState, _mainMenuState,
-                () => IsCommand(UICommand.QuitToMenu) && !LevelManager.Instance.IsLevelActive);
+                () => IsCommand(UICommand.Back) || IsCommand(UICommand.QuitToMenu));
 
             if (LevelManager.Instance.IsLevelActive)
                 _stateMachine.SetStateAndEnter(_inGameState);
@@ -186,7 +183,7 @@ namespace UI
             ProcessCommand(UICommand.Resume);
         }
 
-        public void SettingsBackButtonClicked()
+        public void BackButtonClicked()
         {
             ProcessCommand(UICommand.Back);
         }

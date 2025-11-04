@@ -2,17 +2,16 @@
 using EventBus;
 using Player;
 using Player.Input;
-
 using UnityEngine.UIElements;
 
 namespace UI.States
 {
     public class InGameUIState : UIBaseState
     {
+        private readonly VisualElement _crosshair;
         private readonly ProgressBar _healthBar;
         private readonly EventBinding<PlayerHitEvent> _playerHitEventBinding;
-        private readonly IPlayerInput _playerInput;
-        private readonly VisualElement _crosshair;
+        private readonly IInputService _playerInput;
         private bool _isAiming;
 
         public InGameUIState(VisualElement rootElement, UIStateMachine stateMachine) : base(rootElement, stateMachine,
