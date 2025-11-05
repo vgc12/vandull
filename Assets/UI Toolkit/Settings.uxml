@@ -11,7 +11,7 @@
                                 <ui:Label text="MOUSE SETTINGS" name="label" class="settings-header" style="-unity-font-style: bold; margin-bottom: 15px;" />
                                 <ui:VisualElement name="sensitivity" class="settings-element" style="flex-direction: row; margin-bottom: 5px; width: 100%;">
                                     <ui:Label text="Sensitivity" name="label" selectable="false" focusable="false" class="settings-label settings-element" style="width: 150px; flex-grow: 0;" />
-                                    <ui:Slider name="slider" high-value="10" low-value="0.1" value="5" show-input-field="true" class="settings-element" style="width: auto; align-content: flex-start; align-self: flex-end; flex-grow: 1; padding-right: 13%; flex-direction: row; margin-right: 0; margin-left: 0;" />
+                                    <ui:Slider name="slider" high-value="10" low-value="0.1" value="5" show-input-field="true" focusable="true" class="settings-element" style="width: auto; align-content: flex-start; align-self: flex-end; flex-grow: 1; padding-right: 13%; flex-direction: row; margin-right: 0; margin-left: 0;" />
                                 </ui:VisualElement>
                                 <ui:VisualElement name="invert-y" style="margin-bottom: 10px;">
                                     <ui:Toggle name="toggle" label="Invert Y-Axis" class="settings-label settings-element" />
@@ -40,48 +40,48 @@
                                             <ui:VisualElement name="move-forward" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Move Forward" class="action-label settings-label" style="flex-grow: 0;" />
                                                 <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
-                                                    <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
+                                                    <ui:Button name="primary" text="d" focusable="false" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="move-backward" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Move Backward" class="action-label settings-label" style="flex-grow: 0;" />
                                                 <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
-                                                    <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
+                                                    <ui:Button name="primary" text="d" focusable="false" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="move-right" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Move Right" class="action-label settings-label" style="flex-grow: 0;" />
                                                 <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
-                                                    <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
+                                                    <ui:Button name="primary" text="d" focusable="false" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="move-left" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Move Left" class="action-label settings-label" style="flex-grow: 0;" />
                                                 <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
-                                                    <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
+                                                    <ui:Button name="primary" text="d" focusable="false" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="lean-left" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Lean Left" class="action-label settings-label" style="flex-grow: 0;" />
                                                 <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
-                                                    <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
+                                                    <ui:Button name="primary" text="d" focusable="false" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="lean-right" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Lean Right" class="action-label settings-label" style="flex-grow: 0;" />
-                                                <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
-                                                    <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
+                                                <ui:VisualElement name="buttons" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
+                                                    <ui:Button name="primary" text="d" focusable="false" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="jump" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Jump" class="action-label settings-label" style="flex-grow: 0;" />
-                                                <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
+                                                <ui:VisualElement name="buttons" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
                                                     <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="crouch" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Crouch" class="action-label settings-label" style="flex-grow: 0;" />
-                                                <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
+                                                <ui:VisualElement name="buttons" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
                                                     <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
@@ -96,8 +96,8 @@
                                             <ui:Label text="actions" name="actions-label" parse-escape-sequences="false" class="section-title settings-header" />
                                             <ui:VisualElement name="interact" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Interact" class="action-label settings-label" style="flex-grow: 0;" />
-                                                <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
-                                                    <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
+                                                <ui:VisualElement name="buttons" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
+                                                    <ui:Button name="primary" text="d" focusable="true" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                         </ui:VisualElement>
@@ -105,31 +105,31 @@
                                             <ui:Label text="combat" name="combat-label" parse-escape-sequences="false" class="section-title settings-header" />
                                             <ui:VisualElement name="attack" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Fire / Use Item" class="action-label settings-label" style="flex-grow: 0;" />
-                                                <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
+                                                <ui:VisualElement name="buttons" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
                                                     <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="aim" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Aim / Alternate use" name="Label" class="action-label settings-label" style="flex-grow: 0;" />
-                                                <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
+                                                <ui:VisualElement name="buttons" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
                                                     <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="reload" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Reload" name="Label" class="action-label settings-label" style="flex-grow: 0;" />
-                                                <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
+                                                <ui:VisualElement name="buttons" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
                                                     <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="cycle-forward" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Cycle Forward" class="action-label settings-label" style="flex-grow: 0;" />
-                                                <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
+                                                <ui:VisualElement name="buttons" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
                                                     <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>
                                             <ui:VisualElement name="cycle-backward" class="binding-row" style="flex-direction: row;">
                                                 <ui:Label text="Cycle Backward" class="action-label settings-label" style="flex-grow: 0;" />
-                                                <ui:VisualElement name="buttons" focusable="true" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
+                                                <ui:VisualElement name="buttons" focusable="false" style="flex-grow: 1; flex-direction: row-reverse; flex-shrink: 0; padding-right: 13%;">
                                                     <ui:Button name="primary" text="d" class="key-button settings-button settings-keybind-button" />
                                                 </ui:VisualElement>
                                             </ui:VisualElement>

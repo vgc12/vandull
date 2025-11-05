@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using DependencyInjection;
 using EventBus;
 using Player.Input;
@@ -59,6 +58,10 @@ namespace UI.States
             }
         };
 
+        private readonly List<VisualElement> _focusableElements = new();
+
+        private readonly float _inputDelay = 0.1f;
+
         private readonly KeyIconMappingConfig _keyIconMappingConfig = new();
         private readonly ILogger _logger = RuntimeResolver.Instance.Resolve<ILogger>();
         private SliderInt _ambientVolumeSlider;
@@ -78,6 +81,7 @@ namespace UI.States
 
         // Current device type detection
         private string _currentDeviceFolder = "Xbox Series";
+        private int _currentFocusIndex;
         private SliderInt _dialogueVolumeSlider;
         private Tab _gamepadTab;
 
@@ -90,6 +94,7 @@ namespace UI.States
 
         private bool _isScrollViewFocused;
         private Tab _keyboardMouseTab;
+        private float _lastInputTime;
 
         //Audio Sliders
         private SliderInt _mainVolumeSlider;
@@ -122,7 +127,6 @@ namespace UI.States
         {
             // Subscribe to device change events
             InputSystem.onActionChange += OnActionChange;
-            
         }
 
         private void OnActionChange(object obj, InputActionChange change)
@@ -261,7 +265,7 @@ namespace UI.States
 
             SetUpFocusElements();
 
-            
+
             // Setup control buttons
             _cancelRebindButton.clicked += CancelRebind;
             _applyButton.clicked += ApplySettings;
@@ -273,23 +277,47 @@ namespace UI.States
             };
             _controlsScrollView.RegisterCallback<FocusInEvent>(OnScrollViewFocusIn);
             foreach (var element in _controlsScrollView.Children())
-            {
-                element.RegisterCallback<FocusInEvent>(evt =>
-                {
-                    _controlsScrollView.ScrollTo(element);  
-                });
-            }
+                element.RegisterCallback<FocusInEvent>(evt => { _controlsScrollView.ScrollTo(element); });
             _inputActions.InMenuCancel += OnCancel;
 
             _keyboardMouseTab.selected += _ => _currentControlScheme = ControlScheme.KeyboardMouse;
             _gamepadTab.selected += _ => _currentControlScheme = ControlScheme.Gamepad;
             _controlsScrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
- 
+            _inputActions.Navigate += OnNavigate;
         }
-        private VisualElement[] _focusableElements;
-        private int _currentFocusIndex = -1;
+
+        private void OnNavigate(Vector2 arg0)
+        {
+            if (!IsActive || _rebindOperation != null || Time.time - _lastInputTime < _inputDelay ||
+                arg0.magnitude == 0) return;
+
+            _lastInputTime = Time.time;
+
+            if (arg0.y > 0)
+            {
+                _currentFocusIndex--;
+                if (_currentFocusIndex < 0) _currentFocusIndex = _focusableElements.Count - 1;
+            }
+            else if (arg0.y < 0)
+            {
+                _currentFocusIndex++;
+                if (_currentFocusIndex >= _focusableElements.Count) _currentFocusIndex = 0;
+            }
+
+            var element = _focusableElements[_currentFocusIndex];
+            element.Focus();
+
+            // Check if the ScrollView contains the element
+            if (_controlsScrollView.Contains(element)) _controlsScrollView.ScrollTo(element);
+        }
+
         private void SetUpFocusElements()
         {
+            // Use TrickleDown enum instead
+            RootPageElement.RegisterCallback<NavigationMoveEvent>(evt => { evt.PreventDefault(); },
+                TrickleDown.TrickleDown);
+
+
             var allElements = RootPageElement.Query<VisualElement>().Where(e => e.focusable).ToList();
 
             foreach (var element in allElements)
@@ -308,17 +336,12 @@ namespace UI.States
                     parent.RemoveFromClassList("settings-element-focused");
                     foreach (var visualElement in parent.Children())
                         visualElement.RemoveFromClassList("settings-element-focused");
-                    
                 });
 
-                if (element.focusable)
-                {
-                    
-                }
+                if (element.focusable) _focusableElements.Add(element);
             }
-            
         }
-       
+
         private void OnCancel()
         {
             if (!IsActive) return;
