@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DependencyInjection;
 using EventBus;
 using Player.Input;
@@ -58,7 +59,7 @@ namespace UI.States
             }
         };
 
-        private readonly List<VisualElement> _focusableElements = new();
+        private List<VisualElement> _focusableElements = new();
 
         private readonly float _inputDelay = 0.1f;
 
@@ -326,6 +327,7 @@ namespace UI.States
                 if (parent == null) continue;
                 element.RegisterCallback<FocusInEvent>(evt =>
                 {
+                    _logger.Log(element.name + " focused");
                     parent.AddToClassList("settings-element-focused");
                     foreach (var visualElement in parent.Children())
                         visualElement.AddToClassList("settings-element-focused");
@@ -340,6 +342,7 @@ namespace UI.States
 
                 if (element.focusable) _focusableElements.Add(element);
             }
+            _focusableElements = _focusableElements.Distinct().OrderBy(e => e.worldBound.y).ToList();
         }
 
         private void OnCancel()
