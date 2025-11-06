@@ -8,7 +8,7 @@ namespace Items.Guns.Recoil
     {
         private readonly EventBinding<AimChangedEvent> _aimChangedEventBinding;
         private readonly MonoBehaviour _behaviour;
-        private readonly GunConfig _config;
+        private readonly Gun _gun;
         private readonly Transform _gunTransform;
         private readonly Vector3 _originalGunRotation;
         private readonly Transform _recoilTransform;
@@ -35,13 +35,12 @@ namespace Items.Guns.Recoil
         private Vector3 _targetRecoil;
 
 
-        public RecoilSystem(GunConfig config, Transform gunTransform, Transform recoilTransform,
-            MonoBehaviour behaviour)
+        public RecoilSystem(Gun gun)
         {
-            _config = config;
-            _recoilTransform = recoilTransform;
-            _gunTransform = gunTransform;
-            _behaviour = behaviour;
+            _gun = gun;
+            _recoilTransform = gun.RecoilTransform;
+            _gunTransform = gun.transform;
+            _behaviour = gun;
 
             _aimChangedEventBinding = new EventBinding<AimChangedEvent>(OnAimChanged);
             EventBus<AimChangedEvent>.Register(_aimChangedEventBinding);
@@ -50,17 +49,17 @@ namespace Items.Guns.Recoil
             _originalGunRotation = _gunTransform.localEulerAngles;
         }
 
-        public Vector3 CurrentRecoil => _currentRecoil * _config.recoilSettings.recoilEffectMultiplier;
+        public Vector3 CurrentRecoil => _currentRecoil * _gun.recoilSettings.recoilEffectMultiplier;
 
 
         public void ApplyRecoil()
         {
-            if (_config.recoilSettings.useProgressiveRecoil) UpdateProgressiveRecoil();
+            if (_gun.recoilSettings.useProgressiveRecoil) UpdateProgressiveRecoil();
 
             // Calculate recoil values with current multiplier
-            var verticalRecoil = _config.recoilSettings.verticalRecoil * _currentRecoilMultiplier;
+            var verticalRecoil = _gun.recoilSettings.verticalRecoil * _currentRecoilMultiplier;
             var horizontalRecoil =
-                Random.Range(-_config.recoilSettings.horizontalRecoil, _config.recoilSettings.horizontalRecoil) *
+                Random.Range(-_gun.recoilSettings.horizontalRecoil, _gun.recoilSettings.horizontalRecoil) *
                 _currentRecoilMultiplier;
 
             // Apply camera recoil
@@ -68,16 +67,16 @@ namespace Items.Guns.Recoil
 
             // Apply gun physical recoil
 
-            var randomPositionX = Random.Range(-_config.recoilSettings.positionRecoil.x * 0.5f,
-                _config.recoilSettings.positionRecoil.x * 0.5f);
-            var posRecoil = new Vector3(randomPositionX, _config.recoilSettings.positionRecoil.y,
-                _config.recoilSettings.positionRecoil.z);
+            var randomPositionX = Random.Range(-_gun.recoilSettings.positionRecoil.x * 0.5f,
+                _gun.recoilSettings.positionRecoil.x * 0.5f);
+            var posRecoil = new Vector3(randomPositionX, _gun.recoilSettings.positionRecoil.y,
+                _gun.recoilSettings.positionRecoil.z);
             _targetGunRecoil = posRecoil * _currentRecoilMultiplier;
 
-            var randomRotationY = Random.Range(-_config.recoilSettings.rotationRecoil.y * 0.5f,
-                _config.recoilSettings.rotationRecoil.y * 0.5f);
-            var rotRecoil = new Vector3(_config.recoilSettings.rotationRecoil.x, randomRotationY,
-                _config.recoilSettings.rotationRecoil.z);
+            var randomRotationY = Random.Range(-_gun.recoilSettings.rotationRecoil.y * 0.5f,
+                _gun.recoilSettings.rotationRecoil.y * 0.5f);
+            var rotRecoil = new Vector3(_gun.recoilSettings.rotationRecoil.x, randomRotationY,
+                _gun.recoilSettings.rotationRecoil.z);
             _targetGunRotationRecoil = rotRecoil * _currentRecoilMultiplier;
 
 
@@ -88,10 +87,10 @@ namespace Items.Guns.Recoil
         public void Update()
         {
             // Update progressive recoil decay
-            if (_config.recoilSettings.useProgressiveRecoil && Time.time > _lastShotTime + 0.5f)
+            if (_gun.recoilSettings.useProgressiveRecoil && Time.time > _lastShotTime + 0.5f)
             {
                 _currentRecoilMultiplier = Mathf.Lerp(_currentRecoilMultiplier, 1f,
-                    Time.deltaTime * _config.recoilSettings.recoilDecayRate);
+                    Time.deltaTime * _gun.recoilSettings.recoilDecayRate);
 
                 if (Time.time > _lastShotTime + 2f) _consecutiveShots = 0;
             }
@@ -132,24 +131,24 @@ namespace Items.Guns.Recoil
 
             if (timeSinceLastShot < 0.3f) // Within burst window
                 _currentRecoilMultiplier = Mathf.Min(
-                    _currentRecoilMultiplier * _config.recoilSettings.recoilMultiplierPerShot,
-                    _config.recoilSettings.maxRecoilMultiplier
+                    _currentRecoilMultiplier * _gun.recoilSettings.recoilMultiplierPerShot,
+                    _gun.recoilSettings.maxRecoilMultiplier
                 );
         }
 
         private void ApplyCameraRecoil()
         {
             _currentRecoil = Vector3.Slerp(_currentRecoil, _targetRecoil,
-                Time.deltaTime * _config.recoilSettings.recoilSpeed);
+                Time.deltaTime * _gun.recoilSettings.recoilSpeed);
 
 
             if (_recoilTransform)
                 _recoilTransform.localRotation =
-                    Quaternion.Euler(_currentRecoil * _config.recoilSettings.recoilEffectMultiplier);
+                    Quaternion.Euler(_currentRecoil * _gun.recoilSettings.recoilEffectMultiplier);
 
 
             _targetRecoil = Vector3.Lerp(_targetRecoil, Vector3.zero,
-                Time.deltaTime * _config.recoilSettings.returnSpeed);
+                Time.deltaTime * _gun.recoilSettings.returnSpeed);
         }
 
 
@@ -162,18 +161,18 @@ namespace Items.Guns.Recoil
 
 
             _gunTransform.localPosition = Vector3.Lerp(_gunTransform.localPosition, targetPosition,
-                Time.deltaTime * _config.recoilSettings.physicalRecoilSpeed);
+                Time.deltaTime * _gun.recoilSettings.physicalRecoilSpeed);
 
 
             _currentGunRotationRecoil = Vector3.Lerp(_currentGunRotationRecoil, _targetGunRotationRecoil,
-                Time.deltaTime * _config.recoilSettings.physicalRecoilSpeed);
+                Time.deltaTime * _gun.recoilSettings.physicalRecoilSpeed);
             _gunTransform.localRotation = Quaternion.Euler(_originalGunRotation + _currentGunRotationRecoil);
 
 
             _targetGunRecoil = Vector3.Lerp(_targetGunRecoil, Vector3.zero,
-                Time.deltaTime * _config.recoilSettings.physicalReturnSpeed);
+                Time.deltaTime * _gun.recoilSettings.physicalReturnSpeed);
             _targetGunRotationRecoil = Vector3.Lerp(_targetGunRotationRecoil, Vector3.zero,
-                Time.deltaTime * _config.recoilSettings.physicalReturnSpeed);
+                Time.deltaTime * _gun.recoilSettings.physicalReturnSpeed);
         }
     }
 }

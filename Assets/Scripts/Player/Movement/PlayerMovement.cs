@@ -1,8 +1,9 @@
 using System.Collections;
 using Attributes;
-using General;
+using Player.Input;
+using Reflex.Attributes;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using ILogger = General.Logging.ILogger;
 
 namespace Player.Movement
 {
@@ -21,16 +22,16 @@ namespace Player.Movement
 
         private readonly RaycastHit[] _crouchCheckHits = new RaycastHit[1];
 
-        private Coroutine _crouchCoroutine;
+        [Inject] private readonly ILogger _logger;
 
+        private Coroutine _crouchCoroutine;
 
         private GroundChecker _groundChecker;
 
-
-        private Rigidbody _rigidbody;
-
         private RaycastHit _slopeHit;
 
+
+        public Rigidbody Rigidbody { get; private set; }
 
         public bool ObjectAbove { get; private set; }
 
@@ -44,11 +45,13 @@ namespace Player.Movement
 
         public Transform PlayerModel => playerModel;
 
+        public bool IsAiming { get; set; }
+
 
         public void Crouch()
         {
             if (_crouchCoroutine != null) StopCoroutine(_crouchCoroutine);
-
+            Debug.Log(_input);
             _crouchCoroutine = StartCoroutine(SetPlayerHeight(config.CrouchHeight, config.CrouchCameraPosition));
         }
 
@@ -75,7 +78,7 @@ namespace Player.Movement
 
                 if (size > 0)
                 {
-                    VandullLogger.Log(_crouchCheckHits[0].collider.name);
+                    _logger.Log(_crouchCheckHits[0].collider.name);
                     ObjectAbove = true;
                     yield return null;
                     continue;
@@ -99,24 +102,23 @@ namespace Player.Movement
 
         #region UnityFunctions
 
-        private void Start()
+        [Inject] private readonly IPlayerInput _input;
+
+        private void Awake()
         {
             _groundChecker = GetComponent<GroundChecker>();
 
-            _rigidbody = GetComponent<Rigidbody>();
+            Rigidbody = GetComponent<Rigidbody>();
 
+            _input.Crouch += OnCrouchInput;
 
-            InputManager.Instance.InputActions.Player.Move.performed += OnMoveInput;
-            InputManager.Instance.InputActions.Player.Move.canceled += OnMoveInput;
+            _input.Jump += OnJumpInput;
 
-            InputManager.Instance.InputActions.Player.Jump.performed += OnJumpInput;
-            InputManager.Instance.InputActions.Player.Jump.canceled += OnJumpInput;
+            _input.Sprint += OnSprintInput;
 
-            InputManager.Instance.InputActions.Player.Sprint.performed += OnSprintInput;
-            InputManager.Instance.InputActions.Player.Sprint.canceled += OnSprintInput;
+            _input.Move += OnMoveInput;
 
-            InputManager.Instance.InputActions.Player.Crouch.performed += OnCrouchInput;
-            InputManager.Instance.InputActions.Player.Crouch.canceled += OnCrouchInput;
+            _input.Aim += OnAimInput;
 
             playerModel.localScale = new Vector3(1, config.InitialHeight, 1);
             crouchPositionTransform.localPosition = new Vector3(crouchPositionTransform.localPosition.x,
@@ -124,21 +126,22 @@ namespace Player.Movement
                 crouchPositionTransform.localPosition.z);
         }
 
-
-        private void OnDisable()
+        private void OnAimInput(bool value)
         {
-            InputManager.Instance.InputActions.Player.Move.performed -= OnMoveInput;
-            InputManager.Instance.InputActions.Player.Move.canceled -= OnMoveInput;
-
-            InputManager.Instance.InputActions.Player.Jump.performed -= OnJumpInput;
-            InputManager.Instance.InputActions.Player.Jump.canceled -= OnJumpInput;
-
-            InputManager.Instance.InputActions.Player.Sprint.performed -= OnSprintInput;
-            InputManager.Instance.InputActions.Player.Sprint.canceled -= OnSprintInput;
-
-            InputManager.Instance.InputActions.Player.Crouch.performed -= OnCrouchInput;
-            InputManager.Instance.InputActions.Player.Crouch.canceled -= OnCrouchInput;
+            IsAiming = value;
         }
+
+        private void OnMoveInput(Vector2 value)
+        {
+            MoveInput = value;
+        }
+
+
+        private void OnCrouchInput(bool value)
+        {
+            CrouchPressed = value;
+        }
+
 
         private void OnDrawGizmos()
         {
@@ -149,31 +152,22 @@ namespace Player.Movement
                 headCheckTransform.position + Vector3.up *
                 (config.InitialCrouchCameraPosition - crouchPositionTransform.localPosition.y));
             //Gizmos.DrawRay(playerModel.transform.position, Vector3.down * (playerModel.localScale.y * 0.5f + 0.3f));
-            Gizmos.DrawRay(transform.position, slopeDir * 20f);
+            Gizmos.DrawRay(transform.position, _slopeDir * 20f);
         }
 
         #endregion
 
         #region ControlFunctions
 
-        private void OnSprintInput(InputAction.CallbackContext obj)
+        private void OnSprintInput(bool value)
         {
-            SprintPressed = obj.performed;
+            SprintPressed = value;
         }
 
-        private void OnCrouchInput(InputAction.CallbackContext obj)
-        {
-            CrouchPressed = obj.performed;
-        }
 
-        private void OnJumpInput(InputAction.CallbackContext obj)
+        private void OnJumpInput(bool value)
         {
-            JumpPressed = obj.performed;
-        }
-
-        private void OnMoveInput(InputAction.CallbackContext context)
-        {
-            MoveInput = context.ReadValue<Vector2>();
+            JumpPressed = value;
         }
 
         #endregion
@@ -181,7 +175,7 @@ namespace Player.Movement
 
         #region MovementFunctions
 
-        private Vector3 slopeDir;
+        private Vector3 _slopeDir;
 
         public void Move(float speed)
         {
@@ -192,7 +186,7 @@ namespace Player.Movement
             if (OnSlope())
             {
                 var slopeMoveDirection = Vector3.ProjectOnPlane(moveDirection, _slopeHit.normal).normalized;
-                slopeDir = slopeMoveDirection;
+                _slopeDir = slopeMoveDirection;
 
                 ApplyMovement(slopeMoveDirection * (speed * config.SlopeMultiplier));
 
@@ -219,19 +213,19 @@ namespace Player.Movement
 
         public void ApplyMovement(Vector3 movement)
         {
-            _rigidbody.AddForce(movement, ForceMode.Force);
+            Rigidbody.AddForce(movement, ForceMode.Force);
         }
 
         public void ApplyDrag()
         {
-            _rigidbody.linearDamping = _groundChecker.IsGrounded ? config.GroundDrag : config.AirDrag;
+            Rigidbody.linearDamping = _groundChecker.IsGrounded ? config.GroundDrag : config.AirDrag;
         }
 
 
         public void Jump()
         {
-            _rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
-            _rigidbody.AddForce(_rigidbody.linearVelocity / 3 * (config.JumpForce * config.JumpMultiplier),
+            Rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
+            Rigidbody.AddForce(Rigidbody.linearVelocity / 3 * (config.JumpForce * config.JumpMultiplier),
                 ForceMode.Impulse);
         }
 

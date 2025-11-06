@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Attributes;
 using EventBus;
-using General;
 using Items.Guns;
-using Npcs.Shared;
 using Player;
+using Reflex.Attributes;
 using UnityEngine;
+using ILogger = General.Logging.ILogger;
+
 
 namespace Items
 {
@@ -16,11 +17,11 @@ namespace Items
     {
         [SerializeField] public List<Gun> gunObjects = new();
 
-        [SerializeField] [Required] private ArmAnimationController armAnimationController;
-
         [SerializeField] [Required] private RigHandler rigHandler;
 
         private List<Item> _inventory = new();
+
+        [Inject] public ILogger Logger;
 
         public Item EquippedItem { get; private set; }
 
@@ -52,13 +53,13 @@ namespace Items
         private void LogPrefabs()
         {
             Debug.Log("Current Prefabs:");
-            foreach (var prefab in gunObjects) VandullLogger.Log(prefab.name);
+            foreach (var prefab in gunObjects) Logger.Log(prefab.name);
         }
 
         private void LogInventory()
         {
             Debug.Log("Current Inventory:");
-            foreach (var item in _inventory) VandullLogger.Log(item.name + (item == EquippedItem ? " (Equipped)" : ""));
+            foreach (var item in _inventory) Logger.Log(item.name + (item == EquippedItem ? " (Equipped)" : ""));
         }
 
         public void SetUpItems()
@@ -77,6 +78,9 @@ namespace Items
 
         public void SwitchItem(int direction)
         {
+            // Something is preventing item swap (i.e reloading, mid grenade throw, etc)
+            if (!EquippedItem.CanBeSwappedFrom) return;
+
             if (_inventory.Count == 0) return;
             var currentIndex = _inventory.IndexOf(EquippedItem);
             var nextIndex = Math.Abs((currentIndex + direction) % gunObjects.Count);
@@ -92,11 +96,11 @@ namespace Items
             EquippedItem = item;
             EquippedItem.Equip();
 
-            rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
-            rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
-//            animator.SetLayerWeight((int)EquippedItem.gripType, 1);
-
-            armAnimationController.PlayAnimation(EquippedItem.gripType);
+            rigHandler.LeftHandTarget = EquippedItem.leftHandTarget;
+            rigHandler.LeftHandHint = EquippedItem.leftHandHint;
+            rigHandler.RightHandTarget = EquippedItem.rightHandTarget;
+            rigHandler.RightHandHint = EquippedItem.rightHandHint;
+            rigHandler.RebuildRigs();
         }
     }
 }

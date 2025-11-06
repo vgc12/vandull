@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: PlayerMovementConfig
   m_EditorClassIdentifier: Assembly-CSharp::Player.Movement.PlayerMovementConfig
   crouchWalkSpeed: 20
-  walkSpeed: 30
-  sprintSpeed: 50
+  walkSpeed: 45
+  sprintSpeed: 60
   movementMultiplier: 52.2
   slopeMultiplier: 68.4
   jumpForce: 9

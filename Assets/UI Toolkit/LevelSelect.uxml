@@ -1,6 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/UI%20Toolkit/InGame.uss?fileID=7433441132597879392&amp;guid=26adf465b5f0c73468afb0dca5b7fd2a&amp;type=3#InGame" />
-    <ui:VisualElement name="LevelSelectRoot" style="flex-grow: 1; flex-direction: row; display: flex;">
-        <ui:ProgressBar value="100" name="HealthBar" class="health-bar" style="width: 23%; flex-direction: column-reverse; -unity-background-image-tint-color: rgb(255, 255, 255);" />
+    <Style src="project://database/Assets/UI%20Toolkit/level-select.uss?fileID=7433441132597879392&amp;guid=cd78e5c8cd94df847b8df5513f15f6a3&amp;type=3#level-select" />
+    <Style src="project://database/Assets/UI%20Toolkit/vandull-common.uss?fileID=7433441132597879392&amp;guid=a39a13c2966cff748b648d6b872b5878&amp;type=3#vandull-common" />
+    <ui:VisualElement name="level-select-root" style="flex-grow: 1; flex-direction: row; display: flex; background-color: rgb(0, 0, 0);">
+        <ui:ScrollView name="level-button-container" style="flex-grow: 0; flex-shrink: 0; align-items: flex-start; justify-content: center; align-self: flex-start; width: 40%;" />
     </ui:VisualElement>
 </ui:UXML>

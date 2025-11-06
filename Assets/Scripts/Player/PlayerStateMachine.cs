@@ -1,13 +1,14 @@
 ﻿using EventBus;
 using General;
-using Levels;
 using Levels.Strategies;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
+using Reflex.Attributes;
 using Shared;
 using StateMachine;
 using UnityEngine;
+using ILogger = General.Logging.ILogger;
 
 namespace Player
 {
@@ -18,6 +19,8 @@ namespace Player
 
         [SerializeField] private float health;
 
+        [Inject] private readonly ILogger _logger;
+
 
         private GroundChecker _groundChecker;
         private StateMachine.StateMachine _stateMachine;
@@ -26,6 +29,7 @@ namespace Player
         public PlayerMovement PlayerMovement { get; private set; }
 
         public PlayerLooking PlayerLooking { get; private set; }
+
 
         private bool IsGroundedAndNotCrouching =>
             _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed;
@@ -66,21 +70,26 @@ namespace Player
         {
             if (Invulnerable || IsDead) return;
 
-            VandullLogger.Log($"Player took {amount} damage");
+            _logger.Log($"Player took {amount} damage");
             health -= amount;
             EventBus<PlayerHitEvent>.Raise(new PlayerHitEvent(health));
             if (Health <= 0) Die();
         }
 
         public bool Invulnerable => invulnerable;
-        public float Health => health;
+
+        public float Health
+        {
+            get => health;
+            set => health = value;
+        }
 
         public bool IsDead { get; private set; }
 
         public void Die()
         {
             IsDead = true;
-            EventBus<LevelEvent>.Raise(new LevelEvent(LevelEventType.LevelLost));
+            EventBus<PlayerKilledEvent>.Raise(new PlayerKilledEvent(gameObject, transform.position, ""));
         }
 
 

@@ -1,5 +1,4 @@
 using EventBus;
-using Levels;
 using Levels.Strategies;
 using Player;
 using UnityEngine;
@@ -11,7 +10,8 @@ namespace Environment
         private void OnTriggerExit(Collider other)
         {
             if (other.GetComponentInParent<PlayerStateMachine>())
-                EventBus<LevelEvent>.Raise(new LevelEvent(LevelEventType.LevelLost, "Fell Into Oblivion"));
+                EventBus<PlayerKilledEvent>.Raise(new PlayerKilledEvent(other.gameObject, other.transform.position,
+                    "Fell Into The Void"));
         }
     }
 }

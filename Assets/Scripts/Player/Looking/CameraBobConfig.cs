@@ -8,5 +8,8 @@ namespace Player.Looking
         public CameraBobSetting walkConfig;
         public CameraBobSetting sprintConfig;
         public CameraBobSetting crouchWalkConfig;
+        public CameraBobSetting aimWalkConfig;
+        public CameraBobSetting aimCrouchWalkConfig;
+        public CameraBobSetting sprintAimConfig;
     }
 }

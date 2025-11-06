@@ -13,10 +13,8 @@ MonoBehaviour:
   m_Name: Level 1 Config
   m_EditorClassIdentifier: Assembly-CSharp::Levels.LevelConfig
   levelName: Level 1
-  missionStrategy:
-    strategyTypeName: 0
   enemyCount: 4
-  hostageCount: 2
-  bombCount: 3
-  levelDescription: 
-  difficultyLevel: 1
+  hostageCount: 0
+  bombCount: 0
+  levelDescription: buh
+  difficultyLevel: 0

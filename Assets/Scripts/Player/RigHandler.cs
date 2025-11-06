@@ -11,6 +11,45 @@ namespace Player
 
         public RigBuilder rigBuilder;
 
+        public Transform LeftHandTarget;
+        public Transform LeftHandHint;
+        public Transform RightHandTarget;
+        public Transform RightHandHint;
+        [SerializeField] private bool _leftHandFollowItemTarget = true;
+        [SerializeField] private bool _rightHandFollowItemTarget = true;
+
+
+        public bool LeftHandFollowItemTarget
+        {
+            get => _leftHandFollowItemTarget;
+            set
+            {
+                RebuildRigs();
+                _leftHandFollowItemTarget = value;
+            }
+        }
+
+        public bool RightHandFollowItemTarget
+        {
+            get => _rightHandFollowItemTarget;
+            set
+            {
+                RebuildRigs();
+                _rightHandFollowItemTarget = value;
+            }
+        }
+
+
+        private void Update()
+        {
+            if (LeftHandFollowItemTarget && leftHandConstraint && LeftHandTarget && LeftHandHint)
+                ConstraintFollowTransform(leftHandConstraint, LeftHandTarget, LeftHandHint);
+
+
+            if (RightHandFollowItemTarget && rightHandConstraint && RightHandTarget && RightHandHint)
+                ConstraintFollowTransform(rightHandConstraint, RightHandTarget, RightHandHint);
+        }
+
 
         public void SetLeftHandData(Transform leftHandTarget, Transform leftHandHint)
         {
@@ -20,6 +59,15 @@ namespace Player
         public void SetRightHandData(Transform rightHandTarget, Transform rightHandHint)
         {
             ApplyConstraint(rightHandConstraint, rightHandTarget, rightHandHint);
+        }
+
+
+        public void ConstraintFollowTransform(TwoBoneIKConstraint constraint, Transform target, Transform hint)
+        {
+            constraint.data.target.position = target.position;
+            constraint.data.target.rotation = target.rotation;
+            constraint.data.hint.position = hint.position;
+            constraint.data.hint.rotation = hint.rotation;
         }
 
 
@@ -35,7 +83,7 @@ namespace Player
             RebuildRigs();
         }
 
-        private void RebuildRigs()
+        public void RebuildRigs()
         {
             rigBuilder.Build();
         }

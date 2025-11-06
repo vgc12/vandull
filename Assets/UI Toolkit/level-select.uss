@@ -1,0 +1,6 @@
+:root {
+}
+
+.level-select-button {
+    width: 80%;
+}

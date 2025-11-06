@@ -11,46 +11,27 @@ namespace Items.Guns.Firing
         private readonly float _burstDelay;
         private Coroutine _burstFireCoroutine;
 
-        public BurstFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
-            Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour, muzzleTransform, onShotFiredSubscribers)
+        public BurstFireMode(Gun gun, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(gun, onShotFiredSubscribers)
         {
-            _burstCount = Config.firingSettings.burstCount;
-            _burstDelay = Config.firingSettings.burstDelay;
+            _burstCount = _gun.firingSettings.burstCount;
+            _burstDelay = _gun.firingSettings.burstDelay;
         }
 
-
-        public override void ExecuteFireCommand(FireCommand command)
-        {
-            switch (command)
-            {
-                case FireCommand.SingleShot:
-                    StartBurstFire();
-                    break;
-                case FireCommand.StartAutomaticFire:
-                    break;
-                case FireCommand.StopAutomaticFire:
-                    StopFire();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(command), command, null);
-            }
-        }
 
         public override void Fire()
         {
+            StartBurstFire();
         }
 
 
         public override void StopFire()
         {
-            StopBurstFire();
         }
 
         private void StartBurstFire()
         {
             if (_burstFireCoroutine != null) return;
-            if (!CanFire) return;
 
             _burstFireCoroutine = Behaviour.StartCoroutine(FireBurst());
         }
@@ -64,14 +45,15 @@ namespace Items.Guns.Firing
 
         private IEnumerator FireBurst()
         {
-            for (var i = 0; i < _burstCount && !IsOutOfAmmo; i++)
+            for (var i = 0; i < _burstCount; i++)
             {
-                if (CanFire) PerformShot();
+                PerformShot();
+
 
                 if (i < _burstCount - 1) yield return new WaitForSeconds(_burstDelay);
             }
 
-            yield return new WaitForSeconds(Config.firingSettings.fireRate - _burstDelay);
+            yield return new WaitForSeconds(_gun.firingSettings.fireRate - _burstDelay);
             _burstFireCoroutine = null;
         }
     }

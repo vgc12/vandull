@@ -9,6 +9,7 @@ namespace StateMachine
 
         private readonly Dictionary<Type, StateNode> _nodes = new();
         private StateNode _currentState;
+        public IState CurrentState => _currentState.State;
 
         public void Update()
         {
@@ -27,6 +28,18 @@ namespace StateMachine
             nextState?.Enter();
             _currentState = _nodes[to.GetType()];
         }
+
+        public void ChangeState(Type to)
+        {
+            if (_currentState != null && _currentState.State.GetType() == to)
+                return;
+            var previousState = _currentState?.State;
+            var nextState = _nodes[to].State;
+            previousState?.Exit();
+            nextState?.Enter();
+            _currentState = _nodes[to];
+        }
+
 
         private ITransition GetTransition()
         {
@@ -49,14 +62,19 @@ namespace StateMachine
         public void SetState(IState state)
         {
             _currentState = _nodes[state.GetType()];
-         
+        }
+
+        public void SetStateAndEnter(IState state)
+        {
+            _currentState = _nodes[state.GetType()];
+            _currentState.State.Enter();
         }
 
         public void AddState(IState state)
         {
             GetOrAddNode(state);
         }
-        
+
         public void AddTransition(IState from, IState to, IPredicate condition)
         {
             GetOrAddNode(from).AddTransition(GetOrAddNode(to).State, condition);

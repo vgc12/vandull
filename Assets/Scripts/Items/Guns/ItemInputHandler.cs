@@ -1,14 +1,15 @@
 ﻿using EventBus;
-using Player;
+using Levels;
+using Player.Input;
+using Reflex.Attributes;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 namespace Items.Guns
 {
     public class ItemInputHandler : MonoBehaviour
     {
-        private bool _aimToggled;
+        [Inject] private readonly IPlayerInput _input;
+
         private Gun _currentGun;
         private Item _currentItem;
 
@@ -23,91 +24,82 @@ namespace Items.Guns
 
         public void Start()
         {
-            InputManager.Instance.InputActions.Player.Aim.started += OnAim;
-            InputManager.Instance.InputActions.Player.Aim.canceled += OnAim;
-            InputManager.Instance.InputActions.Player.Reload.started += OnReload;
-            InputManager.Instance.InputActions.Player.Reload.canceled += OnReload;
+            _input.Aim += OnAim;
 
-            InputManager.Instance.InputActions.Player.Attack.started += Use;
-            InputManager.Instance.InputActions.Player.Attack.performed += Use;
-            InputManager.Instance.InputActions.Player.Attack.canceled += Use;
+            _input.Reload += OnReload;
 
-            InputManager.Instance.InputActions.Player.SwitchFireMode.started += OnFireModeSwitched;
-            InputManager.Instance.InputActions.Player.SwitchFireMode.canceled += OnFireModeSwitched;
+            _input.QuickReload += OnQuickReload;
 
-            InputManager.Instance.InputActions.Player.Restart.performed += OnRestart;
+
+            _input.Attack += Use;
+
+            _input.SwitchFireMode += OnFireModeSwitched;
+
+            _input.Restart += OnRestart;
         }
 
         private void OnDestroy()
         {
-            InputManager.Instance.InputActions.Player.Aim.started -= OnAim;
-            InputManager.Instance.InputActions.Player.Aim.canceled -= OnAim;
-            InputManager.Instance.InputActions.Player.Reload.started -= OnReload;
-            InputManager.Instance.InputActions.Player.Reload.canceled -= OnReload;
-            InputManager.Instance.InputActions.Player.Attack.started -= Use;
-            InputManager.Instance.InputActions.Player.Attack.performed -= Use;
-            InputManager.Instance.InputActions.Player.Attack.canceled -= Use;
-            InputManager.Instance.InputActions.Player.SwitchFireMode.started -= OnFireModeSwitched;
-            InputManager.Instance.InputActions.Player.SwitchFireMode.canceled -= OnFireModeSwitched;
-            InputManager.Instance.InputActions.Player.Restart.performed -= OnRestart;
-
             EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedEventBinding);
+            _input.Aim -= OnAim;
+            _input.Reload -= OnReload;
+            _input.Attack -= Use;
+            _input.SwitchFireMode -= OnFireModeSwitched;
+            _input.Restart -= OnRestart;
         }
 
-        public void OnRestart(InputAction.CallbackContext obj)
+
+        private void OnRestart()
         {
-            if (obj.performed)
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            LevelManager.Instance.ReloadLevel();
         }
 
-        private void OnFireModeSwitched(InputAction.CallbackContext obj)
+        private void Use((bool started, bool performed, bool canceled) context)
+        {
+            if (context.performed) _currentItem?.Use();
+            if (context.canceled) _currentItem.StopUse();
+        }
+
+        public void OnQuickReload()
+        {
+            if (_currentItem == null) return;
+
+            _currentGun.StartReload(true);
+        }
+
+        public void OnReload()
+        {
+            if (_currentItem == null) return;
+
+            _currentGun.StartReload(false);
+        }
+
+
+        private void OnFireModeSwitched()
         {
             if (!_currentGun) return;
-            if (obj.started) _currentGun.CycleFireMode();
-        }
-
-
-        private void Use(InputAction.CallbackContext obj)
-        {
-            if (_currentItem is not Gun gun) return;
-            if (obj.started)
-                gun.ExecuteSingleShot();
-            else if (obj.performed)
-                gun.StartAutomaticFire();
-            else if (obj.canceled) gun.StopAutomaticFire();
+            _currentGun.CycleFireMode();
         }
 
         private void OnItemSwitched(ItemSwitchedEvent obj)
         {
+            if (!obj.NewItem || obj.NewItem.Owner != OwnerStatus.Player) return;
             _currentItem = obj.NewItem;
             // Important that this gets toggled off, when item is switched
-            _aimToggled = false;
+
             if (obj.NewItem is Gun newGun)
-            {
-                if (_currentGun != null) _currentGun.StopAiming();
                 _currentGun = newGun;
-            }
             else
-            {
                 _currentGun = null;
-            }
         }
 
-        public void OnAim(InputAction.CallbackContext context)
+        public void OnAim(bool value)
         {
             if (_currentGun == null) return;
-            if (context.started) _aimToggled = !_aimToggled;
-
-            if (_aimToggled)
+            if (value)
                 _currentGun.StartAiming();
-            else if (!_aimToggled) _currentGun.StopAiming();
-        }
-
-        public void OnReload(InputAction.CallbackContext context)
-        {
-            if (_currentItem == null) return;
-            if (context.started)
-                _currentGun.StartReload();
+            else
+                _currentGun.StopAiming();
         }
     }
 }

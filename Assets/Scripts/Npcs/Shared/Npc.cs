@@ -32,7 +32,12 @@ namespace Npcs.Shared
         #region Properties
 
         public bool Invulnerable => invulnerable;
-        public float Health => health;
+
+        public float Health
+        {
+            get => health;
+            set => health = value;
+        }
 
         public bool IsDead => health <= 0;
 
@@ -100,6 +105,7 @@ namespace Npcs.Shared
         {
             if (invulnerable || IsDead) return;
             health -= amount;
+            health = Mathf.Clamp(health, 0, float.MaxValue);
             if (IsDead) Die();
         }
 

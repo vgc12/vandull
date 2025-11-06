@@ -2,8 +2,8 @@
 {
     public enum MissionType
     {
-        KillAllEnemiesStrategy,
-        RescueHostagesStrategy,
-        DefuseBombsStrategy
+        Elimination,
+        HostageRescue,
+        BombDefusal
     }
 }

@@ -1,74 +1,38 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Items.Guns.Firing
 {
     public class AutomaticFireMode : BaseFireMode
     {
-        private Coroutine _autoFireCoroutine;
         private bool _fireButtonHeld;
+        private bool _shouldFire;
 
-        public AutomaticFireMode(GunConfig config, Transform gunTransform, MonoBehaviour behaviour,
-            Transform muzzleTransform, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
-            : base(config, gunTransform, behaviour, muzzleTransform, onShotFiredSubscribers)
+        public AutomaticFireMode(Gun gun, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
+            : base(gun, onShotFiredSubscribers)
         {
-        }
-
-
-        public override void ExecuteFireCommand(FireCommand command)
-        {
-            switch (command)
-            {
-                case FireCommand.SingleShot:
-                    break;
-                case FireCommand.StartAutomaticFire:
-                    StartAutomaticFire();
-                    break;
-                case FireCommand.StopAutomaticFire:
-                    StopFire();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(command), command, null);
-            }
         }
 
         public override void Fire()
         {
+            StartAutomaticFire();
         }
 
 
         public override void StopFire()
         {
-            if (_autoFireCoroutine == null) return;
-            Behaviour.StopCoroutine(_autoFireCoroutine);
-            _autoFireCoroutine = null;
+            _shouldFire = false;
         }
 
         public override void Update()
         {
+            // Should execute this even when out of ammo to make the dry fire sound
+            if (_shouldFire) PerformShot();
         }
 
         private void StartAutomaticFire()
         {
-            if (_autoFireCoroutine != null) return;
-            if (!CanFire) return;
-
-            _autoFireCoroutine = Behaviour.StartCoroutine(AutomaticFireRoutine());
-        }
-
-
-        private IEnumerator AutomaticFireRoutine()
-        {
-            while (!IsOutOfAmmo)
-            {
-                if (CanFire) PerformShot();
-
-                yield return new WaitForSeconds(Config.firingSettings.fireRate);
-            }
-
-            _autoFireCoroutine = null;
+            _shouldFire = true;
         }
     }
 }

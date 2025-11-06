@@ -17,3 +17,4 @@ MonoBehaviour:
   reloadTime: 2
   magazineRotation: {x: 0, y: 90, z: 0}
   magazinePrefab: {fileID: 8083715352898168017, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
+  reloadAnimation: {fileID: 11400000, guid: 5a826fe3c4e37d54ea39aaa2d2fd2b3a, type: 2}
