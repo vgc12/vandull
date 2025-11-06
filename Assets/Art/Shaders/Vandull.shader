@@ -285,6 +285,7 @@ Shader "Custom/VandullWithMandelbrot"
 
             float3 kaliSetPattern(float2 st)
             {
+                return float3(0, 0, 0);
                 float2 uv = st * 2.5;
                 //uv.x = _ScreenParams.x / _ScreenParams.y;
                 float2 c = float2(-abs(sin(_Time.y * 0.4)) * .2, -abs(cos(_Time.y * 0.25)) * .2);

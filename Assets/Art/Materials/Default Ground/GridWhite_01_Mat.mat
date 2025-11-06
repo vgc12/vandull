@@ -21,13 +21,11 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: GridWhite_01_Mat
-  m_Shader: {fileID: 4800000, guid: f5838c87c1a04c24e95945fdeeb915fb, type: 3}
+  m_Shader: {fileID: 4800000, guid: 4bd054383b451be4f86c5f89c08a7749, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - ENABLE_MANDELBROT
   - OUTLINE_METHOD_NORMAL
-  - _MANDELBROTMODE_WORLDSPACE
   m_InvalidKeywords:
   - GLITCH_EFFECT
   - LSDEFFECT
@@ -37,6 +35,7 @@ Material:
   - _COLORZ_ON
   - _EMISSION
   - _ENVIRONMENTREFLECTIONS_OFF
+  - _MANDELBROTMODE_WORLDSPACE
   - _NORMALMAP
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
@@ -49,6 +48,14 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AOMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AlbedoMap:
+        m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
         m_Scale: {x: 1, y: 1}
@@ -97,8 +104,16 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MetallicMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Normal:
         m_Texture: {fileID: 2800000, guid: f55f5f23ed651b144bc15f7a58bae2bd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -139,6 +154,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AO: 0.512
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
@@ -150,6 +166,7 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 0.28
+    - _CellBands: 26.2
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _ColorX: 1
@@ -173,7 +190,7 @@ Material:
     - _EdgeShadowAttenuation: 0.055
     - _EdgeSpecular: 0.238
     - _EnableHolographic: 0
-    - _EnableMandelbrot: 1
+    - _EnableMandelbrot: 0
     - _EntityId: 5
     - _EnvironmentReflections: 0
     - _Fresnel: 0.5
@@ -209,6 +226,7 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _NormalReplacementValue: 0.999993
+    - _NormalStrength: 0.9
     - _NormalThreshold: 1
     - _OcclusionStrength: 0
     - _OublineWidth: 0.3
@@ -225,7 +243,7 @@ Material:
     - _RimBands: 4
     - _RimStrength: 0.419
     - _RimThreshold: 0.1
-    - _Roughness: 0.618
+    - _Roughness: 0.285
     - _ShadowAttenuationBands: 10
     - _ShadowSoftness: 0.05
     - _ShadowThreshold: 0.163
@@ -248,6 +266,7 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
+    - _Albedo: {r: 1, g: 1, b: 1, a: 1}
     - _AmbientColor: {r: 0.381132, g: 0.14598072, b: 0.14598072, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Base_Color: {r: 1, g: 1, b: 1, a: 1}
