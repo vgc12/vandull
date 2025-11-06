@@ -13,6 +13,11 @@ Shader "Custom/Vandull"
         _RoughnessMap("Roughness Map", 2D) = "white" {}
         _Roughness("Roughness", Range(0, 1)) = 0.5
 
+        [Header(Alpha)]
+        _AlphaMap("Alpha Map", 2D) = "white" {}
+        _AlphaCutoff("Alpha Cutoff", Range(0, 1)) = 0.5
+        [Toggle] _UseAlphaMap("Use Alpha Map", Float) = 0
+
         [Header(Rim Lighting)]
         _RimStrength("Rim Strength", Range(0, 1)) = 0.5
         _RimAmount("Rim Amount", Range(0, 1)) = 0.7
@@ -57,14 +62,9 @@ Shader "Custom/Vandull"
     {
         Tags
         {
-            "RenderType" = "Opaque"
+            "RenderType" = "TransparentCutout"
             "RenderPipeline" = "UniversalPipeline"
-            "Queue" = "Geometry"
-        }
-
-        Tags
-        {
-            "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline"
+            "Queue" = "AlphaTest"
         }
 
         // PASS 1: Outline Pass (rendered first, behind the object)
@@ -92,21 +92,28 @@ Shader "Custom/Vandull"
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
+                float2 uv : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
-
+                float2 uv : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
+
+            TEXTURE2D(_AlphaMap);
+            SAMPLER(sampler_AlphaMap);
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _OutlineColor;
                 float _OutlineWidth;
                 float _OutlineMethod;
+                float4 _AlphaMap_ST;
+                float _AlphaCutoff;
+                bool _UseAlphaMap;
             CBUFFER_END
 
             Varyings OutlineVert(Attributes input)
@@ -116,23 +123,19 @@ Shader "Custom/Vandull"
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-
                 #ifdef OUTLINE_METHOD_NORMAL
                     // Expand along normals
                     float3 normalOS = normalize(input.normalOS);
                     input.positionOS.xyz += normalOS * _OutlineWidth;
                 #else
-
-                float3 normalOS = normalize(input.normalOS);
-                input.positionOS.xyz += normalOS * _OutlineWidth;
-
-                input.positionOS.xyz *= (1.0 + _OutlineWidth);
+                    float3 normalOS = normalize(input.normalOS);
+                    input.positionOS.xyz += normalOS * _OutlineWidth;
+                    input.positionOS.xyz *= (1.0 + _OutlineWidth);
                 #endif
-
 
                 VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
                 output.positionCS = vertexInput.positionCS;
-
+                output.uv = TRANSFORM_TEX(input.uv, _AlphaMap);
 
                 return output;
             }
@@ -142,12 +145,19 @@ Shader "Custom/Vandull"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
-                half4 color = _OutlineColor;
+                // Apply alpha clipping to outline as well
+                if (_UseAlphaMap)
+                {
+                    float alpha = SAMPLE_TEXTURE2D(_AlphaMap, sampler_AlphaMap, input.uv).r;
+                    clip(alpha - _AlphaCutoff);
+                }
 
+                half4 color = _OutlineColor;
                 return color;
             }
             ENDHLSL
         }
+        
         Pass
         {
             Name "ForwardLit"
@@ -159,6 +169,7 @@ Shader "Custom/Vandull"
             Cull Off
             ZWrite On
             ZTest LEqual
+            
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -181,7 +192,8 @@ Shader "Custom/Vandull"
             SAMPLER(sampler_BumpMap);
             TEXTURE2D(_RoughnessMap);
             SAMPLER(sampler_RoughnessMap);
-
+            TEXTURE2D(_AlphaMap);
+            SAMPLER(sampler_AlphaMap);
 
             CBUFFER_START(UnityPerMaterial)
                 bool _UseNormalMapInLightCalculations;
@@ -199,6 +211,11 @@ Shader "Custom/Vandull"
                 // Surface
                 float _Roughness;
                 float4 _RoughnessMap_ST;
+
+                // Alpha
+                float4 _AlphaMap_ST;
+                float _AlphaCutoff;
+                bool _UseAlphaMap;
 
                 // Rim Lighting
                 float _RimStrength;
@@ -231,8 +248,6 @@ Shader "Custom/Vandull"
                 float _DitherStrength;
 
                 //Glitch Effect
-
-
             CBUFFER_END
 
             struct Attributes
@@ -276,7 +291,6 @@ Shader "Custom/Vandull"
 
                 EdgeConstants ec;
             };
-
 
             float celBanding(float value, float bands)
             {
@@ -346,6 +360,7 @@ Shader "Custom/Vandull"
 
                 Light light = GetMainLight(shadowCoord);
                 Color = CalculateCelShading(light, s);
+                
                 #ifdef _ADDITIONAL_LIGHTS
                 int pixelLightCount = GetAdditionalLightsCount();
                 for (int i = 0; i < pixelLightCount; i++)
@@ -397,13 +412,13 @@ Shader "Custom/Vandull"
 
                 float3 u = f * f * (3.0 - 2.0 * f);
                 float4 a = float4(dot(ghash(i), f),
-                                    dot(ghash(i + vn1), f - vn1),
-                                    dot(ghash(i + vn2), f - vn2),
-                                    dot(ghash(i + vn3), f - vn3));
+                                   dot(ghash(i + vn1), f - vn1),
+                                   dot(ghash(i + vn2), f - vn2),
+                                   dot(ghash(i + vn3), f - vn3));
                 float4 b = float4(dot(ghash(i + vn4), f - vn4),
-                              dot(ghash(i + vn5), f - vn5),
-                              dot(ghash(i + vn6), f - vn6),
-                              dot(ghash(i + vn7), f - vn7));
+                                dot(ghash(i + vn5), f - vn5),
+                                dot(ghash(i + vn6), f - vn6),
+                                dot(ghash(i + vn7), f - vn7));
 
                 float4 c = lerp(a, b, u.x);
                 float2 rg = lerp(c.xy, c.zw, u.y);
@@ -433,17 +448,18 @@ Shader "Custom/Vandull"
                 return abs(normal > _NormalThreshold);
             }
 
-
             half4 frag(Varyings input) : SV_Target
             {
+                // Sample alpha map and perform alpha clipping
+                if (_UseAlphaMap)
+                {
+                    float alpha = SAMPLE_TEXTURE2D(_AlphaMap, sampler_AlphaMap, input.uv).r;
+                    clip(alpha - _AlphaCutoff);
+                }
+
                 float4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
-
-
                 float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness;
-
-
                 half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, input.uv) * _BumpScale);
-
 
                 float3 normalWS = input.normalWS;
                 if (_UseNormalMapInLightCalculations)
@@ -452,38 +468,31 @@ Shader "Custom/Vandull"
                         normalTS, half3x3(input.tangentWS, input.bitangentWS, input.normalWS));
                 }
 
-
                 float3 viewDirWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
-
                 float3 ambient = (SampleSH(normalWS) * _AmbientMultiplier) + _AmbientColor;
 
-
                 float3 color;
-
                 LightingCelShaded(roughness, _RimStrength, _RimAmount, _RimThreshold, input.positionWS,
-                                          normalWS,
-                                          viewDirWS, _EdgeDiffuse, _EdgeSpecular,
-                                          _EdgeDistanceAttenuation,
-                                          _EdgeShadowAttenuation, _EdgeRim, color);
+                                      normalWS,
+                                      viewDirWS, _EdgeDiffuse, _EdgeSpecular,
+                                      _EdgeDistanceAttenuation,
+                                      _EdgeShadowAttenuation, _EdgeRim, color);
                 color += ambient;
+                
                 if ((_ColorX && cn(normalTS.x)) || (_ColorY && cn(normalTS.y)) || (_ColorZ && cn(normalTS.z)))
                 {
                     return _NormalEffectsColor;
                 }
 
-
-                // color.r += sin(_Time) * .2 + sin(input.positionWS.z * .5 - _Time * 6);
                 float4 finalColor = float4(color, 1) * texColor;
+                
                 #ifdef LSDEFFECT
-                    finalColor *= abs(sin(_Time * Hash(3214))); 
+                    finalColor *= abs(sin(_Time.y * 3.214)); 
                 #endif
-
 
                 return finalColor;
             }
             ENDHLSL
         }
-
-
     }
 }

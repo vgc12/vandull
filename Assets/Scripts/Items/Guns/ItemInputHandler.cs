@@ -56,7 +56,8 @@ namespace Items.Guns
 
         private void Use((bool started, bool performed, bool canceled) context)
         {
-            _currentItem?.Use();
+            if (context.performed) _currentItem?.Use();
+            if (context.canceled) _currentItem.StopUse();
         }
 
         public void OnQuickReload()

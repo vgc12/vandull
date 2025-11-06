@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using EventBus;
-using General;
 using General.Extensions;
 using Player;
 using UnityEngine;
@@ -21,17 +20,14 @@ namespace Items.Guns.Ammo
         private readonly List<Magazine> _magazines = new();
         private readonly Transform _magazineSpawnPosition;
 
-        private readonly StopwatchTimer _reloadTimer;
         private readonly RigHandler _rigHandler;
 
         private bool _bulletInChamber = true;
         private int _currentMagazineIndex;
 
-        private ItemAnimation _interruptedReloadAnimation;
-        private float _interruptedReloadTime;
 
         private Coroutine _reloadCoroutine;
-        private QueuedReloadType _reloadQueued;
+
 
         public AmmoSystem(Gun gun, RigHandler rigHandler)
         {
@@ -41,9 +37,6 @@ namespace Items.Guns.Ammo
             _magazineSpawnPosition = gun.magazinePosition;
 
 
-            /*_reloadTimer = new StopwatchTimer();
-            _reloadTimer.OnTimerStop += OnReloadTimerStop;*/
-
             _magazinePool = new ObjectPool<Magazine>(
                 CreateMagazine,
                 null,
@@ -51,10 +44,6 @@ namespace Items.Guns.Ammo
                 mag => Object.Destroy(mag.gameObject)
             );
 
-            /*
-            _itemSwitchedBinding = new EventBinding<ItemSwitchedEvent>(OnItemSwitched);
-           EventBus<ItemSwitchedEvent>.Register(_itemSwitchedBinding);
-           */
 
             InitializeMagazines();
         }
@@ -81,10 +70,9 @@ namespace Items.Guns.Ammo
         {
             if (!CanReload || _reloadCoroutine != null) return;
 
-            _reloadQueued = QueuedReloadType.Normal;
             IsReloading = true;
             var length =
-                _gun.ItemAnimationSystem.PlayAnimationAndGetLength(_gun.reloadAnimation, _interruptedReloadTime);
+                _gun.ItemAnimationSystem.PlayAnimationAndGetLength(_gun.reloadAnimation);
             _reloadCoroutine = _behaviour.StartCoroutine(ReloadRoutine(length));
         }
 
@@ -92,10 +80,8 @@ namespace Items.Guns.Ammo
         {
             if (!CanReload || _reloadCoroutine != null) return;
 
-            _reloadQueued = QueuedReloadType.Quick;
             IsReloading = true;
-            var length =
-                _gun.ItemAnimationSystem.PlayAnimationAndGetLength(_gun.quickReloadAnimation, _interruptedReloadTime);
+            var length = _gun.ItemAnimationSystem.PlayAnimationAndGetLength(_gun.quickReloadAnimation);
             _reloadCoroutine = _behaviour.StartCoroutine(ReloadRoutine(length));
         }
 
@@ -109,24 +95,6 @@ namespace Items.Guns.Ammo
                 OnOutOfAmmo?.Invoke();
         }
 
-        public void Update()
-        {
-            /*
-            _reloadTimer.Tick(Time.deltaTime);
-            if (_reloadQueued == QueuedReloadType.None || !_gun.IsEquipped || _reloadCoroutine != null) return;
-
-            switch (_reloadQueued)
-            {
-                case QueuedReloadType.Normal:
-                    StartReload();
-
-                    break;
-                case QueuedReloadType.Quick:
-                    StartQuickReload();
-                    break;
-            }
-            */
-        }
 
         public void DropMagazine()
         {
@@ -151,9 +119,9 @@ namespace Items.Guns.Ammo
             CurrentMagazine = null;
         }
 
-        private void OnReloadTimerStop()
+        public void Update()
         {
-            _interruptedReloadTime = _reloadTimer.GetTime();
+            // noop
         }
 
 
@@ -190,15 +158,15 @@ namespace Items.Guns.Ammo
         {
             // Disable rig syncing during reload
 
-            _reloadTimer.Start();
+
             _rigHandler.LeftHandFollowItemTarget = false;
 
-            var seconds = new WaitForSeconds(length - _interruptedReloadTime);
+            var seconds = new WaitForSeconds(length);
 
             // Wait for reload animation
             yield return seconds;
 
-            _reloadTimer.Stop();
+
             if (_gun.Owner == OwnerStatus.Enemy) EquipNewMagazine();
             IsReloading = false;
 
@@ -212,9 +180,7 @@ namespace Items.Guns.Ammo
 
             _rigHandler.LeftHandFollowItemTarget = true;
             _gun.ItemAnimationSystem.PlayAnimation(_gun.holdingItemAnimation);
-            _reloadQueued = QueuedReloadType.None;
-            _reloadCoroutine = null;
-            _interruptedReloadTime = 0;
+
             OnReloadComplete?.Invoke(new ReloadEvent(CurrentMagazine));
         }
 
@@ -224,8 +190,6 @@ namespace Items.Guns.Ammo
         {
             if (!IsReloading || _gun.Owner == OwnerStatus.Enemy) return;
 
-            _reloadTimer.Stop();
-            _reloadTimer.Reset();
             // Cancel current reload and mark for retry
             IsReloading = false;
 
@@ -277,13 +241,6 @@ namespace Items.Guns.Ammo
 
             var mag = _magazines[index];
             return $"Magazine {index + 1}: {mag.CurrentAmmo}/{_gun.ammoSettings.magazineSize}";
-        }
-
-        private enum QueuedReloadType
-        {
-            None,
-            Normal,
-            Quick
         }
     }
 }

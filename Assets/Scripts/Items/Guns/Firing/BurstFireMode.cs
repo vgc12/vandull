@@ -27,7 +27,6 @@ namespace Items.Guns.Firing
 
         public override void StopFire()
         {
-            StopBurstFire();
         }
 
         private void StartBurstFire()

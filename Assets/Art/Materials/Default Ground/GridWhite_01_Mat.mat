@@ -189,7 +189,7 @@ Material:
     - _RimBands: 30
     - _RimStrength: 0.963
     - _RimThreshold: 0.1
-    - _Roughness: 0.05
+    - _Roughness: 0
     - _ShadowAttenuationBands: 30
     - _ShadowSoftness: 0.05
     - _ShadowThreshold: 0.163

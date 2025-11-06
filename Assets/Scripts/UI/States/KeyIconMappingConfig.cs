@@ -86,7 +86,15 @@ namespace UI.States
 
             // Gamepad - Sticks
             new KeyIconMapping("<Gamepad>/leftStick", "Left_Stick"),
+            new KeyIconMapping("<Gamepad>/leftStick/up", "Left_Stick"),
+            new KeyIconMapping("<Gamepad>/leftStick/right", "Left_Stick"),
+            new KeyIconMapping("<Gamepad>/leftStick/left", "Left_Stick"),
+            new KeyIconMapping("<Gamepad>/leftStick/down", "Left_Stick"),
             new KeyIconMapping("<Gamepad>/rightStick", "Right_Stick"),
+            new KeyIconMapping("<Gamepad>/rightStick/up", "Right_Stick"),
+            new KeyIconMapping("<Gamepad>/rightStick/right", "Right_Stick"),
+            new KeyIconMapping("<Gamepad>/rightStick/left", "Right_Stick"),
+            new KeyIconMapping("<Gamepad>/rightStick/down", "Right_Stick"),
             new KeyIconMapping("<Gamepad>/leftStickPress", "Left_Stick_Click"),
             new KeyIconMapping("<Gamepad>/rightStickPress", "Right_Stick_Click"),
 

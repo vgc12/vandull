@@ -35,7 +35,10 @@ namespace UI.States
             Gamepad
         }
 
+        private const float ScrollCooldownTime = 0.05f;
+
         private readonly Dictionary<string, InputActionReference> _actionMap = new();
+        private readonly VisualElement[] _bottomButtons = new VisualElement[3];
 
         // Configuration for composite actions
         private readonly Dictionary<string, Dictionary<string, string>> _compositeConfig = new()
@@ -59,7 +62,7 @@ namespace UI.States
             }
         };
 
-        private List<VisualElement> _focusableElements = new();
+        private readonly List<VisualElement> _focusableElements = new();
 
         private readonly float _inputDelay = 0.1f;
 
@@ -68,9 +71,17 @@ namespace UI.States
         private SliderInt _ambientVolumeSlider;
 
         private Button _applyButton;
+        private VisualElement _audioContainer;
+        private Button _audioTabButton;
+        private int _bottomButtonFocusIndex;
         private Button _cancelRebindButton;
         private Button _closeButton;
+        private VisualElement _controllerBindsContainer;
+        private Button _controllerBindTabButton;
+        private VisualElement _controlsContainer;
         private ScrollView _controlsScrollView;
+
+        private Button _controlsTabButton;
         private string _currentActionName;
         private AudioSettingsChangedEvent _currentAudioSettings;
         private int _currentBindingIndex;
@@ -83,8 +94,10 @@ namespace UI.States
         // Current device type detection
         private string _currentDeviceFolder = "Xbox Series";
         private int _currentFocusIndex;
+
+        private VisualElement _currentlyFocusedElement;
         private SliderInt _dialogueVolumeSlider;
-        private Tab _gamepadTab;
+
 
         private InputManager _inputActions;
 
@@ -94,7 +107,9 @@ namespace UI.States
         private Toggle _invertYToggle;
 
         private bool _isScrollViewFocused;
-        private Tab _keyboardMouseTab;
+        private VisualElement _keyboardBindsContainer;
+
+        private Button _keyboardBindTabButton;
         private float _lastInputTime;
 
         //Audio Sliders
@@ -104,6 +119,8 @@ namespace UI.States
         // Rebinding state
         private InputActionRebindingExtensions.RebindingOperation _rebindOperation;
         private Button _resetButton;
+
+        private float _scrollCooldown;
         private Slider _sensitivitySlider;
         private SliderInt _sfxVolumeSlider;
         private Toggle _toggleAimToggle;
@@ -198,18 +215,50 @@ namespace UI.States
 
         private void CacheUIElements()
         {
+            _keyboardBindsContainer = RootPageElement.Q<VisualElement>("keyboard-binds-container");
+            _controllerBindsContainer = RootPageElement.Q<VisualElement>("controller-binds-container");
+            _keyboardBindTabButton = RootPageElement.Q<Button>("keyboard-tab-button");
+            _controllerBindTabButton = RootPageElement.Q<Button>("controller-tab-button");
+            _keyboardBindTabButton.clicked += () =>
+            {
+                _currentControlScheme = ControlScheme.KeyboardMouse;
+                _controllerBindsContainer.style.display = DisplayStyle.None;
+                _keyboardBindsContainer.style.display = DisplayStyle.Flex;
+            };
+            _controllerBindTabButton.clicked += () =>
+            {
+                _currentControlScheme = ControlScheme.Gamepad;
+                _keyboardBindsContainer.style.display = DisplayStyle.None;
+                _controllerBindsContainer.style.display = DisplayStyle.Flex;
+            };
+
+            _controlsTabButton = RootPageElement.Q<Button>("controls-tab-button");
+            _audioTabButton = RootPageElement.Q<Button>("audio-tab-button");
+            _controlsContainer = RootPageElement.Q<VisualElement>("controls-container");
+            _audioContainer = RootPageElement.Q<VisualElement>("audio-container");
+            _controlsTabButton.clicked += () =>
+            {
+                _audioContainer.style.display = DisplayStyle.None;
+                _controlsContainer.style.display = DisplayStyle.Flex;
+            };
+            _audioTabButton.clicked += () =>
+            {
+                _controlsContainer.style.display = DisplayStyle.None;
+                _audioContainer.style.display = DisplayStyle.Flex;
+            };
             // Cache overlay elements
             _inputOverlay = RootPageElement.Q<VisualElement>("input-overlay");
             _cancelRebindButton = RootPageElement.Q<Button>("cancel-rebind");
             _waitingText = _inputOverlay?.Q<Label>("waiting-label");
 
+
             // Cache bottom buttons
             _applyButton = RootPageElement.Q<Button>("apply-button");
             _resetButton = RootPageElement.Q<Button>("reset-button");
             _closeButton = RootPageElement.Q<Button>("close-button");
-            _sensitivitySlider = RootPageElement.Query<VisualElement>("sensitivity").Children<Slider>().First();
-            _invertYToggle = RootPageElement.Query<VisualElement>("invert-y").Children<Toggle>().First();
-            _invertXToggle = RootPageElement.Query<VisualElement>("invert-x").Children<Toggle>().First();
+            _sensitivitySlider = RootPageElement.Q<Slider>("sensitivity");
+            _invertYToggle = RootPageElement.Q<Toggle>("invert-y");
+            _invertXToggle = RootPageElement.Q<Toggle>("invert-x");
 
             _toggleCrouchToggle = RootPageElement.Query<VisualElement>("toggle-crouch").Children<Toggle>().First();
             _toggleSprintToggle = RootPageElement.Query<VisualElement>("toggle-sprint").Children<Toggle>().First();
@@ -226,9 +275,6 @@ namespace UI.States
             _ambientVolumeSlider =
                 RootPageElement.Query<VisualElement>("ambient").Children<SliderInt>("slider").First();
             _uiVolumeSlider = RootPageElement.Query<VisualElement>("ui").Children<SliderInt>("slider").First();
-
-            _keyboardMouseTab = RootPageElement.Q<Tab>("keyboard-binds-tab");
-            _gamepadTab = RootPageElement.Q<Tab>("controller-binds-tab");
 
 
             RetrieveSettings();
@@ -276,73 +322,59 @@ namespace UI.States
                 CanExit = true;
                 UIStateMachine.BackButtonClicked();
             };
+
             _controlsScrollView.RegisterCallback<FocusInEvent>(OnScrollViewFocusIn);
             foreach (var element in _controlsScrollView.Children())
                 element.RegisterCallback<FocusInEvent>(evt => { _controlsScrollView.ScrollTo(element); });
             _inputActions.InMenuCancel += OnCancel;
 
-            _keyboardMouseTab.selected += _ => _currentControlScheme = ControlScheme.KeyboardMouse;
-            _gamepadTab.selected += _ => _currentControlScheme = ControlScheme.Gamepad;
+
             _controlsScrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
             _inputActions.Navigate += OnNavigate;
         }
 
         private void OnNavigate(Vector2 arg0)
         {
-            if (!IsActive || _rebindOperation != null || Time.time - _lastInputTime < _inputDelay ||
-                arg0.magnitude == 0) return;
+            if (Time.time < _scrollCooldown) return;
+            _scrollCooldown = Time.time + ScrollCooldownTime;
 
-            _lastInputTime = Time.time;
-
-            if (arg0.y > 0)
-            {
-                _currentFocusIndex--;
-                if (_currentFocusIndex < 0) _currentFocusIndex = _focusableElements.Count - 1;
-            }
-            else if (arg0.y < 0)
-            {
-                _currentFocusIndex++;
-                if (_currentFocusIndex >= _focusableElements.Count) _currentFocusIndex = 0;
-            }
-
-            var element = _focusableElements[_currentFocusIndex];
-            element.Focus();
-
-            // Check if the ScrollView contains the element
-            if (_controlsScrollView.Contains(element)) _controlsScrollView.ScrollTo(element);
+            _controlsScrollView.scrollOffset += new Vector2(0, -arg0.y * 50f); // Adjust multiplier
         }
 
         private void SetUpFocusElements()
         {
-            // Use TrickleDown enum instead
-            RootPageElement.RegisterCallback<NavigationMoveEvent>(evt => { evt.PreventDefault(); },
-                TrickleDown.TrickleDown);
+            RootPageElement.Query<VisualElement>(className: ".unity-text-field").ForEach(e => { e.focusable = false; });
 
 
+            foreach (var visualElement in _sensitivitySlider.Children().Where(c => c.focusable))
+                visualElement.focusable = false;
             var allElements = RootPageElement.Query<VisualElement>().Where(e => e.focusable).ToList();
 
+            RootPageElement.RegisterCallback<NavigationMoveEvent>(evt =>
+            {
+                if (evt.direction == NavigationMoveEvent.Direction.Up)
+                    _controlsScrollView.scrollOffset += new Vector2(0, -300f);
+                else if (evt.direction == NavigationMoveEvent.Direction.Down)
+                    _controlsScrollView.scrollOffset += new Vector2(0, 300f);
+            });
             foreach (var element in allElements)
             {
-                var parent = element.parent;
-                if (parent == null) continue;
-                element.RegisterCallback<FocusInEvent>(evt =>
-                {
-                    _logger.Log(element.name + " focused");
-                    parent.AddToClassList("settings-element-focused");
-                    foreach (var visualElement in parent.Children())
-                        visualElement.AddToClassList("settings-element-focused");
-                });
+                element.RegisterCallback<FocusInEvent>(evt => { element.AddToClassList("settings-element-focused"); });
 
                 element.RegisterCallback<FocusOutEvent>(evt =>
                 {
-                    parent.RemoveFromClassList("settings-element-focused");
-                    foreach (var visualElement in parent.Children())
-                        visualElement.RemoveFromClassList("settings-element-focused");
+                    element.RemoveFromClassList("settings-element-focused");
                 });
-
-                if (element.focusable) _focusableElements.Add(element);
             }
-            _focusableElements = _focusableElements.Distinct().OrderBy(e => e.worldBound.y).ToList();
+        }
+
+        private static bool IsFullyVisible(VisualElement element, ScrollView scrollView)
+        {
+            var elementBound = element.worldBound;
+            var viewportBound = scrollView.contentViewport.worldBound;
+
+            return viewportBound.Contains(elementBound.min) &&
+                   viewportBound.Contains(elementBound.max);
         }
 
         private void OnCancel()
@@ -352,17 +384,20 @@ namespace UI.States
             {
                 CancelRebind();
             }
-            else if (_isScrollViewFocused)
+
+            else if (!_isScrollViewFocused)
+            {
+                CanExit = true;
+            }
+            else
             {
                 _applyButton.focusable = true;
                 _resetButton.focusable = true;
                 _closeButton.focusable = true;
+
                 _applyButton.Focus();
+                _bottomButtonFocusIndex = 1;
                 _isScrollViewFocused = false;
-            }
-            else if (!_isScrollViewFocused)
-            {
-                CanExit = true;
             }
         }
 
@@ -393,19 +428,24 @@ namespace UI.States
             var partIndices = FindCompositePartIndices(reference.action, partName);
             if (partIndices.Count == 0) return;
 
-            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, uiElementName);
-            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, uiElementName);
+            var keyboardButton = GetBindButtonsUnderTab(_keyboardBindsContainer, uiElementName);
+            var controllerButton = GetBindButtonsUnderTab(_controllerBindsContainer, uiElementName);
+
 
             // Find the correct binding index for each control scheme among the part indices
             var keyboardBindingIndex = FindBindingIndexForScheme(reference.action, partIndices, "Keyboard&Mouse");
             var gamepadBindingIndex = FindBindingIndexForScheme(reference.action, partIndices, "Gamepad");
 
+            var keyboardPartBinding = reference.action.bindings[keyboardBindingIndex];
+            var gamepadPartBinding = reference.action.bindings[gamepadBindingIndex];
+
+
             // Update buttons with icons
             if (keyboardBindingIndex >= 0)
-                UpdateButtonWithIcon(keyboardButton, reference.action.bindings[keyboardBindingIndex].effectivePath);
+                UpdateButtonWithIcon(keyboardButton, keyboardPartBinding.effectivePath);
 
             if (gamepadBindingIndex >= 0)
-                UpdateButtonWithIcon(controllerButton, reference.action.bindings[gamepadBindingIndex].effectivePath,
+                UpdateButtonWithIcon(controllerButton, gamepadPartBinding.effectivePath,
                     _currentDeviceFolder);
 
             // Setup click handlers
@@ -457,8 +497,8 @@ namespace UI.States
         {
             if (!_actionMap.TryGetValue(actionName, out var reference)) return;
 
-            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, actionName);
-            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, actionName);
+            var keyboardButton = GetBindButtonsUnderTab(_keyboardBindsContainer, actionName);
+            var controllerButton = GetBindButtonsUnderTab(_controllerBindsContainer, actionName);
 
             // Use GetBindingIndex with group filter
             var keyboardBindingIndex = reference.action.GetBindingIndex(InputBinding.MaskByGroup("Keyboard&Mouse"));
@@ -473,6 +513,7 @@ namespace UI.States
 
             if (keyboardBindingIndex >= 0)
                 keyboardButton.clicked += () => StartRebind(actionName, keyboardBindingIndex, keyboardButton);
+
 
             if (gamepadBindingIndex >= 0)
                 controllerButton.clicked += () => StartRebind(actionName, gamepadBindingIndex, controllerButton);
@@ -553,6 +594,8 @@ namespace UI.States
                 return;
             }
 
+            if (bindingPath.ToLower().Contains("dpad"))
+                _logger.Log($"Rebinding complete {bindingPath}" + _inputActions.InputActions.bindings);
 
             // Try to load icon from Resources
             var name = _keyIconMappingConfig.GetIconName(bindingPath);
@@ -594,9 +637,9 @@ namespace UI.States
 
         private void UpdateCompositePartButton(InputAction action, string partName, string uiElementName)
         {
-            GetBindButtonsUnderTab(_keyboardMouseTab, uiElementName);
+            GetBindButtonsUnderTab(_keyboardBindsContainer, uiElementName);
 
-            GetBindButtonsUnderTab(_gamepadTab, uiElementName);
+            GetBindButtonsUnderTab(_controllerBindsContainer, uiElementName);
 
 
             FindCompositePartIndices(action, partName);
@@ -639,8 +682,8 @@ namespace UI.States
             if (!_actionMap.TryGetValue(actionName, out var reference)) return;
             if (reference.action.bindings.Count <= 0) return;
 
-            var keyboardButton = GetBindButtonsUnderTab(_keyboardMouseTab, actionName);
-            var controllerButton = GetBindButtonsUnderTab(_gamepadTab, actionName);
+            var keyboardButton = GetBindButtonsUnderTab(_keyboardBindsContainer, actionName);
+            var controllerButton = GetBindButtonsUnderTab(_controllerBindsContainer, actionName);
 
             var keyboardBindingIndex = reference.action.GetBindingIndex(InputBinding.MaskByGroup("Keyboard&Mouse"));
             var gamepadBindingIndex = reference.action.GetBindingIndex(InputBinding.MaskByGroup("Gamepad"));
@@ -653,7 +696,7 @@ namespace UI.States
                     _currentDeviceFolder);
         }
 
-        private static Button GetBindButtonsUnderTab(Tab t, string actionName)
+        private static Button GetBindButtonsUnderTab(VisualElement t, string actionName)
         {
             var container = t.Q<VisualElement>(actionName);
 
