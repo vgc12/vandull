@@ -2,17 +2,23 @@ Shader "Custom/URP_PBR"
 {
     Properties
     {
+        [Header(Main Textures)]
         _AlbedoMap("Albedo Map", 2D) = "white" {}
         _Albedo("Albedo Tint", Color) = (1,1,1,1)
+        _NormalMap("Normal Map", 2D) = "bump" {}
+        _NormalStrength("Normal Strength", Range(0,2)) = 1.0
         _MetallicMap("Metallic Map", 2D) = "white" {}
         _Metallic("Metallic", Range(0,1)) = 0.0
         _RoughnessMap("Roughness Map", 2D) = "white" {}
         _Roughness("Roughness", Range(0,1)) = 0.5
         _AOMap("AO Map", 2D) = "white" {}
         _AO("AO Strength", Range(0,1)) = 1.0
-        _NormalMap("Normal Map", 2D) = "bump" {}
-        _NormalStrength("Normal Strength", Range(0,2)) = 1.0
-
+        _EmissionMap("Emission Map", 2D) = "black" {}
+        _EmissionColor("Emission Color", Color) = (0,0,0,1)
+        _EmissionStrength("Emission Strength", Range(0,10)) = 1.0
+        _AlphaMap("Alpha Map", 2D) = "white" {}
+        
+        
         [Header(Cell Shading)]
         _CellBands("Cel Shading Bands", Range(1, 30)) = 4
 
@@ -20,27 +26,38 @@ Shader "Custom/URP_PBR"
         _OutlineColor("Outline Color", Color) = (0,0,0,1)
         _OutlineWidth("Outline Width", Range(0, 1)) = 0.02
         [Toggle(OUTLINE_METHOD_NORMAL)] _OutlineMethod("Extrude Outlines From Normals", Float) = 0
-
+        
+        [Header(Normal Effects)]
+        _NormalEffectsColor("Normal Effects Color", Color) = (1,0,0,1)
+        _NormalThreshold("Normal Threshold", Range(0,1)) = 0.5
+        [Toggle] _ColorX("Apply to X", Float) = 1
+        [Toggle] _ColorY("Apply to Y", Float) = 1
+        [Toggle] _ColorZ("Apply to Z", Float) = 1
+        
+        [Header(Rendering)]
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("__src", Integer) = 5
+       [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("__dst", Integer) = 10
+     
+  
     }
 
     SubShader
     {
         Tags
         {
-            "RenderType" = "Opaque"
+            "RenderType" = "Transparent"
+            "Queue" = "Transparent"
             "RenderPipeline" = "UniversalPipeline"
         }
         LOD 100
+        
+        
         Pass
         {
             Name "Outline"
-            Tags
-            {
-                "LightMode" = "SRPDefaultUnlit"
-            }
+  
             Cull Front
-            ZWrite On
-
+  
             HLSLPROGRAM
             #pragma vertex OutlineVert
             #pragma fragment OutlineFrag
@@ -97,14 +114,17 @@ Shader "Custom/URP_PBR"
             }
             ENDHLSL
         }
-        Pass
-        {
+        
+
+        Pass{
+      
             Name "ForwardLit"
             Tags
             {
                 "LightMode" = "UniversalForward"
             }
 
+ 
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -114,6 +134,7 @@ Shader "Custom/URP_PBR"
             #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fog
 
+            #include "VandullFunctions.hlsl"    
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
@@ -146,15 +167,32 @@ Shader "Custom/URP_PBR"
             SAMPLER(sampler_AOMap);
             TEXTURE2D(_NormalMap);
             SAMPLER(sampler_NormalMap);
+            TEXTURE2D(_EmissionMap);
+            SAMPLER(sampler_EmissionMap);
+            TEXTURE2D(_AlphaMap);
+            SAMPLER(sampler_AlphaMap);
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _AlbedoMap_ST;
+                float4 _RoughnessMap_ST;
+                float4 _MetallicMap_ST;
+                float4 _AOMap_ST;
+                float4 _NormalMap_ST;
+                float4 _EmissionMap_ST;
+                float4 _AlphaMap_ST;
                 float4 _Albedo;
+                float4 _EmissionColor;
+                float4 _NormalEffectsColor;
                 float _Metallic;
                 float _Roughness;
                 float _AO;
                 float _NormalStrength;
+                float _EmissionStrength;
                 float _CellBands;
+                float _NormalThreshold;
+                float _ColorX;
+                float _ColorY;
+                float _ColorZ;
             CBUFFER_END
 
             #define PI 3.14159265359
@@ -221,22 +259,22 @@ Shader "Custom/URP_PBR"
                 return output;
             }
 
-            float celBanding(float value, float bands)
-            {
-                return floor(value * bands) / bands;
-            }
 
             float4 frag(Varyings input) : SV_Target
             {
                 // Sample textures
                 float4 albedoSample = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.uv);
                 float3 albedo = albedoSample.rgb * _Albedo.rgb;
-
+                float alpha = SAMPLE_TEXTURE2D(_AlphaMap, sampler_AlphaMap, input.uv).r ;
 
                 float metallic = SAMPLE_TEXTURE2D(_MetallicMap, sampler_MetallicMap, input.uv).r * _Metallic;
                 float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness;
                 float ao = SAMPLE_TEXTURE2D(_AOMap, sampler_AOMap, input.uv).r * _AO;
-
+       
+                
+                // Sample emission
+                float3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv).rgb * _EmissionColor.rgb * _EmissionStrength;
+                
                 // Sample and apply normal map
                 float3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.uv));
                 normalTS.xy *= _NormalStrength;
@@ -313,6 +351,9 @@ Shader "Custom/URP_PBR"
                 float3 ambient = float3(0.03, 0.03, 0.03) * albedo * ao;
                 float3 color = ambient + Lo;
 
+                // Add emission (before tone mapping for HDR glow)
+                color += emission;
+
                 // Tone mapping
                 color = color / (color + float3(1.0, 1.0, 1.0));
 
@@ -322,9 +363,59 @@ Shader "Custom/URP_PBR"
                 // Apply fog
                 color = MixFog(color, input.fogFactor);
 
+                // Check normal threshold effects
+                if ((_ColorX > 0.5 && checkNormalThreshold(normalTS.x, _NormalThreshold)) ||
+                    (_ColorY > 0.5 && checkNormalThreshold(normalTS.y, _NormalThreshold)) ||
+                    (_ColorZ > 0.5 && checkNormalThreshold(normalTS.z, _NormalThreshold)))
+                {
+                    return float4(_NormalEffectsColor.rgb, alpha);
+                }
 
-                return float4(color, 1.0);
+                return float4(color, alpha);
             }
+            ENDHLSL
+        }
+        // Depth only pass for depth pre-pass and depth-only rendering
+        Pass
+        {
+            Name "DepthOnly"
+            Tags
+            {
+                "LightMode" = "DepthOnly"
+            }
+
+            // -------------------------------------
+            // Render State Commands
+            ZWrite On
+            ColorMask R
+            Cull Off
+
+            HLSLPROGRAM
+            #pragma target 2.0
+
+            // -------------------------------------
+            // Shader Stages
+            #pragma vertex DepthOnlyVertex
+            #pragma fragment DepthOnlyFragment
+
+            // -------------------------------------
+            // Material Keywords
+            #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local_fragment _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+
+            // -------------------------------------
+            // Unity defined keywords
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
+
+            //--------------------------------------
+            // GPU Instancing
+            #pragma multi_compile_instancing
+            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+
+            // -------------------------------------
+            // Includes
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
             ENDHLSL
         }
 
@@ -388,5 +479,6 @@ Shader "Custom/URP_PBR"
             }
             ENDHLSL
         }
+
     }
 }

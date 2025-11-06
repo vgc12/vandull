@@ -21,19 +21,19 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Fabric
-  m_Shader: {fileID: 4800000, guid: f5838c87c1a04c24e95945fdeeb915fb, type: 3}
+  m_Shader: {fileID: 4800000, guid: 4bd054383b451be4f86c5f89c08a7749, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - ENABLE_MANDELBROT
-  - _MANDELBROTMODE_UV
+  m_ValidKeywords: []
   m_InvalidKeywords:
   - ENABLE_HOLOGRAPHIC
+  - ENABLE_MANDELBROT
   - GLITCH_EFFECT
   - POSTERIZE
   - _COLORY_ON
   - _COLORZ_ON
   - _MANDELBROTINFINITEZOOM_ON
+  - _MANDELBROTMODE_UV
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -45,6 +45,18 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AOMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AlbedoMap:
+        m_Texture: {fileID: 2800000, guid: 741470498b14d55488fbc6d800af4af5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AlphaMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 2800000, guid: 741470498b14d55488fbc6d800af4af5, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -93,7 +105,15 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MetallicMap:
+        m_Texture: {fileID: 2800000, guid: e3db5bf60762f964980d6a05639ccbe2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Normal:
+        m_Texture: {fileID: 2800000, guid: f55f5f23ed651b144bc15f7a58bae2bd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
         m_Texture: {fileID: 2800000, guid: f55f5f23ed651b144bc15f7a58bae2bd, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -125,8 +145,11 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _DstBlend: 10
+    - _SrcBlend: 5
     m_Floats:
+    - _AO: 1
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
@@ -136,6 +159,7 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1.18
+    - _CellBands: 20.6
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _ColorX: 0
@@ -160,6 +184,7 @@ Material:
     - _EdgeShadowAttenuation: 0.05
     - _EdgeSpecular: 0.1
     - _EmissionIntensity: 1
+    - _EmissionStrength: 1
     - _EnableHolographic: 1
     - _EnableMandelbrot: 1
     - _EntityId: 0.64
@@ -192,8 +217,9 @@ Material:
     - _MandelbrotZoomCenterX: -0.5
     - _MandelbrotZoomCenterY: 0
     - _MandelbrotZoomSpeed: 0.5
-    - _Metallic: 0
+    - _Metallic: 0.755
     - _NormalReplacementValue: 0.9997
+    - _NormalStrength: 1.02
     - _NormalThreshold: 0.941
     - _OcclusionStrength: 1
     - _OublineWidth: 0.3
@@ -210,7 +236,7 @@ Material:
     - _RimBands: 4
     - _RimStrength: 0.2
     - _RimThreshold: 0.51
-    - _Roughness: 0.391
+    - _Roughness: 0.651
     - _ShadowAttenuationBands: 4
     - _ShadowSoftness: 0.327
     - _ShadowThreshold: 0.308
@@ -232,6 +258,7 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
+    - _Albedo: {r: 1, g: 1, b: 1, a: 1}
     - _AmbientColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Base_Color: {r: 1, g: 1, b: 1, a: 1}

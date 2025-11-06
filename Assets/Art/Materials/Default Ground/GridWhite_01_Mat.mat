@@ -24,11 +24,11 @@ Material:
   m_Shader: {fileID: 4800000, guid: 4bd054383b451be4f86c5f89c08a7749, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - OUTLINE_METHOD_NORMAL
+  m_ValidKeywords: []
   m_InvalidKeywords:
   - GLITCH_EFFECT
   - LSDEFFECT
+  - OUTLINE_METHOD_NORMAL
   - POSTERIZE
   - _COLORX_ON
   - _COLORY_ON
@@ -56,10 +56,18 @@ Material:
         m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _AlphaMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0.004, y: 0}
+    - _BaseTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Base_Texture:
         m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
         m_Scale: {x: 1, y: 1}
@@ -125,7 +133,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RoughnessMap:
-        m_Texture: {fileID: 2800000, guid: b6e307a09e414694a91352b6d054bf6a, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SmoothnessMap:
@@ -152,11 +160,16 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _DstBlend: 10
+    - _DstBlendAlpha: 0
+    - _SrcBlend: 5
+    - _SrcBlendAlpha: 1
     m_Floats:
     - _AO: 0.512
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
+    - _AlphaCutoff: 0.5
     - _AlphaToMask: 0
     - _AmbientEnvironmentMultiplier: 1
     - _AmbientMultiplier: 1
@@ -166,7 +179,7 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 0.28
-    - _CellBands: 26.2
+    - _CellBands: 5
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _ColorX: 1
@@ -189,6 +202,7 @@ Material:
     - _EdgeRim: 0.682
     - _EdgeShadowAttenuation: 0.055
     - _EdgeSpecular: 0.238
+    - _EmissionStrength: 1
     - _EnableHolographic: 0
     - _EnableMandelbrot: 0
     - _EntityId: 5
@@ -243,7 +257,7 @@ Material:
     - _RimBands: 4
     - _RimStrength: 0.419
     - _RimThreshold: 0.1
-    - _Roughness: 0.285
+    - _Roughness: 1
     - _ShadowAttenuationBands: 10
     - _ShadowSoftness: 0.05
     - _ShadowThreshold: 0.163
