@@ -11,10 +11,10 @@ Material:
   m_Shader: {fileID: 4800000, guid: 4bd054383b451be4f86c5f89c08a7749, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - OUTLINE_METHOD_NORMAL
   m_InvalidKeywords:
   - ENABLE_MANDELBROT
-  - OUTLINE_METHOD_NORMAL
   - POSTERIZE
   - _COLORX_ON
   - _COLORY_ON
@@ -179,10 +179,10 @@ Material:
     - _Mode: 0
     - _NormalReplacementValue: 1
     - _NormalStrength: 1
-    - _NormalThreshold: 0.9999
+    - _NormalThreshold: 0.99999
     - _OcclusionStrength: 1
     - _OutlineMethod: 1
-    - _OutlineWidth: 0.0008
+    - _OutlineWidth: 0.0016
     - _Parallax: 0.02
     - _PosterizationCount: 99
     - _Posterize: 1

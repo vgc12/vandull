@@ -277,7 +277,16 @@ Shader "Custom/URP_PBR"
                 
                 // Sample and apply normal map
                 float3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.uv));
+
+                if ((_ColorX > 0.5 && checkNormalThreshold(normalTS.x, _NormalThreshold)) ||
+                    (_ColorY > 0.5 && checkNormalThreshold(normalTS.y, _NormalThreshold)) ||
+                    (_ColorZ > 0.5 && checkNormalThreshold(normalTS.z, _NormalThreshold)))
+                {
+                    return float4(_NormalEffectsColor.rgb, alpha);
+                }
+
                 normalTS.xy *= _NormalStrength;
+                // Check normal threshold effects
 
                 float3x3 TBN = float3x3(input.tangentWS, input.bitangentWS, input.normalWS);
                 float3 N = normalize(mul(normalTS, TBN));
@@ -363,13 +372,6 @@ Shader "Custom/URP_PBR"
                 // Apply fog
                 color = MixFog(color, input.fogFactor);
 
-                // Check normal threshold effects
-                if ((_ColorX > 0.5 && checkNormalThreshold(normalTS.x, _NormalThreshold)) ||
-                    (_ColorY > 0.5 && checkNormalThreshold(normalTS.y, _NormalThreshold)) ||
-                    (_ColorZ > 0.5 && checkNormalThreshold(normalTS.z, _NormalThreshold)))
-                {
-                    return float4(_NormalEffectsColor.rgb, alpha);
-                }
 
                 return float4(color, alpha);
             }

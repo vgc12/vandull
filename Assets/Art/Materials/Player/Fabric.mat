@@ -24,12 +24,14 @@ Material:
   m_Shader: {fileID: 4800000, guid: 4bd054383b451be4f86c5f89c08a7749, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - OUTLINE_METHOD_NORMAL
   m_InvalidKeywords:
   - ENABLE_HOLOGRAPHIC
   - ENABLE_MANDELBROT
   - GLITCH_EFFECT
   - POSTERIZE
+  - _COLORX_ON
   - _COLORY_ON
   - _COLORZ_ON
   - _MANDELBROTINFINITEZOOM_ON
@@ -162,7 +164,7 @@ Material:
     - _CellBands: 20.6
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _ColorX: 0
+    - _ColorX: 1
     - _ColorXDirection: 1
     - _ColorY: 1
     - _ColorYDirection: 1
@@ -220,10 +222,10 @@ Material:
     - _Metallic: 0.755
     - _NormalReplacementValue: 0.9997
     - _NormalStrength: 1.02
-    - _NormalThreshold: 0.941
+    - _NormalThreshold: 0.9999
     - _OcclusionStrength: 1
     - _OublineWidth: 0.3
-    - _OutlineMethod: 0
+    - _OutlineMethod: 1
     - _OutlineWidth: 0.0056
     - _Outline_Strength: 2
     - _Parallax: 0.005
