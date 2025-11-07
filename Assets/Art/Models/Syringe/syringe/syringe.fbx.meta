@@ -7,8 +7,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Material.001
-    second: {fileID: 2100000, guid: e538b8e72fc72c04d83dc154175711d2, type: 2}
+      name: Liquid
+    second: {fileID: 2100000, guid: 5b10ae49d0c30db45a3e0e0df996ca47, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: glass
+    second: {fileID: 2100000, guid: 583fcb1311415284cb0f7d593c8bf8e2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: metal
+    second: {fileID: 2100000, guid: 48ebdbd39b65e1c4e86e9fd30d1ed44b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

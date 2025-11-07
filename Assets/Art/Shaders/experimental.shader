@@ -17,28 +17,29 @@ Shader "Custom/URP_PBR"
         _EmissionColor("Emission Color", Color) = (0,0,0,1)
         _EmissionStrength("Emission Strength", Range(0,10)) = 1.0
         _AlphaMap("Alpha Map", 2D) = "white" {}
-        
-        
+
+
         [Header(Cell Shading)]
         _CellBands("Cel Shading Bands", Range(1, 30)) = 4
 
         [Header(Outline)]
+        [Toggle(USE_OUTLINE)] _UseOutline("Enable Outline", Float) = 1
         _OutlineColor("Outline Color", Color) = (0,0,0,1)
         _OutlineWidth("Outline Width", Range(0, 1)) = 0.02
         [Toggle(OUTLINE_METHOD_NORMAL)] _OutlineMethod("Extrude Outlines From Normals", Float) = 0
-        
+
         [Header(Normal Effects)]
         _NormalEffectsColor("Normal Effects Color", Color) = (1,0,0,1)
         _NormalThreshold("Normal Threshold", Range(0,1)) = 0.5
         [Toggle] _ColorX("Apply to X", Float) = 1
         [Toggle] _ColorY("Apply to Y", Float) = 1
         [Toggle] _ColorZ("Apply to Z", Float) = 1
-        
+
         [Header(Rendering)]
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("__src", Integer) = 5
-       [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("__dst", Integer) = 10
-     
-  
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("__dst", Integer) = 10
+
+
     }
 
     SubShader
@@ -51,80 +52,146 @@ Shader "Custom/URP_PBR"
         }
         LOD 100
         
-        
+        // Depth pre-pass to write depth values first
         Pass
         {
-            Name "Outline"
-  
-            Cull Front
-  
+            Name "DepthOnly"
+            Tags
+            {
+                "LightMode" = "DepthOnly"
+            }
+
+            ZWrite On
+            ColorMask 0
+
             HLSLPROGRAM
-            #pragma vertex OutlineVert
-            #pragma fragment OutlineFrag
-            #pragma multi_compile_fog
-            #pragma shader_feature OUTLINE_METHOD_NORMAL
+            #pragma vertex DepthOnlyVertex
+            #pragma fragment DepthOnlyFragment
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
-                float3 normalOS : NORMAL;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
+                float2 uv : TEXCOORD0;
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-                UNITY_VERTEX_OUTPUT_STEREO
+                float2 uv : TEXCOORD0;
             };
 
+            TEXTURE2D(_AlphaMap);
+            SAMPLER(sampler_AlphaMap);
+
             CBUFFER_START(UnityPerMaterial)
-                float4 _OutlineColor;
-                float _OutlineWidth;
+                float4 _AlphaMap_ST;
+                float4 _Albedo;
             CBUFFER_END
 
-            Varyings OutlineVert(Attributes input)
+            Varyings DepthOnlyVertex(Attributes input)
             {
                 Varyings output;
-                UNITY_SETUP_INSTANCE_ID(input);
-                UNITY_TRANSFER_INSTANCE_ID(input, output);
-                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
-
-                float3 normalOS = normalize(input.normalOS);
-
-                #ifdef OUTLINE_METHOD_NORMAL
-                    input.positionOS.xyz += normalOS * _OutlineWidth;
-                #else
-                input.positionOS.xyz += normalOS * _OutlineWidth;
-                input.positionOS.xyz *= (1.0 + _OutlineWidth);
-                #endif
-
                 VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
                 output.positionCS = vertexInput.positionCS;
+                output.uv = TRANSFORM_TEX(input.uv, _AlphaMap);
                 return output;
             }
 
-            half4 OutlineFrag(Varyings input) : SV_Target
+            half4 DepthOnlyFragment(Varyings input) : SV_TARGET
             {
-                UNITY_SETUP_INSTANCE_ID(input);
-                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-                return _OutlineColor;
+                // Sample alpha and discard fully transparent pixels
+                float alpha = SAMPLE_TEXTURE2D(_AlphaMap, sampler_AlphaMap, input.uv).r * _Albedo.a;
+                clip(alpha - 0.01);
+                return 0;
             }
             ENDHLSL
         }
         
+                Pass
+                {
+                    Name "Outline"
+        
+                    Cull Front
+        
+                    HLSLPROGRAM
+                    #pragma vertex OutlineVert
+                    #pragma fragment OutlineFrag
+                    #pragma multi_compile_fog
+                    #pragma shader_feature OUTLINE_METHOD_NORMAL
+                    #pragma shader_feature_local USE_OUTLINE
+                    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+        
+                    struct Attributes
+                    {
+                        float4 positionOS : POSITION;
+                        float3 normalOS : NORMAL;
+                        UNITY_VERTEX_INPUT_INSTANCE_ID
+                    };
+        
+                    struct Varyings
+                    {
+                        float4 positionCS : SV_POSITION;
+                        UNITY_VERTEX_INPUT_INSTANCE_ID
+                        UNITY_VERTEX_OUTPUT_STEREO
+                    };
+        
+                    CBUFFER_START(UnityPerMaterial)
+                        float4 _OutlineColor;
+                        float _OutlineWidth;
+                    CBUFFER_END
+        
+                    Varyings OutlineVert(Attributes input)
+                    {
+                        Varyings output;
+        
+                        UNITY_SETUP_INSTANCE_ID(input);
+                        UNITY_TRANSFER_INSTANCE_ID(input, output);
+                        UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+        
+                        #ifdef USE_OUTLINE
+                        float3 normalOS = normalize(input.normalOS);
+        
+                        #ifdef OUTLINE_METHOD_NORMAL
+                            input.positionOS.xyz += normalOS * _OutlineWidth;
+                        #else
+                        input.positionOS.xyz += normalOS * _OutlineWidth;
+                        input.positionOS.xyz *= (1.0 + _OutlineWidth);
+                        #endif
+                        #endif
+        
+                        VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
+                        output.positionCS = vertexInput.positionCS;
+                        return output;
+                    }
+        
+                    half4 OutlineFrag(Varyings input) : SV_Target
+                    {
+                        UNITY_SETUP_INSTANCE_ID(input);
+                        UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+                        
+                        #ifdef USE_OUTLINE
+                        return _OutlineColor;
+                        #else
+                        discard;
+                        return half4(0, 0, 0, 0);
+                        #endif
+                    }
+                    ENDHLSL
+                }
+        
 
-        Pass{
-      
+        Pass
+        {
+
             Name "ForwardLit"
             Tags
             {
                 "LightMode" = "UniversalForward"
             }
-
- 
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite Off
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -134,7 +201,7 @@ Shader "Custom/URP_PBR"
             #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fog
 
-            #include "VandullFunctions.hlsl"    
+            #include "VandullFunctions.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
@@ -265,16 +332,17 @@ Shader "Custom/URP_PBR"
                 // Sample textures
                 float4 albedoSample = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.uv);
                 float3 albedo = albedoSample.rgb * _Albedo.rgb;
-                float alpha = SAMPLE_TEXTURE2D(_AlphaMap, sampler_AlphaMap, input.uv).r ;
+                float alpha = SAMPLE_TEXTURE2D(_AlphaMap, sampler_AlphaMap, input.uv).r * _Albedo.a;
 
                 float metallic = SAMPLE_TEXTURE2D(_MetallicMap, sampler_MetallicMap, input.uv).r * _Metallic;
                 float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness;
                 float ao = SAMPLE_TEXTURE2D(_AOMap, sampler_AOMap, input.uv).r * _AO;
-       
-                
+
+
                 // Sample emission
-                float3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv).rgb * _EmissionColor.rgb * _EmissionStrength;
-                
+                float3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv).rgb * _EmissionColor.rgb
+                    * _EmissionStrength;
+
                 // Sample and apply normal map
                 float3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.uv));
 
@@ -377,49 +445,7 @@ Shader "Custom/URP_PBR"
             }
             ENDHLSL
         }
-        // Depth only pass for depth pre-pass and depth-only rendering
-        Pass
-        {
-            Name "DepthOnly"
-            Tags
-            {
-                "LightMode" = "DepthOnly"
-            }
 
-            // -------------------------------------
-            // Render State Commands
-            ZWrite On
-            ColorMask R
-            Cull Off
-
-            HLSLPROGRAM
-            #pragma target 2.0
-
-            // -------------------------------------
-            // Shader Stages
-            #pragma vertex DepthOnlyVertex
-            #pragma fragment DepthOnlyFragment
-
-            // -------------------------------------
-            // Material Keywords
-            #pragma shader_feature_local _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-
-            // -------------------------------------
-            // Unity defined keywords
-            #pragma multi_compile _ LOD_FADE_CROSSFADE
-
-            //--------------------------------------
-            // GPU Instancing
-            #pragma multi_compile_instancing
-            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
-
-            // -------------------------------------
-            // Includes
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthOnlyPass.hlsl"
-            ENDHLSL
-        }
 
         // Shadow caster pass for receiving shadows
         Pass
