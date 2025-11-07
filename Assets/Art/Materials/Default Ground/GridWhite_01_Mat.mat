@@ -24,11 +24,12 @@ Material:
   m_Shader: {fileID: 4800000, guid: 4bd054383b451be4f86c5f89c08a7749, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - OUTLINE_METHOD_NORMAL
+  - USE_OUTLINE
   m_InvalidKeywords:
   - GLITCH_EFFECT
   - LSDEFFECT
-  - OUTLINE_METHOD_NORMAL
   - POSTERIZE
   - _COLORX_ON
   - _COLORY_ON
@@ -276,6 +277,7 @@ Material:
     - _UseHighNormalMasking: 0
     - _UseNormalMap: 1
     - _UseNormalMapInLightCalculations: 0
+    - _UseOutline: 1
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1

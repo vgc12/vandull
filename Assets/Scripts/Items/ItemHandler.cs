@@ -72,9 +72,6 @@ namespace Items
             }
         }
 
-        public void InitializeItem(Item item)
-        {
-        }
 
         public void SwitchItem(int direction)
         {

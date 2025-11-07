@@ -1,22 +1,19 @@
 ﻿using EventBus;
-using Player;
 using Player.Input;
 using Reflex.Attributes;
 using Singletons;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Items
 {
     [RequireComponent(typeof(ItemHandler))]
     public class ItemSwitcher : Singleton<ItemSwitcher>
     {
+        [Inject] private readonly IPlayerInput _input;
+
         private ItemHandler _itemHandler;
 
         private EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
-
-        [Inject]
-        private readonly IPlayerInput _input;
 
         private void Start()
         {
@@ -35,6 +32,5 @@ namespace Items
             _itemHandler.SwitchItem((int)value);
             EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_itemHandler.EquippedItem));
         }
-    
     }
 }

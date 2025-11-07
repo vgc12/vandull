@@ -13,6 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - OUTLINE_METHOD_NORMAL
+  - USE_OUTLINE
   m_InvalidKeywords:
   - ENABLE_MANDELBROT
   - POSTERIZE
@@ -212,6 +213,7 @@ Material:
     - _UseHighNormalMasking: 0
     - _UseNormalMap: 1
     - _UseNormalMapInLightCalculations: 0
+    - _UseOutline: 1
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1

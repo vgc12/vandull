@@ -2,6 +2,7 @@
 using EventBus;
 using Player;
 using Player.Input;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 namespace UI.States
@@ -25,6 +26,12 @@ namespace UI.States
             EventBus<PlayerHitEvent>.Register(_playerHitEventBinding);
             _healthBar = rootElement.Q<ProgressBar>("health-bar");
             _crosshair = rootElement.Q<VisualElement>("crosshair");
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            _healthBar.value = 100;
+        }
+
+        private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
+        {
             _healthBar.value = 100;
         }
 

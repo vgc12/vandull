@@ -299,7 +299,7 @@ namespace Items.Guns
             {
                 return _animationSystemFactory != null
                     ? _animationSystemFactory()
-                    : new PlayerGunAnimationSystem();
+                    : new PlayerItemAnimationSystem();
             }
 
             private void SetDefaultFactories()
@@ -319,7 +319,7 @@ namespace Items.Guns
 
                 _trailSystemFactory = () => new TrailSystem(_gun.trailSettings);
 
-                _animationSystemFactory = () => new PlayerGunAnimationSystem();
+                _animationSystemFactory = () => new PlayerItemAnimationSystem();
                 _owner = OwnerStatus.Player;
             }
 
