@@ -155,6 +155,9 @@ namespace UI
             _stateMachine.AddTransition(_mainMenuState, _levelSelectState,
                 () => IsCommand(UICommand.Play));
 
+            _stateMachine.AddTransition(_levelSelectState, _mainMenuState, () =>
+                IsCommand(UICommand.Back));
+
             _stateMachine.AddTransition(_quitMenuState, _pausedState,
                 () => IsCommand(UICommand.Back) && LevelManager.Instance.IsLevelActive);
             _stateMachine.AddTransition(_quitMenuState, _mainMenuState,

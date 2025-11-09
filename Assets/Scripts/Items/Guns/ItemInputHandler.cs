@@ -62,14 +62,14 @@ namespace Items.Guns
 
         public void OnQuickReload()
         {
-            if (_currentItem == null) return;
+            if (_currentGun == null) return;
 
             _currentGun.StartReload(true);
         }
 
         public void OnReload()
         {
-            if (_currentItem == null) return;
+            if (_currentGun == null) return;
 
             _currentGun.StartReload(false);
         }

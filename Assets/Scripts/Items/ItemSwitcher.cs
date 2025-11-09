@@ -19,7 +19,6 @@ namespace Items
         {
             _input.SwitchItem += OnItemSwitched;
             _itemHandler = GetComponent<ItemHandler>();
-            EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_itemHandler.EquippedItem));
         }
 
         private void OnDestroy()
@@ -30,7 +29,6 @@ namespace Items
         private void OnItemSwitched(float value)
         {
             _itemHandler.SwitchItem((int)value);
-            EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(_itemHandler.EquippedItem));
         }
     }
 }

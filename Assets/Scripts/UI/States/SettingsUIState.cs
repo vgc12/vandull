@@ -7,7 +7,6 @@ using Player.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
-using UnityEngine.InputSystem.Switch;
 using UnityEngine.InputSystem.XInput;
 using UnityEngine.UIElements;
 using ILogger = General.Logging.ILogger;
@@ -171,8 +170,6 @@ namespace UI.States
                     _currentDeviceFolder = "PS5";
                 else if (device is XInputController)
                     _currentDeviceFolder = "Xbox Series";
-                else if (device is SwitchProControllerHID)
-                    _currentDeviceFolder = "Switch";
                 else
                     _currentDeviceFolder = "Xbox Series"; // Default gamepad
             }

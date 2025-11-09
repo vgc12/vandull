@@ -23,6 +23,11 @@ namespace UI.States
             if (_backButton != null) _backButton.clicked += stateMachine.BackButtonClicked;
         }
 
+        public override void Enter()
+        {
+            base.Enter();
+        }
+
         ~QuitUIState()
         {
             if (_quitToMenuButton != null) _quitToMenuButton.clicked -= UIStateMachine.QuitToMenuButtonClicked;

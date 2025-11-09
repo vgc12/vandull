@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Attributes;
 using EventBus;
-using Items.Guns;
 using Player;
 using Reflex.Attributes;
 using UnityEngine;
@@ -15,8 +14,6 @@ namespace Items
     [Serializable]
     public class ItemHandler : MonoBehaviour
     {
-        [SerializeField] public List<Gun> gunObjects = new();
-
         [SerializeField] [Required] private RigHandler rigHandler;
 
         private List<Item> _inventory = new();
@@ -35,8 +32,6 @@ namespace Items
         // Call this from Awake() or Start() in your MonoBehaviour
         public void Start()
         {
-            gunObjects ??= new List<Gun>();
-
             _inventory ??= new List<Item>();
 
 
@@ -53,7 +48,7 @@ namespace Items
         private void LogPrefabs()
         {
             Debug.Log("Current Prefabs:");
-            foreach (var prefab in gunObjects) Logger.Log(prefab.name);
+            foreach (var prefab in _inventory) Logger.Log(prefab.name);
         }
 
         private void LogInventory()
@@ -64,12 +59,8 @@ namespace Items
 
         public void SetUpItems()
         {
-            gunObjects = GetComponentsInChildren<Gun>().ToList();
-            foreach (var i in gunObjects)
-            {
-                _inventory.Add(i);
-                i.UnEquip();
-            }
+            _inventory = GetComponentsInChildren<Item>().ToList();
+            foreach (var i in _inventory) i.UnEquip();
         }
 
 
@@ -80,7 +71,10 @@ namespace Items
 
             if (_inventory.Count == 0) return;
             var currentIndex = _inventory.IndexOf(EquippedItem);
-            var nextIndex = Math.Abs((currentIndex + direction) % gunObjects.Count);
+            direction = -direction;
+            var nextIndex = currentIndex + direction < 0
+                ? _inventory.Count - 1
+                : (currentIndex + direction) % _inventory.Count;
             EquipItem(_inventory[nextIndex]);
         }
 
@@ -98,6 +92,20 @@ namespace Items
             rigHandler.RightHandTarget = EquippedItem.rightHandTarget;
             rigHandler.RightHandHint = EquippedItem.rightHandHint;
             rigHandler.RebuildRigs();
+            EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(EquippedItem));
+        }
+
+        public void EquipItemAtIndex(int index)
+        {
+            if (index < 0 || index >= _inventory.Count) return;
+            EquipItem(_inventory[index]);
+        }
+
+        public void TryRemoveItem(Item item)
+        {
+            if (!_inventory.Contains(item)) return;
+            _inventory.Remove(item);
+            EquipItemAtIndex(0);
         }
     }
 }

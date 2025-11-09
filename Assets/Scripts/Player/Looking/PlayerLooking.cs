@@ -18,7 +18,7 @@ namespace Player.Looking
             Left = 1,
             None = 0
         }
-        
+
 
         private Vector2 _mouseDelta;
 
@@ -107,7 +107,8 @@ namespace Player.Looking
 
         public void Look()
         {
-            var mouseX = _mouseDelta.x * Time.deltaTime * config.Sensitivity * (int)config.xAimType;
+            var mouseX = _mouseDelta.x * Time.deltaTime * config.Sensitivity * config.InputMultiplier *
+                         (int)config.xAimType;
             var mouseY = _mouseDelta.y * Time.deltaTime * config.Sensitivity * (int)config.yAimType;
 
             _cameraRotation.y += mouseX;

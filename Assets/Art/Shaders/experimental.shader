@@ -1,4 +1,4 @@
-Shader "Custom/URP_PBR"
+Shader "Custom/Vandull"
 {
     Properties
     {
@@ -16,11 +16,9 @@ Shader "Custom/URP_PBR"
         _EmissionMap("Emission Map", 2D) = "black" {}
         _EmissionColor("Emission Color", Color) = (0,0,0,1)
         _EmissionStrength("Emission Strength", Range(0,10)) = 1.0
-        _AlphaMap("Alpha Map", 2D) = "white" {}
-
 
         [Header(Cell Shading)]
-        _CellBands("Cel Shading Bands", Range(1, 30)) = 4
+        _VandullCelBandsRadiance("Cel Shading Bands", Range(1, 30)) = 6.0
 
         [Header(Outline)]
         [Toggle(USE_OUTLINE)] _UseOutline("Enable Outline", Float) = 1
@@ -36,10 +34,7 @@ Shader "Custom/URP_PBR"
         [Toggle] _ColorZ("Apply to Z", Float) = 1
 
         [Header(Rendering)]
-        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("__src", Integer) = 5
-        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("__dst", Integer) = 10
-
-
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTestMode("__ztest", Integer) = 4
     }
 
     SubShader
@@ -52,72 +47,27 @@ Shader "Custom/URP_PBR"
         }
         LOD 100
 
-        // Depth pre-pass to write depth values first
-        Pass
-        {
-            Name "DepthOnly"
-            Tags
-            {
-                "LightMode" = "DepthOnly"
-            }
 
-            ZWrite On
-            ColorMask 0
-
-            HLSLPROGRAM
-            #pragma vertex DepthOnlyVertex
-            #pragma fragment DepthOnlyFragment
-
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
-            struct Attributes
-            {
-                float4 positionOS : POSITION;
-                float2 uv : TEXCOORD0;
-            };
-
-            struct Varyings
-            {
-                float4 positionCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
-            };
-
-            TEXTURE2D(_AlphaMap);
-            SAMPLER(sampler_AlphaMap);
-
-            CBUFFER_START(UnityPerMaterial)
-                float4 _AlphaMap_ST;
-                float4 _Albedo;
-            CBUFFER_END
-
-            Varyings DepthOnlyVertex(Attributes input)
-            {
-                Varyings output;
-                VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
-                output.positionCS = vertexInput.positionCS;
-                output.uv = TRANSFORM_TEX(input.uv, _AlphaMap);
-                return output;
-            }
-
-            half4 DepthOnlyFragment(Varyings input) : SV_TARGET
-            {
-                // Sample alpha and discard fully transparent pixels
-                float alpha = SAMPLE_TEXTURE2D(_AlphaMap, sampler_AlphaMap, input.uv).r * _Albedo.a;
-                clip(alpha - 0.01);
-                return 0;
-            }
-            ENDHLSL
-        }
-
+        // ====================================================================
+        // OUTLINE PASS
+        // ====================================================================
         Pass
         {
             Name "Outline"
-
             Cull Front
+            ZTest [_ZTestMode]
 
             HLSLPROGRAM
             #pragma vertex OutlineVert
             #pragma fragment OutlineFrag
+
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fragment _ _LIGHT_LAYERS
+            #pragma multi_compile_fragment _ _LIGHT_COOKIES
+            #pragma multi_compile _ _FORWARD_PLUS
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fog
             #pragma shader_feature OUTLINE_METHOD_NORMAL
             #pragma shader_feature_local USE_OUTLINE
@@ -142,6 +92,7 @@ Shader "Custom/URP_PBR"
                 float _OutlineWidth;
             CBUFFER_END
 
+
             Varyings OutlineVert(Attributes input)
             {
                 Varyings output;
@@ -151,10 +102,9 @@ Shader "Custom/URP_PBR"
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
                 #ifdef USE_OUTLINE
-                        float3 normalOS = normalize(input.normalOS);
-        
+                    float3 normalOS = normalize(input.normalOS);
                 #ifdef OUTLINE_METHOD_NORMAL
-                            input.positionOS.xyz += normalOS * _OutlineWidth;
+                        input.positionOS.xyz += normalOS * _OutlineWidth;
                 #else
                         input.positionOS.xyz += normalOS * _OutlineWidth;
                         input.positionOS.xyz *= (1.0 + _OutlineWidth);
@@ -172,7 +122,7 @@ Shader "Custom/URP_PBR"
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
                 #ifdef USE_OUTLINE
-                        return _OutlineColor;
+                    return _OutlineColor;
                 #else
                 discard;
                 return half4(0, 0, 0, 0);
@@ -181,47 +131,68 @@ Shader "Custom/URP_PBR"
             ENDHLSL
         }
 
-
+        // ====================================================================
+        // FORWARD LIT PASS - Using URP's BRDF Functions
+        // ====================================================================
         Pass
         {
-
             Name "ForwardLit"
             Tags
             {
                 "LightMode" = "UniversalForward"
             }
 
+            ZTest [_ZTestMode]
+            Blend SrcAlpha OneMinusSrcAlpha
+
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
-            #pragma multi_compile _ _ADDITIONAL_LIGHTS
-            #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
+
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fragment _ _LIGHT_LAYERS
+            #pragma multi_compile_fragment _ _LIGHT_COOKIES
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fog
+
             #pragma multi_compile_fog
 
             #include "VandullFunctions.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
-            struct Attributes
+            /*struct Attributes
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
                 float4 tangentOS : TANGENT;
                 float2 uv : TEXCOORD0;
+            };*/
+            struct Attributes
+            {
+                float3 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                float4 tangentOS : TANGENT;
+                float2 uv : TEXCOORD0;
+                float2 staticLightmapUV : TEXCOORD1;
+                float2 dynamicLightmapUV : TEXCOORD2;
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
-                float3 positionWS : TEXCOORD1;
-                float3 normalWS : TEXCOORD2;
-                float3 tangentWS : TEXCOORD3;
-                float3 bitangentWS : TEXCOORD4;
-                float fogFactor : TEXCOORD5;
+                float3 positionWS : TEXCOORD0;
+                float3 normalWS : TEXCOORD1;
+                float4 tangentWS : TEXCOORD2; // xyz: tangent, w: sign
+                float fogFactor : TEXCOORD3;
+                float2 staticLightmapUV : TEXCOORD4;
+                float2 dynamicLightmapUV : TEXCOORD5;
+                half3 vertexSH : TEXCOORD6; // SH for dynamic objects
+                float2 uv : TEXCOORD7;
             };
+
 
             TEXTURE2D(_AlbedoMap);
             SAMPLER(sampler_AlbedoMap);
@@ -235,17 +206,9 @@ Shader "Custom/URP_PBR"
             SAMPLER(sampler_NormalMap);
             TEXTURE2D(_EmissionMap);
             SAMPLER(sampler_EmissionMap);
-            TEXTURE2D(_AlphaMap);
-            SAMPLER(sampler_AlphaMap);
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _AlbedoMap_ST;
-                float4 _RoughnessMap_ST;
-                float4 _MetallicMap_ST;
-                float4 _AOMap_ST;
-                float4 _NormalMap_ST;
-                float4 _EmissionMap_ST;
-                float4 _AlphaMap_ST;
                 float4 _Albedo;
                 float4 _EmissionColor;
                 float4 _NormalEffectsColor;
@@ -261,66 +224,26 @@ Shader "Custom/URP_PBR"
                 float _ColorZ;
             CBUFFER_END
 
-            #define PI 3.14159265359
-
-            // Distribution GGX
-            float DistributionGGX(float3 N, float3 H, float roughness)
-            {
-                float a = roughness * roughness;
-                float a2 = a * a;
-                float NdotH = max(dot(N, H), 0.0);
-                float NdotH2 = NdotH * NdotH;
-
-                float nom = a2;
-                float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-                denom = PI * denom * denom;
-
-                return nom / denom;
-            }
-
-            // Geometry Schlick GGX
-            float GeometrySchlickGGX(float NdotV, float roughness)
-            {
-                float r = (roughness + 1.0);
-                float k = (r * r) / 8.0;
-
-                float nom = NdotV;
-                float denom = NdotV * (1.0 - k) + k;
-
-                return nom / denom;
-            }
-
-            // Geometry Smith
-            float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
-            {
-                float NdotV = max(dot(N, V), 0.0);
-                float NdotL = max(dot(N, L), 0.0);
-                float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-                float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-
-                return ggx1 * ggx2;
-            }
-
-            // Fresnel Schlick
-            float3 FresnelSchlick(float cosTheta, float3 F0)
-            {
-                return F0 + (1.0 - F0) * pow(saturate(1.0 - cosTheta), 5.0);
-            }
-
             Varyings vert(Attributes input)
             {
-                Varyings output;
+                Varyings output = (Varyings)0;
 
-                VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
-                VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
+                VertexPositionInputs positionInputs = GetVertexPositionInputs(input.positionOS);
+                VertexNormalInputs normalInputs = GetVertexNormalInputs(input.normalOS, input.tangentOS);
 
-                output.positionCS = vertexInput.positionCS;
-                output.positionWS = vertexInput.positionWS;
-                output.normalWS = normalInput.normalWS;
-                output.tangentWS = normalInput.tangentWS;
-                output.bitangentWS = normalInput.bitangentWS;
+                output.positionCS = positionInputs.positionCS;
+                output.positionWS = positionInputs.positionWS;
+                output.normalWS = normalInputs.normalWS;
+                output.tangentWS = float4(normalInputs.tangentWS, input.tangentOS.w);
+                output.fogFactor = ComputeFogFactor(positionInputs.positionCS.z);
                 output.uv = TRANSFORM_TEX(input.uv, _AlbedoMap);
-                output.fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
+
+                // Lightmap UVs
+                OUTPUT_LIGHTMAP_UV(input.staticLightmapUV, unity_LightmapST, output.staticLightmapUV);
+                OUTPUT_LIGHTMAP_UV(input.dynamicLightmapUV, unity_DynamicLightmapST, output.dynamicLightmapUV);
+
+                // SH/Light probe data for dynamic objects
+                OUTPUT_SH(output.normalWS, output.vertexSH);
 
                 return output;
             }
@@ -330,123 +253,73 @@ Shader "Custom/URP_PBR"
             {
                 // Sample textures
                 float4 albedoSample = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.uv);
-                float3 albedo = albedoSample.rgb * _Albedo.rgb;
-                float alpha = SAMPLE_TEXTURE2D(_AlphaMap, sampler_AlphaMap, input.uv).r * _Albedo.a;
+                half3 albedo = albedoSample.rgb * _Albedo.rgb;
 
-                float metallic = SAMPLE_TEXTURE2D(_MetallicMap, sampler_MetallicMap, input.uv).r * _Metallic;
-                float roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness;
-                float ao = SAMPLE_TEXTURE2D(_AOMap, sampler_AOMap, input.uv).r * _AO;
+                half metallic = SAMPLE_TEXTURE2D(_MetallicMap, sampler_MetallicMap, input.uv).r * _Metallic;
+                half roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness;
+                half smoothness = 1.0h - roughness;
+                half occlusion = SAMPLE_TEXTURE2D(_AOMap, sampler_AOMap, input.uv).r;
+                occlusion = lerp(1.0h, occlusion, _AO);
+                half3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv).rgb
+                    * _EmissionColor.rgb * _EmissionStrength;
 
-
-                // Sample emission
-                float3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv).rgb * _EmissionColor.rgb
-                    * _EmissionStrength;
-
-                // Sample and apply normal map
-                float3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.uv));
-
-                if ((_ColorX > 0.5 && checkNormalThreshold(normalTS.x, _NormalThreshold)) ||
-                    (_ColorY > 0.5 && checkNormalThreshold(normalTS.y, _NormalThreshold)) ||
-                    (_ColorZ > 0.5 && checkNormalThreshold(normalTS.z, _NormalThreshold)))
-                {
-                    return float4(_NormalEffectsColor.rgb, alpha);
-                }
+                // === SAMPLE AND TRANSFORM NORMAL MAP ===
+                // Sample normal map (tangent space)
+                half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.uv));
 
                 normalTS.xy *= _NormalStrength;
-                // Check normal threshold effects
+                normalTS = normalize(normalTS);
 
-                float3x3 TBN = float3x3(input.tangentWS, input.bitangentWS, input.normalWS);
-                float3 N = normalize(mul(normalTS, TBN));
+                // Build tangent-to-world matrix
+                half3 bitangent = cross(input.normalWS, input.tangentWS.xyz) * input.tangentWS.w;
+                half3x3 tangentToWorld = half3x3(input.tangentWS.xyz, bitangent, input.normalWS);
 
-                float3 V = normalize(GetCameraPositionWS() - input.positionWS);
+                // Transform normal from tangent space to world space
+                half3 normalWS = normalize(mul(normalTS, tangentToWorld));
 
-                float3 F0 = float3(0.04, 0.04, 0.04);
-                F0 = lerp(F0, albedo, metallic);
+                // Setup InputData
+                InputData inputData;
 
-                float3 Lo = float3(0.0, 0.0, 0.0);
-
-                // Main Light
-                Light mainLight = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
-
-                float3 L = normalize(mainLight.direction);
-                float3 H = normalize(V + L);
-                float3 attenuation = mainLight.distanceAttenuation * mainLight.shadowAttenuation;
-
-                float3 radiance = mainLight.color * attenuation;
-
-                // Cook-Torrance BRDF
-                float NDF = D_GGX(dot(N, H), roughness);
-                float G = GeometrySmith(N, V, L, roughness);
-                float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-
-                float3 kS = F;
-                float3 kD = float3(1.0, 1.0, 1.0) - kS;
-                kD *= 1.0 - metallic;
-
-                float3 numerator = NDF * G * F;
-                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-                float3 specular = numerator / denominator;
-
-                float NdotL = max(dot(N, L), 0.0);
-                NdotL = celBanding(NdotL, _CellBands);
-                Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+                inputData.positionWS = input.positionWS;
+                inputData.positionCS = input.positionCS;
 
 
-                // Additional Lights
-                #ifdef _ADDITIONAL_LIGHTS
-                uint pixelLightCount = GetAdditionalLightsCount();
-                for (uint lightIndex = 0u; lightIndex < pixelLightCount; ++lightIndex)
-                {
-                    Light light = GetAdditionalLight(lightIndex, input.positionWS);
-                    
-                    float3 L = normalize(light.direction);
-                    float3 H = normalize(V + L);
-                    float3 radiance = light.color * light.distanceAttenuation * light.shadowAttenuation;
+                inputData.normalWS = normalWS;
 
-                    // Cook-Torrance BRDF
-                    float NDF = DistributionGGX(N, H, roughness);
-                    float G = GeometrySmith(N, V, L, roughness);
-                    float3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+                inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
+                inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
+                inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
+                inputData.vertexLighting = half3(0, 0, 0);
 
-                    float3 kS = F;
-                    float3 kD = float3(1.0, 1.0, 1.0) - kS;
-                    kD *= 1.0 - metallic;
-
-                    float3 numerator = NDF * G * F;
-                    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-                    float3 specular = numerator / denominator;
-                    specular = celBanding(specular, _CellBands);
-
-                    float NdotL = max(dot(N, L), 0.0);
-                    NdotL = celBanding(NdotL, _CellBands);
-                    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
-                }
+                #if defined(LIGHTMAP_ON)
+                inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS);
+                #else
+                inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS);
                 #endif
 
-                // Ambient
-                float3 ambient = float3(0.03, 0.03, 0.03) * albedo * ao;
-                float3 color = ambient + Lo;
+                inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+                inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
 
-                // Add emission (before tone mapping for HDR glow)
-                color += emission;
+                // ALSO SET tangentToWorld for InputData (some lighting functions use it)
+                inputData.tangentToWorld = tangentToWorld;
 
-                // Tone mapping
-                color = color / (color + float3(1.0, 1.0, 1.0));
+                // Setup SurfaceData
+                SurfaceData surfaceData = (SurfaceData)0;
+                surfaceData.albedo = albedo;
+                surfaceData.metallic = metallic;
+                surfaceData.smoothness = smoothness;
+                surfaceData.occlusion = occlusion;
+                surfaceData.emission = emission;
+                surfaceData.normalTS = normalTS;
+                surfaceData.alpha = 1.0; // or your alpha value
+                surfaceData.specular = half3(0, 0, 0); // metallic workflow
 
-                // Gamma correction
-                color = pow(color, float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
+                float4 color = VandullPBR(inputData, surfaceData);
 
-                // Apply fog
-                color = MixFog(color, input.fogFactor);
-
-
-                return float4(color, alpha);
+                return color;
             }
             ENDHLSL
         }
-
-
-        // Shadow caster pass for receiving shadows
         Pass
         {
             Name "ShadowCaster"
@@ -454,9 +327,6 @@ Shader "Custom/URP_PBR"
             {
                 "LightMode" = "ShadowCaster"
             }
-
-            ZWrite On
-            ZTest LEqual
             ColorMask 0
 
             HLSLPROGRAM
@@ -465,6 +335,8 @@ Shader "Custom/URP_PBR"
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
+
+            float3 _LightDirection;
 
             struct Attributes
             {
@@ -477,26 +349,22 @@ Shader "Custom/URP_PBR"
                 float4 positionCS : SV_POSITION;
             };
 
+
             float4 GetShadowPositionHClip(Attributes input)
             {
-                float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                float3 postionWS = TransformObjectToWorld(input.positionOS.xyz);
                 float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
-                float4 positionCS =
-                    TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, _MainLightPosition.xyz));
-
-                #if UNITY_REVERSED_Z
-                positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
-                #else
-                positionCS.z = max(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
-                #endif
-
+                float4 positionCS = TransformWorldToHClip(ApplyShadowBias(postionWS, normalWS, _LightDirection));
+                positionCS = ApplyShadowClamping(positionCS);
                 return positionCS;
             }
 
             Varyings ShadowPassVertex(Attributes input)
             {
                 Varyings output;
+
                 output.positionCS = GetShadowPositionHClip(input);
+
                 return output;
             }
 

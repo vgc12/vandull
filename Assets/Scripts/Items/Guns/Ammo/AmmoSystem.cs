@@ -182,25 +182,9 @@ namespace Items.Guns.Ammo
             _gun.ItemAnimationSystem.PlayAnimation(_gun.holdingItemAnimation);
 
             OnReloadComplete?.Invoke(new ReloadEvent(CurrentMagazine));
+            _reloadCoroutine = null;
         }
 
-
-        // Event Handlers
-        private void OnItemSwitched(ItemSwitchedEvent evt)
-        {
-            if (!IsReloading || _gun.Owner == OwnerStatus.Enemy) return;
-
-            // Cancel current reload and mark for retry
-            IsReloading = false;
-
-            if (_reloadCoroutine != null)
-            {
-                _behaviour.StopCoroutine(_reloadCoroutine);
-                _reloadCoroutine = null;
-            }
-
-            _rigHandler.LeftHandFollowItemTarget = true;
-        }
 
         // Factory
         private Magazine CreateMagazine()

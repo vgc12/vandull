@@ -19,6 +19,8 @@ namespace Player
 
         [SerializeField] private float health;
 
+        [SerializeField] private float maxHealth = 100f;
+
         [Inject] private readonly ILogger _logger;
 
 
@@ -50,7 +52,7 @@ namespace Player
             PlayerLooking = GetComponent<PlayerLooking>();
 
 
-            health = 100;
+            health = 100f;
 
 
             InitializeStateMachine();
@@ -81,9 +83,10 @@ namespace Player
         public float Health
         {
             get => health;
-            set => health = value;
+            set => health = Mathf.Clamp(value, 0, maxHealth);
         }
 
+        public float MaxHealth => maxHealth;
         public bool IsDead { get; private set; }
 
         public void Die()

@@ -36,9 +36,12 @@ namespace Npcs.Shared
         public float Health
         {
             get => health;
-            set => health = value;
+            set => health = Mathf.Clamp(value, 0, maxHealth);
         }
 
+        [SerializeField] private float maxHealth = 100f;
+
+        public float MaxHealth => maxHealth;
         public bool IsDead => health <= 0;
 
         #endregion
