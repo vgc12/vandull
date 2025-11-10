@@ -1,10 +1,14 @@
 ﻿using EventBus;
 using General;
+using Levels.Strategies;
 using Player.Looking;
 using Player.Movement;
 using Player.States;
+using Reflex.Attributes;
+using Shared;
 using StateMachine;
 using UnityEngine;
+using ILogger = General.Logging.ILogger;
 
 namespace Player
 {
@@ -15,6 +19,10 @@ namespace Player
 
         [SerializeField] private float health;
 
+        [SerializeField] private float maxHealth = 100f;
+
+        [Inject] private readonly ILogger _logger;
+
 
         private GroundChecker _groundChecker;
         private StateMachine.StateMachine _stateMachine;
@@ -23,6 +31,7 @@ namespace Player
         public PlayerMovement PlayerMovement { get; private set; }
 
         public PlayerLooking PlayerLooking { get; private set; }
+
 
         private bool IsGroundedAndNotCrouching =>
             _groundChecker.IsGrounded && !PlayerMovement.CrouchPressed;
@@ -43,7 +52,7 @@ namespace Player
             PlayerLooking = GetComponent<PlayerLooking>();
 
 
-            health = 100;
+            health = 100f;
 
 
             InitializeStateMachine();
@@ -61,25 +70,35 @@ namespace Player
 
         public void TakeDamage(float amount, Vector3 direction)
         {
-            if (Invulnerable) return;
+            if (Invulnerable || IsDead) return;
 
-            VandullLogger.Log($"Player took {amount} damage");
+            _logger.Log($"Player took {amount} damage");
             health -= amount;
+            EventBus<PlayerHitEvent>.Raise(new PlayerHitEvent(health));
             if (Health <= 0) Die();
         }
 
         public bool Invulnerable => invulnerable;
-        public float Health => health;
+
+        public float Health
+        {
+            get => health;
+            set => health = Mathf.Clamp(value, 0, maxHealth);
+        }
+
+        public float MaxHealth => maxHealth;
+        public bool IsDead { get; private set; }
 
         public void Die()
         {
-            EventBus<PlayerDeathEvent>.Raise(new PlayerDeathEvent());
+            IsDead = true;
+            EventBus<PlayerKilledEvent>.Raise(new PlayerKilledEvent(gameObject, transform.position, ""));
         }
 
 
         private void InitializeStateMachine()
         {
-            var movementStates = Factory.Create(this);
+            var movementStates = new Factory(this).Create();
 
             _stateMachine = new StateMachine.StateMachine();
 
@@ -87,7 +106,7 @@ namespace Player
             _stateMachine.SetState(movementStates.IdleState);
         }
 
-        private void CreateAnyTransitions(Factory states)
+        private void CreateAnyTransitions(PlayerStates states)
         {
             _stateMachine.AddAnyTransition(states.JumpState,
                 new FuncPredicate(() =>
@@ -110,25 +129,35 @@ namespace Player
         }
 
 
-        private class Factory
+        private class PlayerStates
         {
-            public IdleState IdleState { get; private init; }
-            public WalkState WalkState { get; private init; }
-            public SprintState SprintState { get; private init; }
-            public JumpState JumpState { get; private init; }
-            public CrouchState CrouchState { get; private init; }
-            public IState CrouchWalkState { get; private init; }
+            public IdleState IdleState { get; init; }
+            public WalkState WalkState { get; init; }
+            public SprintState SprintState { get; init; }
+            public JumpState JumpState { get; init; }
+            public CrouchState CrouchState { get; init; }
+            public IState CrouchWalkState { get; init; }
+        }
 
-            public static Factory Create(PlayerStateMachine sm)
+        private class Factory : IFactory<PlayerStates>
+        {
+            private readonly PlayerStateMachine _sm;
+
+            public Factory(PlayerStateMachine sm)
             {
-                return new Factory
+                _sm = sm;
+            }
+
+            public PlayerStates Create()
+            {
+                return new PlayerStates
                 {
-                    IdleState = new IdleState(sm),
-                    WalkState = new WalkState(sm),
-                    SprintState = new SprintState(sm),
-                    JumpState = new JumpState(sm),
-                    CrouchState = new CrouchState(sm),
-                    CrouchWalkState = new CrouchWalkState(sm)
+                    IdleState = new IdleState(_sm),
+                    WalkState = new WalkState(_sm),
+                    SprintState = new SprintState(_sm),
+                    JumpState = new JumpState(_sm),
+                    CrouchState = new CrouchState(_sm),
+                    CrouchWalkState = new CrouchWalkState(_sm)
                 };
             }
         }

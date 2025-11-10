@@ -2,6 +2,7 @@
 using EventBus;
 using General;
 using Items.Guns;
+using Levels.Strategies;
 using Npcs.Sensors;
 using Npcs.Shared;
 using Npcs.States;
@@ -146,16 +147,12 @@ namespace Npcs
         {
             _transform.LookAt(target);
             _transform.rotation = Quaternion.Euler(0, _transform.rotation.eulerAngles.y, 0);
-
-
-/*
-            var direction = target - Gun.FireModeSystem.CurrentFireSystem.MuzzleTransform.position;
-     */
         }
 
 
         public override void TakeDamage(float amount, Vector3 direction)
         {
+            if (IsDead) return;
             base.TakeDamage(amount, direction);
             _lastDamageDirection = -direction;
             _damagedTimer.Start();
@@ -164,11 +161,7 @@ namespace Npcs
         public override void Die()
         {
             base.Die();
-            EventBus<EnemyKilledEvent>.Raise(new EnemyKilledEvent());
+            EventBus<EnemyKilledEvent>.Raise(new EnemyKilledEvent(this, transform.position));
         }
-    }
-
-    public class EnemyKilledEvent : IEvent
-    {
     }
 }

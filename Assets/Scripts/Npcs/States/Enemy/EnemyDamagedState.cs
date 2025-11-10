@@ -1,6 +1,4 @@
-﻿using General;
-
-namespace Npcs.States.Enemy
+﻿namespace Npcs.States.Enemy
 {
     public class EnemyDamagedState : NpcState
     {
@@ -13,7 +11,6 @@ namespace Npcs.States.Enemy
 
         public override void Update()
         {
-            VandullLogger.Log("Entered damage state, turning towards player");
             _enemy.LookAtDamageDirection();
         }
     }

@@ -54,6 +54,13 @@ namespace Items.Guns
             );
         }
 
+
+        private void OnDisable()
+        {
+            EventBus<ShotHitEvent>.Deregister(_shotHitEventBinding);
+            _decalPool?.Clear();
+        }
+
         private void SpawnDecal(ShotHitEvent obj)
         {
             var decal = _decalPool.Get();
@@ -86,13 +93,6 @@ namespace Items.Guns
                 decal.fadeFactor = initialFade;
                 _decalPool.Release(decal);
             }
-        }
-        
-        
-        private void OnDestroy()
-        {
-            EventBus<ShotHitEvent>.Deregister(_shotHitEventBinding);
-            _decalPool.Clear();
         }
     }
 }

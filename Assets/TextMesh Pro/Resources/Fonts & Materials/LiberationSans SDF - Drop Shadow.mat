@@ -2,23 +2,41 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: LiberationSans SDF - Drop Shadow
-  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
-  m_ShaderKeywords: OUTLINE_ON UNDERLAY_ON
+  m_Shader: {fileID: 4800000, guid: 4bd054383b451be4f86c5f89c08a7749, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - USE_OUTLINE
+  m_InvalidKeywords:
+  - OUTLINE_ON
+  - UNDERLAY_ON
+  - _COLORX_ON
+  - _COLORY_ON
+  - _COLORZ_ON
   m_LightmapFlags: 5
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AOMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AlbedoMap:
+        m_Texture: {fileID: 28684132378477856, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BumpMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -27,20 +45,38 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _FaceTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 28684132378477856, guid: 8f586378b4e144a9851e7b34d9b748ee,
-          type: 2}
+        m_Texture: {fileID: 28684132378477856, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OutlineTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints:
+    - _ZTestMode: 4
     m_Floats:
+    - _AO: 1
     - _Ambient: 0.5
     - _Bevel: 0.5
     - _BevelClamp: 0
@@ -50,8 +86,13 @@ Material:
     - _BumpFace: 0
     - _BumpOutline: 0
     - _ColorMask: 15
+    - _ColorX: 1
+    - _ColorY: 1
+    - _ColorZ: 1
+    - _CullMode: 0
     - _Diffuse: 0.5
     - _DiffusePower: 1
+    - _EmissionStrength: 1
     - _FaceDilate: 0.1
     - _FaceUVSpeedX: 0
     - _FaceUVSpeedY: 0
@@ -63,12 +104,17 @@ Material:
     - _LightAngle: 3.1416
     - _MaskSoftnessX: 0
     - _MaskSoftnessY: 0
+    - _Metallic: 0
+    - _NormalStrength: 1
+    - _NormalThreshold: 0.999998
+    - _OutlineMethod: 0
     - _OutlineSoftness: 0
     - _OutlineUVSpeedX: 0
     - _OutlineUVSpeedY: 0
-    - _OutlineWidth: 0.1
+    - _OutlineWidth: 0.02
     - _PerspectiveFilter: 0.875
     - _Reflectivity: 10
+    - _Roughness: 0.5
     - _ScaleRatioA: 0.9
     - _ScaleRatioB: 0.73125
     - _ScaleRatioC: 0.64125
@@ -88,19 +134,26 @@ Material:
     - _UnderlayOffsetX: 0.5
     - _UnderlayOffsetY: -0.5
     - _UnderlaySoftness: 0.05
+    - _UseOutline: 1
+    - _VandullCelBandsRadiance: 6
     - _VertexOffsetX: 0
     - _VertexOffsetY: 0
     - _WeightBold: 0.75
     - _WeightNormal: 0
     m_Colors:
+    - _Albedo: {r: 1, g: 1, b: 1, a: 1}
     - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _EnvMatrixRotation: {r: 0, g: 0, b: 0, a: 0}
     - _FaceColor: {r: 1, g: 1, b: 1, a: 1}
     - _GlowColor: {r: 0, g: 1, b: 0, a: 0.5}
     - _MaskCoord: {r: 0, g: 0, b: 32767, a: 32767}
+    - _NormalEffectsColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _ReflectFaceColor: {r: 0, g: 0, b: 0, a: 1}
     - _ReflectOutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
     - _UnderlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

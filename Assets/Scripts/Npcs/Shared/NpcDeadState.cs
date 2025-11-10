@@ -13,9 +13,8 @@ namespace Npcs.Shared
 
         public override void Enter()
         {
-            _enemy.Gun.StopFiring();
+            _enemy.Gun.StopUse();
             _enemy.Gun.Drop();
-            _enemy.Die();
         }
     }
 }

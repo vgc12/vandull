@@ -3,24 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using Attributes;
 using EventBus;
-using General;
-using Items.Guns;
-using Npcs.Shared;
 using Player;
+using Reflex.Attributes;
 using UnityEngine;
+using ILogger = General.Logging.ILogger;
+
 
 namespace Items
 {
     [Serializable]
     public class ItemHandler : MonoBehaviour
     {
-        [SerializeField] public List<Gun> gunObjects = new();
-
-        [SerializeField] [Required] private ArmAnimationController armAnimationController;
-
         [SerializeField] [Required] private RigHandler rigHandler;
 
         private List<Item> _inventory = new();
+
+        [Inject] public ILogger Logger;
 
         public Item EquippedItem { get; private set; }
 
@@ -34,8 +32,6 @@ namespace Items
         // Call this from Awake() or Start() in your MonoBehaviour
         public void Start()
         {
-            gunObjects ??= new List<Gun>();
-
             _inventory ??= new List<Item>();
 
 
@@ -52,34 +48,33 @@ namespace Items
         private void LogPrefabs()
         {
             Debug.Log("Current Prefabs:");
-            foreach (var prefab in gunObjects) VandullLogger.Log(prefab.name);
+            foreach (var prefab in _inventory) Logger.Log(prefab.name);
         }
 
         private void LogInventory()
         {
             Debug.Log("Current Inventory:");
-            foreach (var item in _inventory) VandullLogger.Log(item.name + (item == EquippedItem ? " (Equipped)" : ""));
+            foreach (var item in _inventory) Logger.Log(item.name + (item == EquippedItem ? " (Equipped)" : ""));
         }
 
         public void SetUpItems()
         {
-            gunObjects = GetComponentsInChildren<Gun>().ToList();
-            foreach (var i in gunObjects)
-            {
-                _inventory.Add(i);
-                i.UnEquip();
-            }
+            _inventory = GetComponentsInChildren<Item>().ToList();
+            foreach (var i in _inventory) i.UnEquip();
         }
 
-        public void InitializeItem(Item item)
-        {
-        }
 
         public void SwitchItem(int direction)
         {
+            // Something is preventing item swap (i.e reloading, mid grenade throw, etc)
+            if (!EquippedItem.CanBeSwappedFrom) return;
+
             if (_inventory.Count == 0) return;
             var currentIndex = _inventory.IndexOf(EquippedItem);
-            var nextIndex = Math.Abs((currentIndex + direction) % gunObjects.Count);
+            direction = -direction;
+            var nextIndex = currentIndex + direction < 0
+                ? _inventory.Count - 1
+                : (currentIndex + direction) % _inventory.Count;
             EquipItem(_inventory[nextIndex]);
         }
 
@@ -92,11 +87,25 @@ namespace Items
             EquippedItem = item;
             EquippedItem.Equip();
 
-            rigHandler.SetLeftHandData(EquippedItem.leftHandTarget, EquippedItem.leftHandHint);
-            rigHandler.SetRightHandData(EquippedItem.rightHandTarget, EquippedItem.rightHandHint);
-//            animator.SetLayerWeight((int)EquippedItem.gripType, 1);
+            rigHandler.LeftHandTarget = EquippedItem.leftHandTarget;
+            rigHandler.LeftHandHint = EquippedItem.leftHandHint;
+            rigHandler.RightHandTarget = EquippedItem.rightHandTarget;
+            rigHandler.RightHandHint = EquippedItem.rightHandHint;
+            rigHandler.RebuildRigs();
+            EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(EquippedItem));
+        }
 
-            armAnimationController.PlayAnimation(EquippedItem.gripType);
+        public void EquipItemAtIndex(int index)
+        {
+            if (index < 0 || index >= _inventory.Count) return;
+            EquipItem(_inventory[index]);
+        }
+
+        public void TryRemoveItem(Item item)
+        {
+            if (!_inventory.Contains(item)) return;
+            _inventory.Remove(item);
+            EquipItemAtIndex(0);
         }
     }
 }

@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/level-select.uss?fileID=7433441132597879392&amp;guid=cd78e5c8cd94df847b8df5513f15f6a3&amp;type=3#level-select" />
+    <Style src="project://database/Assets/UI%20Toolkit/vandull-common.uss?fileID=7433441132597879392&amp;guid=a39a13c2966cff748b648d6b872b5878&amp;type=3#vandull-common" />
+    <Style src="project://database/Assets/UI%20Toolkit/Settings.uss?fileID=7433441132597879392&amp;guid=ec9430bf6f4d1a94dafe6ea75e7f0a90&amp;type=3#Settings" />
+    <ui:VisualElement name="level-select-root" style="flex-grow: 1; flex-direction: column; display: flex; background-color: rgb(0, 0, 0);">
+        <ui:Label text="Level Select" class="settings-label" style="align-self: center; font-size: 24px;" />
+        <ui:ScrollView name="level-button-container" style="flex-grow: 0; flex-shrink: 0; align-items: flex-start; justify-content: center; align-self: flex-start; width: 40%;" />
+    </ui:VisualElement>
+</ui:UXML>

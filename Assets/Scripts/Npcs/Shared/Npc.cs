@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Attributes;
 using General;
+using Shared;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -31,8 +32,16 @@ namespace Npcs.Shared
         #region Properties
 
         public bool Invulnerable => invulnerable;
-        public float Health => health;
 
+        public float Health
+        {
+            get => health;
+            set => health = Mathf.Clamp(value, 0, maxHealth);
+        }
+
+        [SerializeField] private float maxHealth = 100f;
+
+        public float MaxHealth => maxHealth;
         public bool IsDead => health <= 0;
 
         #endregion
@@ -97,8 +106,10 @@ namespace Npcs.Shared
 
         public virtual void TakeDamage(float amount, Vector3 direction)
         {
-            if (invulnerable) return;
+            if (invulnerable || IsDead) return;
             health -= amount;
+            health = Mathf.Clamp(health, 0, float.MaxValue);
+            if (IsDead) Die();
         }
 
         public virtual void Die()

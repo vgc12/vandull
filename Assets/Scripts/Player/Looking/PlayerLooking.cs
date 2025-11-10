@@ -1,13 +1,16 @@
 using Attributes;
+using Player.Input;
+using Reflex.Attributes;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Player.Looking
 {
-    [RequireComponent(typeof(GroundChecker), typeof(Bobber), typeof(Rigidbody))]
+    [RequireComponent(typeof(GroundChecker), typeof(Rigidbody))]
     public class PlayerLooking : MonoBehaviour
     {
         #region Variables
+
+        [Inject] private IPlayerInput _input;
 
         private enum LeanDirection
         {
@@ -16,9 +19,6 @@ namespace Player.Looking
             None = 0
         }
 
-        [Required] public ObjectSwayer objectSwayer;
-
-        private InputManager _input;
 
         private Vector2 _mouseDelta;
 
@@ -29,7 +29,6 @@ namespace Player.Looking
 
         private Rigidbody _rigidbody;
 
-        public Bobber Bobber { get; private set; }
 
         [Header("Configuration")] [Required] [SerializeField]
         private PlayerLookingConfig config;
@@ -44,29 +43,24 @@ namespace Player.Looking
 
         [SerializeField] [Required] private Transform leanPoint;
 
-        [Header("Configuration")] 
-        [Required] public CameraBobConfig cameraBobConfig;
-        
+        [SerializeField] private Transform itemHolder;
+
+        [Header("Configuration")] [Required] public CameraBobConfig weaponBobConfig;
+
         #endregion
 
         #region UnityFunctions
 
-  
-
         private void Start()
         {
             InitializeControls();
-            Bobber = GetComponent<Bobber>();
         }
 
 
         private void OnDestroy()
         {
-            
-            _input.InputActions.Player.Look.performed -= OnMouseMove;
-            _input.InputActions.Player.Look.canceled -= OnMouseMove;
-            _input.InputActions.Player.Lean.started -= OnLeaning;
-            _input.InputActions.Player.Lean.canceled -= OnLeaning;
+            _input.Look -= OnMouseMove;
+            _input.Lean -= OnLeaning;
         }
 
         #endregion
@@ -76,25 +70,20 @@ namespace Player.Looking
 
         private void InitializeControls()
         {
-         
-            _input = InputManager.Instance;
-            _input.InputActions.Player.Look.performed += OnMouseMove;
-            _input.InputActions.Player.Look.canceled += OnMouseMove;
+            _input.Look += OnMouseMove;
 
-
-            _input.InputActions.Player.Lean.started += OnLeaning;
-            _input.InputActions.Player.Lean.canceled += OnLeaning;
+            _input.Lean += OnLeaning;
         }
 
 
-        private void OnLeaning(InputAction.CallbackContext context)
+        private void OnLeaning(float value)
         {
-            _leanDirection = (LeanDirection)context.ReadValue<float>();
+            _leanDirection = (LeanDirection)value;
         }
 
-        public void OnMouseMove(InputAction.CallbackContext context)
+        private void OnMouseMove(Vector2 direction)
         {
-            _mouseDelta = context.ReadValue<Vector2>();
+            _mouseDelta = direction;
         }
 
         #endregion
@@ -110,13 +99,17 @@ namespace Player.Looking
 
             leanPoint.rotation = rot;
             cameraHolder.rotation = Quaternion.Euler(_cameraRotation.x, _cameraRotation.y, 0);
+            if (!itemHolder) return;
+            itemHolder.localRotation = Quaternion.Euler(itemHolder.localRotation.eulerAngles.x,
+                itemHolder.localRotation.eulerAngles.x, leanPoint.rotation.eulerAngles.z);
         }
 
 
         public void Look()
         {
-            var mouseX = _mouseDelta.x * Time.deltaTime * config.Sensitivity;
-            var mouseY = _mouseDelta.y * Time.deltaTime * config.Sensitivity;
+            var mouseX = _mouseDelta.x * Time.deltaTime * config.Sensitivity * config.InputMultiplier *
+                         (int)config.xAimType;
+            var mouseY = _mouseDelta.y * Time.deltaTime * config.Sensitivity * (int)config.yAimType;
 
             _cameraRotation.y += mouseX;
             _cameraRotation.x -= mouseY;

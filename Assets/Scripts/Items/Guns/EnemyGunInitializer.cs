@@ -1,7 +1,6 @@
 ﻿using Items.Guns.Aiming;
 using Items.Guns.Firing;
 using Items.Guns.Recoil;
-using Npcs.Sensors;
 using Player.Movement;
 using UnityEngine;
 
@@ -11,17 +10,18 @@ namespace Items.Guns
         order = 1)]
     public class EnemyGunInitializer : GunInitializer
     {
-        public ISensor Sensor;
-
         public override GunSystems CreateGunSystems(Gun gun)
         {
             var builder = new Builder(gun);
             return builder.WithCustomFireMode(FireType.Automatic,
-                    () => new EnemyAutomaticFireMode(gun.gunConfig, gun.transform, gun, gun.muzzleTransform))
+                    () => new EnemyAutomaticFireMode(gun))
                 .WithRecoilSystem(() =>
-                    new EnemyRecoilSystem(gun.gunConfig, gun.recoilTransform, gun))
+                    new NullRecoilSystem())
                 .WithAimingSystem(() => new EnemyAimingSystem(gun.aimTransform,
-                    FindFirstObjectByType<PlayerMovement>().GetComponentInChildren<Collider>().transform)).Build();
+                    FindFirstObjectByType<PlayerMovement>().GetComponentInChildren<Collider>().transform))
+                .WithAnimationSystem(() => new EnemyGunAnimationSystem())
+                .WithOwnerStatus(OwnerStatus.Enemy)
+                .Build();
         }
     }
 }

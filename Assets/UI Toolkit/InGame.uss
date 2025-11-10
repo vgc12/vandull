@@ -11,9 +11,9 @@
 }
 
 .health-bar .unity-progress-bar__progress {
-    background-color: rgb(120, 13, 13);
+    background-color: rgb(255, 0, 0);
     border-top-left-radius: 3px;
-    border-top-right-radius: 0;
+    border-top-right-radius: 3px;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 3px;
 }
@@ -23,4 +23,69 @@
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
+    -unity-background-scale-mode: stretch-to-fill;
+    background-color: rgb(0, 0, 0);
+}
+
+.crosshair {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    translate: -50% -50%;
+    justify-content: center;
+    align-items: center;
+}
+
+.crosshair-line {
+    position: absolute;
+    background-color: rgb(0, 255, 1);
+}
+
+.crosshair-top {
+    width: 2px;
+    height: 10px;
+    top: 0;
+    left: 50%;
+    translate: -50% 0;
+}
+
+.crosshair-bottom {
+    width: 2px;
+    height: 10px;
+    bottom: 0;
+    left: 50%;
+    translate: -50% 0;
+}
+
+.crosshair-left {
+    width: 10px;
+    height: 2px;
+    left: 0;
+    top: 50%;
+    translate: 0 -50%;
+}
+
+.crosshair-right {
+    width: 10px;
+    height: 2px;
+    right: 0;
+    top: 50%;
+    translate: 0 -50%;
+}
+
+.crosshair-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: rgb(0, 255, 23);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    border-left-color: rgb(255, 255, 255);
+    border-right-color: rgb(255, 255, 255);
+    border-top-color: rgb(255, 255, 255);
+    border-bottom-color: rgb(255, 255, 255);
 }

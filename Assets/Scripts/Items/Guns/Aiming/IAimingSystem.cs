@@ -1,6 +1,6 @@
 ﻿namespace Items.Guns.Aiming
 {
-    public interface IAimingSystem : IGunSystem
+    public interface IAimingSystem : IItemSystem
     {
         bool IsAiming { get; }
 

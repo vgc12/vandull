@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using DependencyInjection;
+using EventBus;
+using UnityEngine;
+using ILogger = General.Logging.ILogger;
 
 namespace Items.Guns
 {
@@ -6,10 +9,23 @@ namespace Items.Guns
         order = 1)]
     public sealed class PlayerGunInitializer : GunInitializer
     {
+        private ILogger _logger;
+
         public override GunSystems CreateGunSystems(Gun gun)
         {
+            RuntimeResolver.Instance.TryResolve(out _logger);
             var builder = new Builder(gun);
-            return builder.ForPlayer().Build();
+            return builder.ForPlayer(_logger).Build();
+        }
+    }
+
+    public class PlayerEquippedNewItemEvent : IEvent
+    {
+        public readonly Item Item;
+
+        public PlayerEquippedNewItemEvent(Item item)
+        {
+            Item = item;
         }
     }
 }

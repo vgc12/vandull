@@ -1,0 +1,289 @@
+/* InputRebindStyles.uss */
+
+.input-settings-container {
+    flex-grow: 1;
+    background-color: rgb(28, 28, 30);
+    padding: 20px;
+}
+
+/* Header Styles */
+.header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom-width: 2px;
+    border-bottom-color: rgb(60, 60, 60);
+}
+
+.header-title {
+    font-size: 32px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+}
+
+.header-subtitle {
+    font-size: 14px;
+    color: rgb(150, 150, 150);
+}
+
+/* Tab Styles */
+.tab-container {
+    flex-direction: row;
+    margin-bottom: 20px;
+    background-color: rgb(40, 40, 42);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.tab-button {
+    flex-grow: 1;
+    height: 40px;
+    background-color: transparent;
+    border-width: 0;
+    color: rgb(180, 180, 180);
+    font-size: 16px;
+    border-radius: 6px;
+    transition-duration: 0.2s;
+}
+
+.tab-button:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tab-button.active {
+    background-color: rgb(60, 60, 62);
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+}
+
+/* Bindings Container */
+.bindings-container {
+    flex-grow: 1;
+    margin-bottom: 20px;
+}
+
+/* Section Styles */
+.binding-section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 18px;
+    color: rgb(100, 150, 250);
+    -unity-font-style: bold;
+    margin-bottom: 15px;
+    margin-top: 10px;
+}
+
+/* Binding Row */
+.binding-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 50px;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background-color: rgb(40, 40, 42);
+    border-radius: 8px;
+    transition-duration: 0.2s;
+}
+
+.binding-row:hover {
+    background-color: rgb(48, 48, 50);
+}
+
+.action-label {
+    flex-grow: 1;
+    font-size: 15px;
+    color: rgb(230, 230, 230);
+    min-width: 150px;
+}
+
+/* Key Button Styles */
+.key-button {
+    width: 120px;
+    height: 36px;
+    margin-left: 10px;
+    background-color: rgb(60, 60, 62);
+    border-color: rgb(80, 80, 82);
+    border-width: 2px;
+    border-radius: 6px;
+    color: rgb(255, 255, 255);
+    font-size: 14px;
+    -unity-font-style: bold;
+    transition-duration: 0.15s;
+}
+
+.key-button:hover {
+    background-color: rgb(70, 70, 72);
+    border-color: rgb(100, 150, 250);
+    scale: 1.02;
+}
+
+.key-button:active {
+    background-color: rgb(80, 80, 82);
+    scale: 0.98;
+}
+
+.key-button.alt {
+    background-color: rgb(50, 50, 52);
+    border-color: rgb(70, 70, 72);
+}
+
+.key-button.listening {
+    background-color: rgb(100, 150, 250);
+    border-color: rgb(120, 170, 255);
+    animation: pulse 1s infinite;
+}
+
+.key-button.conflict {
+    background-color: rgb(200, 50, 50);
+    border-color: rgb(220, 70, 70);
+}
+
+/* Controller Button Styles */
+.controller-button {
+    width: 140px;
+    height: 36px;
+    margin-left: 10px;
+    background-color: rgb(70, 50, 90);
+    border-color: rgb(100, 70, 130);
+    border-width: 2px;
+    border-radius: 6px;
+    color: rgb(255, 255, 255);
+    font-size: 14px;
+    -unity-font-style: bold;
+    transition-duration: 0.15s;
+}
+
+.controller-button:hover {
+    background-color: rgb(90, 70, 110);
+    border-color: rgb(120, 90, 160);
+    scale: 1.02;
+}
+
+.controller-button.listening {
+    background-color: rgb(150, 100, 250);
+    border-color: rgb(170, 120, 255);
+}
+
+/* Reset Button */
+.reset-button {
+    width: 36px;
+    height: 36px;
+    margin-left: 10px;
+    background-color: rgb(80, 60, 40);
+    border-color: rgb(100, 80, 60);
+    border-width: 2px;
+    border-radius: 6px;
+    color: rgb(255, 200, 100);
+    font-size: 18px;
+    transition-duration: 0.15s;
+}
+
+.reset-button:hover {
+    background-color: rgb(100, 80, 60);
+    border-color: rgb(120, 100, 80);
+    scale: 1.1;
+}
+
+.reset-button:active {
+    scale: 0.9;
+}
+
+/* Input Overlay */
+.input-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    align-items: center;
+    justify-content: center;
+}
+
+.input-modal {
+    background-color: rgb(40, 40, 42);
+    padding: 40px;
+    border-radius: 12px;
+    border-width: 2px;
+    border-color: rgb(100, 150, 250);
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+    min-width: 300px;
+    align-items: center;
+}
+
+.waiting-text {
+    font-size: 24px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    margin-bottom: 20px;
+}
+
+.conflict-text {
+    font-size: 14px;
+    color: rgb(255, 100, 100);
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.cancel-button {
+    width: 200px;
+    height: 40px;
+    background-color: rgb(60, 60, 62);
+    border-width: 2px;
+    border-color: rgb(80, 80, 82);
+    border-radius: 6px;
+    color: rgb(200, 200, 200);
+    font-size: 14px;
+}
+
+.cancel-button:hover {
+    background-color: rgb(70, 70, 72);
+}
+
+/* Footer */
+.footer {
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 20px;
+    border-top-width: 2px;
+    border-top-color: rgb(60, 60, 60);
+}
+
+.footer-button {
+    width: 200px;
+    height: 50px;
+    border-radius: 8px;
+    font-size: 16px;
+    -unity-font-style: bold;
+    transition-duration: 0.2s;
+}
+
+.footer-button.danger {
+    background-color: rgb(150, 50, 50);
+    border-color: rgb(170, 70, 70);
+    border-width: 2px;
+    color: white;
+}
+
+.footer-button.danger:hover {
+    background-color: rgb(170, 70, 70);
+    scale: 1.02;
+}
+
+.footer-button.primary {
+    background-color: rgb(50, 150, 250);
+    border-color: rgb(70, 170, 255);
+    border-width: 2px;
+    color: white;
+}
+
+.footer-button.primary:hover {
+    background-color: rgb(70, 170, 255);
+    scale: 1.02;
+}
+
+.footer-button:active {
+    scale: 0.98;
+}

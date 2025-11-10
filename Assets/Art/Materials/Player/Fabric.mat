@@ -21,14 +21,23 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Fabric
-  m_Shader: {fileID: 4800000, guid: f5838c87c1a04c24e95945fdeeb915fb, type: 3}
+  m_Shader: {fileID: 4800000, guid: 4bd054383b451be4f86c5f89c08a7749, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - POSTERIZE
+  - OUTLINE_METHOD_NORMAL
+  - USE_OUTLINE
+  - _WORKFLOWMODE_SPECULAR
   m_InvalidKeywords:
+  - ENABLE_HOLOGRAPHIC
+  - ENABLE_MANDELBROT
+  - GLITCH_EFFECT
+  - POSTERIZE
+  - _COLORX_ON
   - _COLORY_ON
   - _COLORZ_ON
+  - _MANDELBROTINFINITEZOOM_ON
+  - _MANDELBROTMODE_UV
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -40,6 +49,18 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AOMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AlbedoMap:
+        m_Texture: {fileID: 2800000, guid: 741470498b14d55488fbc6d800af4af5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _AlphaMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 2800000, guid: 741470498b14d55488fbc6d800af4af5, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -68,6 +89,18 @@ Material:
         m_Texture: {fileID: 2800000, guid: 919e5d0d15ba60f4a9d59b1808e4a287, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _FoilMask:
+        m_Texture: {fileID: 2800000, guid: d7a19280540fb564abbf06efce92bac3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoloGradient:
+        m_Texture: {fileID: 2800000, guid: f55f5f23ed651b144bc15f7a58bae2bd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HoloNoise:
+        m_Texture: {fileID: 2800000, guid: e3db5bf60762f964980d6a05639ccbe2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 2800000, guid: 741470498b14d55488fbc6d800af4af5, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -76,7 +109,15 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MetallicMap:
+        m_Texture: {fileID: 2800000, guid: e3db5bf60762f964980d6a05639ccbe2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Normal:
+        m_Texture: {fileID: 2800000, guid: f55f5f23ed651b144bc15f7a58bae2bd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
         m_Texture: {fileID: 2800000, guid: f55f5f23ed651b144bc15f7a58bae2bd, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -96,6 +137,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: d34957cff396de34482876145aaa117f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SpecularMap:
+        m_Texture: {fileID: 2800000, guid: d34957cff396de34482876145aaa117f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -108,8 +153,12 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _DstBlend: 10
+    - _SrcBlend: 5
+    - _ZTestMode: 4
     m_Floats:
+    - _AO: 1
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
@@ -119,9 +168,10 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1.18
+    - _CellBands: 20.6
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _ColorX: 0
+    - _ColorX: 1
     - _ColorXDirection: 1
     - _ColorY: 1
     - _ColorYDirection: 1
@@ -143,19 +193,47 @@ Material:
     - _EdgeShadowAttenuation: 0.05
     - _EdgeSpecular: 0.1
     - _EmissionIntensity: 1
+    - _EmissionStrength: 1
+    - _EnableHolographic: 1
+    - _EnableMandelbrot: 1
+    - _EntityId: 0.64
     - _EnvironmentReflections: 1
+    - _GlitchEffectStrength: 5
+    - _GlitchEnabled: 1
+    - _GlitchFlicker: 5
+    - _GlitchFlickerSpeed: 58.6
+    - _GlitchSpeed: 48.5
+    - _GlitchStrength: 0.826
     - _GlossMapScale: 0
     - _Glossiness: 0.008
     - _GlossyReflections: 0
     - _HighNormalSoftness: 0
     - _HighNormalThreshold: 0.972
-    - _Metallic: 0
+    - _HoloDirection: 0.539
+    - _HoloFuzziness: 0.243
+    - _HoloPeriod: 1.51
+    - _HoloScroll: 1.86
+    - _HoloStrength: 0.522
+    - _HoloThreshold: 0.96
+    - _LSDEffect: 0
+    - _MandelbrotInfiniteZoom: 1
+    - _MandelbrotIterations: 100
+    - _MandelbrotMode: 0
+    - _MandelbrotOffsetX: -0.5
+    - _MandelbrotOffsetY: 0
+    - _MandelbrotScale: 3
+    - _MandelbrotStrength: 1
+    - _MandelbrotZoomCenterX: -0.5
+    - _MandelbrotZoomCenterY: 0
+    - _MandelbrotZoomSpeed: 0.5
+    - _Metallic: 0.755
     - _NormalReplacementValue: 0.9997
-    - _NormalThreshold: 0.941
+    - _NormalStrength: 1
+    - _NormalThreshold: 0.999998
     - _OcclusionStrength: 1
     - _OublineWidth: 0.3
-    - _OutlineMethod: 0
-    - _OutlineWidth: 0.0056
+    - _OutlineMethod: 1
+    - _OutlineWidth: 0.005
     - _Outline_Strength: 2
     - _Parallax: 0.005
     - _PosterizationCount: 8.12
@@ -167,7 +245,7 @@ Material:
     - _RimBands: 4
     - _RimStrength: 0.2
     - _RimThreshold: 0.51
-    - _Roughness: 0.391
+    - _Roughness: 0.5
     - _ShadowAttenuationBands: 4
     - _ShadowSoftness: 0.327
     - _ShadowThreshold: 0.308
@@ -185,16 +263,23 @@ Material:
     - _UseHighNormalMasking: 1
     - _UseNormalMap: 1
     - _UseNormalMapInLightCalculations: 0
+    - _UseOutline: 1
+    - _VandullCelBandsRadiance: 6
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
+    - _Albedo: {r: 1, g: 1, b: 1, a: 1}
     - _AmbientColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Base_Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 0.30188674, g: 0.23495904, b: 0.23495904, a: 1}
     - _EmissionColor: {r: 1, g: 0, b: 0, a: 1}
+    - _FoilColor: {r: 1, g: 0, b: 0, a: 1}
     - _HighNormalColor: {r: 0, g: 0, b: 0, a: 1}
+    - _MandelbrotColor1: {r: 0, g: 0, b: 0.19999996, a: 1}
+    - _MandelbrotColor2: {r: 0, g: 0.5, b: 1, a: 1}
+    - _MandelbrotColor3: {r: 1, g: 1, b: 1, a: 1}
     - _NormalEffectsColor: {r: 0, g: 0, b: 0, a: 1}
     - _NormalReplacementColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}

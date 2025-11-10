@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/loading.uss?fileID=7433441132597879392&amp;guid=decfb45cde8245b438dc81bba98d75ef&amp;type=3#loading" />
+    <Style src="project://database/Assets/UI%20Toolkit/Settings.uss?fileID=7433441132597879392&amp;guid=ec9430bf6f4d1a94dafe6ea75e7f0a90&amp;type=3#Settings" />
+    <ui:VisualElement name="loading-root" style="flex-grow: 1; flex-direction: column; display: flex; background-color: rgb(0, 0, 0); align-items: center; justify-content: center;">
+        <ui:Label text="loading" class="settings-label" style="flex-grow: 0; font-size: 24px; -unity-font-style: bold; -unity-font-definition: url(&quot;project://database/Assets/Art/Fonts/BungeeHairline-Regular.ttf?fileID=12800000&amp;guid=83ac249aaefaf3b42a3de0b92f763dee&amp;type=3#BungeeHairline-Regular&quot;);" />
+        <ui:ProgressBar value="0" name="loading-bar" high-value="1" class="loading-bar" style="width: 57%; flex-direction: column-reverse; -unity-background-image-tint-color: rgb(255, 255, 255);" />
+    </ui:VisualElement>
+</ui:UXML>
