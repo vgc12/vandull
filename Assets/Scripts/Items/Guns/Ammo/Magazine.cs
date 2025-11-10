@@ -28,7 +28,10 @@ namespace Items.Guns.Ammo
 
         public void Equip()
         {
-            if (!IsInitialized()) return;
+            if (!IsInitialized())
+            {
+                return;
+            }
 
             transform.SetParent(_equipPosition);
             transform.SetPositionAndRotation(_equipPosition.position, _equipPosition.rotation);
@@ -40,7 +43,10 @@ namespace Items.Guns.Ammo
 
         public void UnEquip()
         {
-            if (!IsInitialized()) return;
+            if (!IsInitialized())
+            {
+                return;
+            }
 
             transform.SetParent(null);
             SetVisibility(false);
@@ -50,7 +56,10 @@ namespace Items.Guns.Ammo
 
         public void Initialize(AmmoSettings settings, Transform equipPosition)
         {
-            if (!ValidateInitialization(settings, equipPosition)) return;
+            if (!ValidateInitialization(settings, equipPosition))
+            {
+                return;
+            }
 
             _equipPosition = equipPosition;
             Capacity = settings.magazineSize;
@@ -64,10 +73,7 @@ namespace Items.Guns.Ammo
             IsDropped = true;
         }
 
-        public void ConsumeAmmo(int amount = 1)
-        {
-            CurrentAmmo = Mathf.Max(0, CurrentAmmo - amount);
-        }
+        public void ConsumeAmmo(int amount = 1) { CurrentAmmo = Mathf.Max(0, CurrentAmmo - amount); }
 
         private void CacheComponents()
         {
@@ -79,16 +85,22 @@ namespace Items.Guns.Ammo
         private void SetPhysicsState(bool isKinematic, bool colliderEnabled)
         {
             if (_rigidbody != null)
+            {
                 _rigidbody.isKinematic = isKinematic;
+            }
 
             if (_collider != null)
+            {
                 _collider.enabled = colliderEnabled;
+            }
         }
 
         private void SetVisibility(bool visible)
         {
             if (_meshRenderer != null)
+            {
                 _meshRenderer.enabled = visible;
+            }
         }
 
         private bool IsInitialized()
@@ -101,6 +113,7 @@ namespace Items.Guns.Ammo
 
             return true;
         }
+
 
         private bool ValidateInitialization(AmmoSettings settings, Transform equipPosition)
         {

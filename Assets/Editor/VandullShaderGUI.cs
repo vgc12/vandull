@@ -56,16 +56,19 @@ public class VandullShaderGUI : ShaderGUI
         EditorGUILayout.Space(5);
 
 
-        xRayFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(xRayFoldout, "XRay");
-        if (xRayFoldout)
+        if (material && material.shader.name.ToLower().Contains("xray"))
         {
-            EditorGUI.indentLevel++;
-            DrawXRaySection(materialEditor, properties);
-            EditorGUI.indentLevel--;
-        }
+            xRayFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(xRayFoldout, "XRay");
+            if (xRayFoldout)
+            {
+                EditorGUI.indentLevel++;
+                DrawXRaySection(materialEditor, properties);
+                EditorGUI.indentLevel--;
+            }
 
-        EditorGUILayout.EndFoldoutHeaderGroup();
-        EditorGUILayout.Space(5);
+            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorGUILayout.Space(5);
+        }
 
         // Normal Effects Section
         normalEffectsFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(normalEffectsFoldout, "Normal Effects");
@@ -211,11 +214,12 @@ public class VandullShaderGUI : ShaderGUI
         var xRayColor = FindProperty("_XRayColor", properties);
         var xRayIntensity = FindProperty("_XRayIntensity", properties);
         var xRayEnabled = FindProperty("_XRayEnabled", properties);
-
+        var alpha = FindProperty("_Alpha", properties);
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
         materialEditor.ShaderProperty(xRayColor, "X-Ray Color");
         materialEditor.ShaderProperty(xRayIntensity, "X-Ray Intensity");
         materialEditor.ShaderProperty(xRayEnabled, "Enable X-Ray");
+        materialEditor.ShaderProperty(alpha, "Alpha");
         EditorGUILayout.HelpBox("Enables an X-Ray effect that highlights edges and silhouettes.", MessageType.Info);
         EditorGUILayout.EndVertical();
     }
@@ -250,10 +254,15 @@ public class VandullShaderGUI : ShaderGUI
             materialEditor.ShaderProperty(outlineMethod, "Extrude From Normals");
 
             if (outlineMethod.floatValue > 0.5f)
+            {
                 EditorGUILayout.HelpBox("Uses vertex normals for extrusion. Better for organic shapes.",
                     MessageType.Info);
+            }
             else
+            {
                 EditorGUILayout.HelpBox("Uses uniform scaling. Better for hard-surface models.", MessageType.Info);
+            }
+
             EditorGUI.indentLevel--;
         }
 
@@ -261,9 +270,21 @@ public class VandullShaderGUI : ShaderGUI
 
         // Quick preset buttons
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("Thin Outline")) outlineWidth.floatValue = 0.01f;
-        if (GUILayout.Button("Medium Outline")) outlineWidth.floatValue = 0.02f;
-        if (GUILayout.Button("Thick Outline")) outlineWidth.floatValue = 0.05f;
+        if (GUILayout.Button("Thin Outline"))
+        {
+            outlineWidth.floatValue = 0.01f;
+        }
+
+        if (GUILayout.Button("Medium Outline"))
+        {
+            outlineWidth.floatValue = 0.02f;
+        }
+
+        if (GUILayout.Button("Thick Outline"))
+        {
+            outlineWidth.floatValue = 0.05f;
+        }
+
         EditorGUILayout.EndHorizontal();
     }
 
@@ -338,17 +359,24 @@ public class VandullShaderGUI : ShaderGUI
 
         // Map textures to your shader's properties
         if (albedo != null)
+        {
             material.SetTexture("_AlbedoMap", albedo);
+        }
 
         if (normal != null)
+        {
             material.SetTexture("_NormalMap", normal);
+        }
 
         if (wasSpecularWorkflow)
         {
             // Coming from specular workflow
             material.SetFloat("_WorkflowMode", 1f);
             if (specular != null)
+            {
                 material.SetTexture("_SpecularMap", specular);
+            }
+
             material.SetColor("_SpecularColor", specularColorOld);
             material.DisableKeyword("_WORKFLOWMODE_METALLIC");
             material.EnableKeyword("_WORKFLOWMODE_SPECULAR");
@@ -369,10 +397,14 @@ public class VandullShaderGUI : ShaderGUI
         }
 
         if (occlusion != null)
+        {
             material.SetTexture("_AOMap", occlusion);
+        }
 
         if (emission != null)
+        {
             material.SetTexture("_EmissionMap", emission);
+        }
 
         // Map property values
         material.SetColor("_Albedo", albedoColor);
@@ -383,12 +415,18 @@ public class VandullShaderGUI : ShaderGUI
 
         // Set default values for new properties
         if (!material.HasProperty("_VandullCelBandsRadiance"))
+        {
             material.SetFloat("_VandullCelBandsRadiance", 6f);
+        }
 
         if (!material.HasProperty("_UseOutline"))
+        {
             material.SetFloat("_UseOutline", 1f);
+        }
 
         if (!material.HasProperty("_OutlineWidth"))
+        {
             material.SetFloat("_OutlineWidth", 0.02f);
+        }
     }
 }
