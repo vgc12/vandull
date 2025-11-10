@@ -27,17 +27,18 @@ Material:
   m_ValidKeywords:
   - OUTLINE_METHOD_NORMAL
   - USE_OUTLINE
+  - _EMISSION
+  - _ENVIRONMENTREFLECTIONS_OFF
+  - _NORMALMAP
+  - _WORKFLOWMODE_SPECULAR
   m_InvalidKeywords:
   - _COLORX_ON
   - _COLORY_ON
   - _COLORZ_ON
-  - _EMISSION
-  - _ENVIRONMENTREFLECTIONS_OFF
-  - _NORMALMAP
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
-  m_CustomRenderQueue: 2000
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
@@ -118,7 +119,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 9853bf8a786712249b6c9125d736bd95, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -130,7 +131,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RoughnessMap:
-        m_Texture: {fileID: 2800000, guid: 6b832b03603a03c4e83f41c7a824c8bb, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SmoothnessMap:
@@ -164,7 +165,7 @@ Material:
     - _SrcBlendAlpha: 1
     - _ZTestMode: 4
     m_Floats:
-    - _AO: 0.512
+    - _AO: 1
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaCutoff: 0.5
@@ -200,7 +201,7 @@ Material:
     - _EdgeRim: 0.682
     - _EdgeShadowAttenuation: 0.055
     - _EdgeSpecular: 0.238
-    - _EmissionStrength: 1
+    - _EmissionStrength: 0
     - _EnableHolographic: 0
     - _EnableMandelbrot: 0
     - _EntityId: 5
@@ -238,12 +239,12 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _NormalReplacementValue: 0.999993
-    - _NormalStrength: 0.94
-    - _NormalThreshold: 1
+    - _NormalStrength: 1
+    - _NormalThreshold: 0.9999
     - _OcclusionStrength: 0
     - _OublineWidth: 0.3
     - _OutlineMethod: 1
-    - _OutlineWidth: 0.063
+    - _OutlineWidth: 0.055
     - _Outline_Strength: 2.23
     - _Parallax: 0.02
     - _PosterizationCount: 6.54
@@ -255,7 +256,7 @@ Material:
     - _RimBands: 4
     - _RimStrength: 0.419
     - _RimThreshold: 0.1
-    - _Roughness: 0.187
+    - _Roughness: 0.641
     - _ShadowAttenuationBands: 10
     - _ShadowSoftness: 0.05
     - _ShadowThreshold: 0.163
