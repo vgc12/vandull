@@ -435,11 +435,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.Gun
   itemName: Mp5
+  holdingItemAnimation: {fileID: 11400000, guid: 5a826fe3c4e37d54ea39aaa2d2fd2b3a, type: 2}
   leftHandTarget: {fileID: 5825049685550679977}
   leftHandHint: {fileID: 4009255428698184839}
   rightHandTarget: {fileID: 2751886013387649119}
   rightHandHint: {fileID: 278902029046896390}
-  holdingItemAnimation: {fileID: 11400000, guid: 5a826fe3c4e37d54ea39aaa2d2fd2b3a, type: 2}
+  initializer: {fileID: 11400000, guid: 0f14420893b86f042b49ddeab2b5c77a, type: 2}
   fireModeSettings: {fileID: 11400000, guid: dd4a23ee97b95b343a40e9ed3b004771, type: 2}
   firingSettings: {fileID: 11400000, guid: 9b137968b1f446c4b9e24bcea5f32d3b, type: 2}
   aimSettings: {fileID: 11400000, guid: e0268525b73ba0c4f93a98805aa62fd3, type: 2}
@@ -448,13 +449,13 @@ MonoBehaviour:
   recoilSettings: {fileID: 11400000, guid: 2c6557c36f87fef44a74bfdd227b39d0, type: 2}
   trailSettings: {fileID: 11400000, guid: 974ef93fce4d2a94fb477958bf8b3244, type: 2}
   audioSettings: {fileID: 11400000, guid: bc7176d49264459468d51cf2dbd1b7f4, type: 2}
-  initializer: {fileID: 11400000, guid: 0f14420893b86f042b49ddeab2b5c77a, type: 2}
   magazinePosition: {fileID: 8206183431887304555}
   hipFireTransform: {fileID: 6740978490012588057}
   aimTransform: {fileID: 964719144802182726}
   muzzleTransform: {fileID: 7445868005513979834}
   reloadAnimation: {fileID: 11400000, guid: 1064aa38f4155854d9b2458af2f5624a, type: 2}
   quickReloadAnimation: {fileID: 11400000, guid: 535b5573f534d454e87f748597f96611, type: 2}
+  checkingAmmoAnimation: {fileID: 11400000, guid: a3500369fb29c6048955cc515f5c1f42, type: 2}
 --- !u!1 &4239529949148065639
 GameObject:
   m_ObjectHideFlags: 0

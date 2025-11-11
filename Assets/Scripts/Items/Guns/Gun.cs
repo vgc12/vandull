@@ -51,6 +51,11 @@ namespace Items.Guns
 
         #endregion
 
+        public void CheckAmmo()
+        {
+            AmmoSystem.CheckAmmo();
+        }
+
         #region Settings
 
         /// <summary>
@@ -144,6 +149,9 @@ namespace Items.Guns
         /// </summary>
         [SerializeField] [Required] [Tooltip("Faster reload animation (may retain ammo in magazine)")]
         public ItemAnimation quickReloadAnimation;
+
+        [SerializeField] [Required] [Tooltip("Animation played when checking ammo")]
+        public ItemAnimation checkingAmmoAnimation;
 
         #endregion
 

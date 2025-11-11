@@ -11668,8 +11668,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2085590868824028915, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
-      propertyPath: controlPoint1.y
-      value: -0.03
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2085590868824028915, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
+      propertyPath: showInEditMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2085590868824028915, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
+      propertyPath: arcLengthSamples
+      value: 480
       objectReference: {fileID: 0}
     - target: {fileID: 2085590868824028915, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
       propertyPath: controlPointWeight
@@ -11682,10 +11690,6 @@ PrefabInstance:
     - target: {fileID: 2085590868824028915, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
       propertyPath: lastBulletRotationEuler.z
       value: -21.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2586042383514319209, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.15
       objectReference: {fileID: 0}
     - target: {fileID: 2586042383514319209, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
       propertyPath: m_LocalPosition.x
@@ -11730,6 +11734,10 @@ PrefabInstance:
     - target: {fileID: 8083715352898168017, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
       propertyPath: m_Name
       value: HK_MP5_Magazine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8083715352898168017, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -18270,7 +18278,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9027380198398651734}
-  - component: {fileID: 2431662921657929441}
   - component: {fileID: 3707416348825341751}
   - component: {fileID: 5933572688951375060}
   - component: {fileID: 9027380198398651735}
@@ -40953,18 +40960,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 117796571}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2431662921657929441
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 89791092719959631}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0db80edcf2a548be88889364d172d95c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Items.ItemSwitcher
 --- !u!4 &2432584967163486414
 Transform:
   m_ObjectHideFlags: 0
@@ -64035,8 +64030,8 @@ MonoBehaviour:
     m_Root: {fileID: 4795924588073799315}
     m_Mid: {fileID: 6028435737473559096}
     m_Tip: {fileID: 4040618517718993702}
-    m_Target: {fileID: 6711854675590813166}
-    m_Hint: {fileID: 243747540195741065}
+    m_Target: {fileID: 827843278}
+    m_Hint: {fileID: 1687408501}
     m_TargetPositionWeight: 1
     m_TargetRotationWeight: 1
     m_HintWeight: 1
@@ -82354,6 +82349,7 @@ MonoBehaviour:
   muzzleTransform: {fileID: 6714447370911913081}
   reloadAnimation: {fileID: 11400000, guid: 474cb3bc175f8eb44914bac2c8ef193f, type: 2}
   quickReloadAnimation: {fileID: 11400000, guid: 4e48f7a55560df0489710581fb677244, type: 2}
+  checkingAmmoAnimation: {fileID: 11400000, guid: 61894bfcc39be014e964952e3d1fdad5, type: 2}
 --- !u!54 &8560449551842581335
 Rigidbody:
   m_ObjectHideFlags: 0

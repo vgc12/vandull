@@ -22,6 +22,7 @@ namespace Items.Guns
 
             _input.QuickReload += OnQuickReload;
 
+            _input.CheckAmmo += OnCheckAmmo;
 
             _input.Attack += Use;
 
@@ -32,6 +33,9 @@ namespace Items.Guns
             _input.SwitchItem += OnItemSwitched;
 
             _itemHandler = GetComponent<ItemHandler>();
+            _currentItem = _itemHandler.EquippedItem;
+            if (_currentItem is Gun gun)
+                _currentGun = gun;
         }
 
         private void OnDestroy()
@@ -41,13 +45,22 @@ namespace Items.Guns
             _input.Attack -= Use;
             _input.SwitchFireMode -= OnFireModeSwitched;
             _input.Restart -= OnRestart;
+            _input.SwitchItem -= OnItemSwitched;
+            _input.CheckAmmo -= OnCheckAmmo;
+            _input.QuickReload -= OnQuickReload;
+        }
+
+        private void OnCheckAmmo()
+        {
+            if (_currentGun == null) return;
+
+            _currentGun.CheckAmmo();
         }
 
         private void OnItemSwitched(float value)
         {
             _itemHandler.SwitchItem((int)value);
             _currentItem = _itemHandler.EquippedItem;
-
 
             if (_currentItem is Gun newGun)
                 _currentGun = newGun;

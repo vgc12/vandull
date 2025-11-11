@@ -11,13 +11,18 @@ namespace Items.Guns.Ammo
         BezierCurve
     }
 
+    public enum SpacingMode
+    {
+        FixedGap, // Bullets stack with a fixed distance between them
+        SpreadAlongCurve // Bullets spread evenly across the entire curve
+    }
+
     [ExecuteAlways]
     public class MagazineBulletSpawner : MonoBehaviour
     {
         [Header("Bullet Settings")] public GameObject bulletPrefab;
 
         public int bulletCount = 30;
-
         public Vector3 bulletRotationEuler = Vector3.zero;
         public bool followCurve = true;
         public Vector3 lastBulletPosition = Vector3.zero;
@@ -27,6 +32,11 @@ namespace Items.Guns.Ammo
         public Vector3 endPoint = new(0, 0.3f, 0.3f);
         public Vector3 controlPoint1 = new(0, 0.1f, 0.1f);
         public Vector3 controlPoint2 = new(0, 0.2f, 0.2f);
+
+        [Header("Spacing Mode")] public SpacingMode spacingMode = SpacingMode.SpreadAlongCurve;
+
+        [Tooltip("Approximate gap between bullets when using Fixed Gap mode (curve parameter space)")]
+        public float bulletGapParameter = 0.033f;
 
         [Header("Stacking")] public bool useStacking = true;
 
@@ -40,19 +50,36 @@ namespace Items.Guns.Ammo
         // Instance-specific object pool
         private ObjectPool<GameObject> _bulletPool;
 
+#if UNITY_EDITOR
+
+        private void OnEnable()
+        {
+            if (Application.isPlaying || !showInEditMode) return;
+            if (_spawnedBullets.Count == 0) SpawnBullets();
+        }
+
+#endif
 
         private void OnDisable()
         {
             // Return bullets to pool when disabled
-            if (Application.isPlaying) ReturnBulletsToPool();
+            if (Application.isPlaying)
+            {
+                ReturnBulletsToPool();
+            }
+            else
+            {
+                // Edit mode: destroy immediately
+                foreach (var bullet in _spawnedBullets)
+                    if (bullet != null)
+                        DestroyImmediate(bullet);
+
+                _spawnedBullets.Clear();
+            }
         }
 
         private void OnDrawGizmosSelected()
         {
-            // Visualize bullet positions in editor
-            Gizmos.color = Color.red;
-
-
             // Draw bezier curve
             Gizmos.color = Color.yellow;
             var prevPos = transform.TransformPoint(startPoint);
@@ -79,7 +106,6 @@ namespace Items.Guns.Ammo
             Gizmos.DrawLine(transform.TransformPoint(startPoint), transform.TransformPoint(controlPoint1));
             Gizmos.DrawLine(transform.TransformPoint(endPoint), transform.TransformPoint(controlPoint2));
 
-
             // Draw bullet positions
             Gizmos.color = Color.red;
             for (var i = 0; i < bulletCount; i++)
@@ -103,9 +129,6 @@ namespace Items.Guns.Ammo
         private void OnValidate()
         {
             // Update bullets when values change in edit mode
-            if (Application.isPlaying || !showInEditMode) return;
-            if (_spawnedBullets.Count == 0) SpawnBullets();
-
             UpdateSpacing();
         }
 
@@ -118,7 +141,7 @@ namespace Items.Guns.Ammo
                     () => Instantiate(bulletPrefab),
                     obj => obj.SetActive(true),
                     obj => obj.SetActive(false),
-                    obj => Destroy(obj),
+                    Destroy,
                     true,
                     30,
                     100
@@ -134,13 +157,28 @@ namespace Items.Guns.Ammo
                 {
                     _spawnedBullets[i].transform.localPosition = GetBulletPosition(i);
                     _spawnedBullets[i].transform.localRotation = GetBulletRotation(i);
-                    if (i == _spawnedBullets.Count - 1) _spawnedBullets[i].transform.localPosition = lastBulletPosition;
+                    if (i == _spawnedBullets.Count - 1)
+                        _spawnedBullets[i].transform.localPosition = lastBulletPosition;
                 }
+        }
+
+        private float GetTForBullet(int i)
+        {
+            if (spacingMode == SpacingMode.FixedGap)
+            {
+                // Fixed gap: stack bullets with constant parameter spacing
+                var t = i * bulletGapParameter;
+                return Mathf.Clamp01(t); // Clamp to 0-1 range
+            }
+
+            // SpacingMode.SpreadAlongCurve
+            // Spread evenly: distribute across the entire curve
+            return (float)i / Mathf.Max(1, bulletCount - 1);
         }
 
         private Vector3 GetBezierTangent(int i)
         {
-            var t = (float)i / Mathf.Max(1, bulletCount - 1);
+            var t = GetTForBullet(i);
 
             // Derivative of cubic Bezier curve: B'(t) = 3(1-t)^2(P1-P0) + 6(1-t)t(P2-P1) + 3t^2(P3-P2)
             var oneMinusT = 1f - t;
@@ -160,7 +198,6 @@ namespace Items.Guns.Ammo
             if (tangent.sqrMagnitude < 0.0001f) return Quaternion.Euler(bulletRotationEuler);
 
             // Create rotation that points the bullet along the tangent
-            // Assuming the bullet's forward axis should align with the curve
             var rotation = Quaternion.LookRotation(tangent.normalized);
 
             // Apply additional rotation offset
@@ -171,7 +208,7 @@ namespace Items.Guns.Ammo
 
         private Vector3 GetBulletPositionFromBezier(int i)
         {
-            var t = (float)i / Mathf.Max(1, bulletCount - 1);
+            var t = GetTForBullet(i);
 
             // Cubic Bezier curve: B(t) = (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3
             var oneMinusT = 1f - t;
@@ -197,11 +234,14 @@ namespace Items.Guns.Ammo
         }
 
         [ContextMenu("Spawn Bullets")]
-        public void SpawnBullets()
+        public void SpawnBullets(int bulletCountOverride = -1)
         {
+            var countToSpawn = bulletCountOverride > 0 ? bulletCountOverride : bulletCount - 1;
+
+
             ClearBullets();
 
-            for (var i = bulletCount - 1; i >= 0; i--)
+            for (var i = countToSpawn; i >= 0; i--)
             {
                 var position = GetBulletPosition(i);
                 GameObject bullet;
@@ -225,25 +265,34 @@ namespace Items.Guns.Ammo
                 bullet.layer = gameObject.layer;
                 bullet.transform.localPosition = position;
                 bullet.transform.localRotation = GetBulletRotation(i);
+                bullet.SetActive(true);
                 _spawnedBullets.Add(bullet);
             }
         }
 
-
-        public void RemoveBullet(int number)
-        {
-            _spawnedBullets.RemoveAt(0);
-        }
-
-        private void ReturnBulletsToPool()
+        public void ReleaseAllBulletsToPool()
         {
             var pool = GetOrCreatePool();
             if (pool == null) return;
 
             foreach (var bullet in _spawnedBullets)
-                if (bullet)
+            {
+                if (bullet != null)
                     pool.Release(bullet);
+            }
 
+            _spawnedBullets.Clear();
+          
+        }
+        
+        
+
+        public void ReturnBulletsToPool()
+        {
+            var pool = GetOrCreatePool();
+            if (pool == null) return;
+
+            pool.Clear();
             _spawnedBullets.Clear();
         }
 
@@ -277,7 +326,6 @@ namespace Items.Guns.Ammo
 
         public void ToggleXRayVisibility(bool visible)
         {
-            // Implementation for X-Ray visibility toggle if needed
             ShaderController.Instance.ToggleXrayShaderOnObject(gameObject, visible);
         }
     }

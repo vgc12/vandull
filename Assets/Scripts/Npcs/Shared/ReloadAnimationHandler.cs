@@ -85,5 +85,11 @@ namespace Npcs.Shared
             if (!_currentGun) return;
             _currentGun.AmmoSystem.ToggleMagazineXRayVisibility(true);
         }
+
+        public void TurnOffXRay()
+        {
+            if (!_currentGun) return;
+            _currentGun.AmmoSystem.ToggleMagazineXRayVisibility(false);
+        }
     }
 }

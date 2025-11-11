@@ -119,18 +119,28 @@ namespace Items.Guns.Ammo
         {
             if (!CurrentMagazine) return;
             CurrentMagazine.UnEquip();
+
             CurrentMagazine = null;
         }
 
         public async void ToggleMagazineXRayVisibility(bool b)
         {
+            if (!CurrentMagazine || _gun.Owner != OwnerStatus.Player) return;
+
             if (b)
             {
+                MagazineBulletSpawner.SpawnBullets(CurrentAmmo);
                 await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, .022f, 0.5f);
                 return;
             }
 
             await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, 0f, 0.5f);
+            MagazineBulletSpawner.ReleaseAllBulletsToPool();
+        }
+
+        public void CheckAmmo()
+        {
+            _gun.ItemAnimationSystem.PlayAnimation(_gun.checkingAmmoAnimation);
         }
 
         public void Update()
@@ -162,9 +172,15 @@ namespace Items.Guns.Ammo
 
         private void EquipCurrentMagazine()
         {
+            if (MagazineBulletSpawner != null && _gun.Owner is OwnerStatus.Player)
+                MagazineBulletSpawner.ReturnBulletsToPool();
+
             CurrentMagazine = _magazines[_currentMagazineIndex];
 
             CurrentMagazine.Equip();
+
+            if (_gun.Owner is OwnerStatus.Player)
+                MagazineBulletSpawner = CurrentMagazine.GetComponent<MagazineBulletSpawner>();
         }
 
         // Reload Logic
@@ -208,9 +224,7 @@ namespace Items.Guns.Ammo
             magazineObject.GetOrAdd<Rigidbody>();
             magazineObject.GetOrAdd<BoxCollider>();
             // this really requires setup so it hopefully gets it instead of adding.
-            MagazineBulletSpawner = magazineObject.GetOrAdd<MagazineBulletSpawner>();
-            MagazineBulletSpawner.bulletCount = _gun.ammoSettings.magazineSize;
-            MagazineBulletSpawner.SpawnBullets();
+
             ShaderController.Instance.ToggleXrayShaderOnObject(magazineObject, false);
 
 

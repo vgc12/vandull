@@ -21,6 +21,7 @@ namespace Player.Input
         private readonly EventBinding<UIStateSwitchedEvent> _uiStateChangedEventBinding;
 
         private bool _aimToggled;
+        private CancellationTokenSource _checkAmmoCts;
         private bool _crouchToggled;
         private SettingsUIState.ControlSettingsChangedEvent _currentControlSettings;
         private double _holdTime;
@@ -33,6 +34,7 @@ namespace Player.Input
 
         [Inject] private ILogger _logger;
         private CancellationTokenSource _reloadCts;
+        private bool _reloadCurrentlyHeld;
 
         private bool _sprintToggled;
         private UIStateType _uiState;
@@ -200,8 +202,19 @@ namespace Player.Input
 
         public void OnReload(InputAction.CallbackContext context)
         {
-            _holdTime = context.duration;
+            if (context.canceled)
+            {
+                _checkAmmoCts?.Cancel();
+                _reloadCurrentlyHeld = false;
+                _holdTime = 0;
+                return;
+            }
+
+
             if (!context.started) return;
+            _reloadCurrentlyHeld = true;
+            _checkAmmoCts = new CancellationTokenSource();
+            ReloadHeldCounter().Forget();
 
             var timeSinceLastTap = Time.time - _lastReloadTapTime;
 
@@ -214,25 +227,12 @@ namespace Player.Input
                 QuickReload.Invoke();
                 _lastReloadTapTime = 0; // Reset to prevent triple-tap issues
             }
-            else if (_holdTime >= _checkMagazineHoldTime)
-            {
-                CancelReload();
-                _holdTime = 0;
-                CheckAmmo.Invoke();
-            }
             else
             {
                 CancelReload(new CancellationTokenSource());
 
                 DelayedReload(_reloadCts.Token).Forget();
                 _lastReloadTapTime = Time.time;
-            }
-
-            void CancelReload(CancellationTokenSource token = null)
-            {
-                _reloadCts?.Cancel();
-                _reloadCts?.Dispose();
-                _reloadCts = null;
             }
         }
 
@@ -305,6 +305,37 @@ namespace Player.Input
             if (context.performed) TrackedDeviceOrientation.Invoke(context.ReadValue<Quaternion>());
         }
 
+        private void CancelReload(CancellationTokenSource token = null)
+        {
+            _reloadCts?.Cancel();
+            _reloadCts?.Dispose();
+            _reloadCts = token;
+        }
+
+        private async UniTask ReloadHeldCounter()
+        {
+            try
+            {
+                while (_holdTime <= _checkMagazineHoldTime && _reloadCurrentlyHeld)
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update, _checkAmmoCts.Token);
+                    _holdTime += Time.deltaTime;
+                }
+
+                if (_reloadCurrentlyHeld)
+                {
+                    CancelReload();
+                    CheckAmmo.Invoke();
+                }
+
+                _holdTime = 0;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when reload is released early - do nothing
+            }
+        }
+
         public void OnPrevious(InputAction.CallbackContext context)
         {
             if (context.performed) Previous.Invoke();
@@ -321,7 +352,7 @@ namespace Player.Input
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(_doubleTapWindow), cancellationToken: ct);
 
-                if (!ct.IsCancellationRequested) Reload.Invoke();
+                if (!ct.IsCancellationRequested && !_reloadCurrentlyHeld) Reload.Invoke();
             }
             catch (OperationCanceledException)
             {
