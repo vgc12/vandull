@@ -10735,15 +10735,8 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 0
-    functionName: DropMagazine
-    data: 
-    objectReferenceParameter: {fileID: 0}
-    floatParameter: 0
-    intParameter: 0
-    messageOptions: 0
   - time: 0.21666667
-    functionName: PlayMagazineRemovedSound
+    functionName: DropMagazine
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
@@ -10751,13 +10744,6 @@ AnimationClip:
     messageOptions: 0
   - time: 0.85
     functionName: EquipNewMagazine
-    data: 
-    objectReferenceParameter: {fileID: 0}
-    floatParameter: 0
-    intParameter: 0
-    messageOptions: 0
-  - time: 0.85
-    functionName: PlayMagazineInsertedSound
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

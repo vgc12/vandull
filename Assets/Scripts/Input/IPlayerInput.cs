@@ -7,6 +7,7 @@ namespace Player.Input
     {
         Vector2 Direction { get; }
         event UnityAction QuickReload;
+        event UnityAction CheckAmmo;
         event UnityAction<(bool started, bool performed, bool canceled)> Attack;
         event UnityAction<Vector2> Move;
         event UnityAction<Vector2> Look;

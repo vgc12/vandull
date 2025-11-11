@@ -1,5 +1,4 @@
-﻿using EventBus;
-using Levels;
+﻿using Levels;
 using Player.Input;
 using Reflex.Attributes;
 using UnityEngine;
@@ -12,15 +11,8 @@ namespace Items.Guns
 
         private Gun _currentGun;
         private Item _currentItem;
+        private ItemHandler _itemHandler;
 
-        private EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
-
-        private void Awake()
-        {
-            _itemSwitchedEventBinding = new EventBinding<ItemSwitchedEvent>(OnItemSwitched);
-
-            EventBus<ItemSwitchedEvent>.Register(_itemSwitchedEventBinding);
-        }
 
         public void Start()
         {
@@ -36,16 +28,31 @@ namespace Items.Guns
             _input.SwitchFireMode += OnFireModeSwitched;
 
             _input.Restart += OnRestart;
+
+            _input.SwitchItem += OnItemSwitched;
+
+            _itemHandler = GetComponent<ItemHandler>();
         }
 
         private void OnDestroy()
         {
-            EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedEventBinding);
             _input.Aim -= OnAim;
             _input.Reload -= OnReload;
             _input.Attack -= Use;
             _input.SwitchFireMode -= OnFireModeSwitched;
             _input.Restart -= OnRestart;
+        }
+
+        private void OnItemSwitched(float value)
+        {
+            _itemHandler.SwitchItem((int)value);
+            _currentItem = _itemHandler.EquippedItem;
+
+
+            if (_currentItem is Gun newGun)
+                _currentGun = newGun;
+            else
+                _currentGun = null;
         }
 
 
@@ -81,17 +88,6 @@ namespace Items.Guns
             _currentGun.CycleFireMode();
         }
 
-        private void OnItemSwitched(ItemSwitchedEvent obj)
-        {
-            if (!obj.NewItem || obj.NewItem.Owner != OwnerStatus.Player) return;
-            _currentItem = obj.NewItem;
-            // Important that this gets toggled off, when item is switched
-
-            if (obj.NewItem is Gun newGun)
-                _currentGun = newGun;
-            else
-                _currentGun = null;
-        }
 
         public void OnAim(bool value)
         {

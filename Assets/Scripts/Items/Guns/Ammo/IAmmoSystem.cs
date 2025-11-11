@@ -31,5 +31,6 @@ namespace Items.Guns.Ammo
 
         void EquipNewMagazine();
         void RemoveCurrentMagazine();
+        void ToggleMagazineXRayVisibility(bool b);
     }
 }

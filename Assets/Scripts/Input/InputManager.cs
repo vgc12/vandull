@@ -14,6 +14,7 @@ namespace Player.Input
 {
     public class InputManager : IInputService, IPlayerActions, IUIActions
     {
+        private readonly float _checkMagazineHoldTime = 0.5f;
         private readonly EventBinding<SettingsUIState.ControlSettingsChangedEvent> _controlsChangedEventBinding;
         private readonly float _crouchInputBuffer = 0.002f;
         private readonly float _doubleTapWindow = 0.3f;
@@ -22,6 +23,7 @@ namespace Player.Input
         private bool _aimToggled;
         private bool _crouchToggled;
         private SettingsUIState.ControlSettingsChangedEvent _currentControlSettings;
+        private double _holdTime;
         private float _lastAimInputTime;
         private float _lastCrouchInputTime;
 
@@ -46,7 +48,6 @@ namespace Player.Input
             _controlsChangedEventBinding =
                 new EventBinding<SettingsUIState.ControlSettingsChangedEvent>(OnControlsChanged);
             EventBus<SettingsUIState.ControlSettingsChangedEvent>.Register(_controlsChangedEventBinding);
-            
         }
 
         public PlayerInputActions InputActions { get; private set; }
@@ -68,7 +69,8 @@ namespace Player.Input
         public event UnityAction<bool> Aim = delegate { };
         public event UnityAction<float> SwitchItem = delegate { };
         public event UnityAction Reload = delegate { };
-        public event UnityAction QuickReload = delegate { }; // New event for double-tap
+        public event UnityAction QuickReload = delegate { };
+        public event UnityAction CheckAmmo = delegate { };
         public event UnityAction SwitchFireMode = delegate { };
         public event UnityAction Restart = delegate { };
 
@@ -149,16 +151,6 @@ namespace Player.Input
             if (context.started || context.canceled) Jump.Invoke(context.started);
         }
 
-        public void OnPrevious(InputAction.CallbackContext context)
-        {
-            if (context.performed) Previous.Invoke();
-        }
-
-        public void OnNext(InputAction.CallbackContext context)
-        {
-            if (context.performed) Next.Invoke();
-        }
-
         public void OnSprint(InputAction.CallbackContext context)
         {
             if (_currentControlSettings.ToggleSprint && context.started &&
@@ -208,29 +200,39 @@ namespace Player.Input
 
         public void OnReload(InputAction.CallbackContext context)
         {
+            _holdTime = context.duration;
             if (!context.started) return;
 
             var timeSinceLastTap = Time.time - _lastReloadTapTime;
 
+
             if (timeSinceLastTap <= _doubleTapWindow)
             {
                 // Double tap detected - cancel pending normal reload
-                _reloadCts?.Cancel();
-                _reloadCts?.Dispose();
-                _reloadCts = null;
 
+                CancelReload();
                 QuickReload.Invoke();
                 _lastReloadTapTime = 0; // Reset to prevent triple-tap issues
             }
+            else if (_holdTime >= _checkMagazineHoldTime)
+            {
+                CancelReload();
+                _holdTime = 0;
+                CheckAmmo.Invoke();
+            }
             else
             {
-                // Start delayed normal reload
-                _reloadCts?.Cancel();
-                _reloadCts?.Dispose();
-                _reloadCts = new CancellationTokenSource();
+                CancelReload(new CancellationTokenSource());
 
                 DelayedReload(_reloadCts.Token).Forget();
                 _lastReloadTapTime = Time.time;
+            }
+
+            void CancelReload(CancellationTokenSource token = null)
+            {
+                _reloadCts?.Cancel();
+                _reloadCts?.Dispose();
+                _reloadCts = null;
             }
         }
 
@@ -301,6 +303,16 @@ namespace Player.Input
         public void OnTrackedDeviceOrientation(InputAction.CallbackContext context)
         {
             if (context.performed) TrackedDeviceOrientation.Invoke(context.ReadValue<Quaternion>());
+        }
+
+        public void OnPrevious(InputAction.CallbackContext context)
+        {
+            if (context.performed) Previous.Invoke();
+        }
+
+        public void OnNext(InputAction.CallbackContext context)
+        {
+            if (context.performed) Next.Invoke();
         }
 
         private async UniTaskVoid DelayedReload(CancellationToken ct)

@@ -5,7 +5,11 @@ using UnityEngine.Pool;
 
 namespace Items.Guns.Ammo
 {
-    public enum CurveMode { AnimationCurves, BezierCurve }
+    public enum CurveMode
+    {
+        AnimationCurves,
+        BezierCurve
+    }
 
     [ExecuteAlways]
     public class MagazineBulletSpawner : MonoBehaviour
@@ -36,28 +40,11 @@ namespace Items.Guns.Ammo
         // Instance-specific object pool
         private ObjectPool<GameObject> _bulletPool;
 
-        private void Update()
-        {
-            if (Application.isPlaying)
-            {
-                if (_spawnedBullets.Count == 0)
-                {
-                    SpawnBullets();
-                }
-
-                UpdateSpacing();
-            }
-        }
-
-        private void OnEnable() { SpawnBullets(); }
 
         private void OnDisable()
         {
             // Return bullets to pool when disabled
-            if (Application.isPlaying)
-            {
-                ReturnBulletsToPool();
-            }
+            if (Application.isPlaying) ReturnBulletsToPool();
         }
 
         private void OnDrawGizmosSelected()
@@ -69,7 +56,7 @@ namespace Items.Guns.Ammo
             // Draw bezier curve
             Gizmos.color = Color.yellow;
             var prevPos = transform.TransformPoint(startPoint);
-            for (var i = 1; i <= 20; i++)
+            for (var i = 20; i >= 1; i--)
             {
                 var t = i / 20f;
                 var oneMinusT = 1f - t;
@@ -116,21 +103,17 @@ namespace Items.Guns.Ammo
         private void OnValidate()
         {
             // Update bullets when values change in edit mode
-            if (!Application.isPlaying && showInEditMode)
-            {
-                UpdateSpacing();
-            }
+            if (Application.isPlaying || !showInEditMode) return;
+            if (_spawnedBullets.Count == 0) SpawnBullets();
+
+            UpdateSpacing();
         }
 
         private ObjectPool<GameObject> GetOrCreatePool()
         {
-            if (bulletPrefab == null)
-            {
-                return null;
-            }
+            if (bulletPrefab == null) return null;
 
             if (_bulletPool == null)
-            {
                 _bulletPool = new ObjectPool<GameObject>(
                     () => Instantiate(bulletPrefab),
                     obj => obj.SetActive(true),
@@ -140,7 +123,6 @@ namespace Items.Guns.Ammo
                     30,
                     100
                 );
-            }
 
             return _bulletPool;
         }
@@ -148,17 +130,12 @@ namespace Items.Guns.Ammo
         private void UpdateSpacing()
         {
             for (var i = 0; i < _spawnedBullets.Count; i++)
-            {
                 if (_spawnedBullets[i] != null)
                 {
                     _spawnedBullets[i].transform.localPosition = GetBulletPosition(i);
                     _spawnedBullets[i].transform.localRotation = GetBulletRotation(i);
-                    if (i == _spawnedBullets.Count - 1)
-                    {
-                        _spawnedBullets[i].transform.localPosition = lastBulletPosition;
-                    }
+                    if (i == _spawnedBullets.Count - 1) _spawnedBullets[i].transform.localPosition = lastBulletPosition;
                 }
-            }
         }
 
         private Vector3 GetBezierTangent(int i)
@@ -176,17 +153,11 @@ namespace Items.Guns.Ammo
 
         private Quaternion GetBulletRotation(int i)
         {
-            if (!followCurve)
-            {
-                return Quaternion.Euler(bulletRotationEuler);
-            }
+            if (!followCurve) return Quaternion.Euler(bulletRotationEuler);
 
             var tangent = GetBezierTangent(i);
 
-            if (tangent.sqrMagnitude < 0.0001f)
-            {
-                return Quaternion.Euler(bulletRotationEuler);
-            }
+            if (tangent.sqrMagnitude < 0.0001f) return Quaternion.Euler(bulletRotationEuler);
 
             // Create rotation that points the bullet along the tangent
             // Assuming the bullet's forward axis should align with the curve
@@ -230,7 +201,7 @@ namespace Items.Guns.Ammo
         {
             ClearBullets();
 
-            for (var i = 0; i < bulletCount; i++)
+            for (var i = bulletCount - 1; i >= 0; i--)
             {
                 var position = GetBulletPosition(i);
                 GameObject bullet;
@@ -239,10 +210,7 @@ namespace Items.Guns.Ammo
                 {
                     // Use object pool in play mode
                     var pool = GetOrCreatePool();
-                    if (pool == null)
-                    {
-                        continue;
-                    }
+                    if (pool == null) continue;
 
                     bullet = pool.Get();
                     bullet.transform.SetParent(transform);
@@ -261,21 +229,20 @@ namespace Items.Guns.Ammo
             }
         }
 
+
+        public void RemoveBullet(int number)
+        {
+            _spawnedBullets.RemoveAt(0);
+        }
+
         private void ReturnBulletsToPool()
         {
             var pool = GetOrCreatePool();
-            if (pool == null)
-            {
-                return;
-            }
+            if (pool == null) return;
 
             foreach (var bullet in _spawnedBullets)
-            {
                 if (bullet)
-                {
                     pool.Release(bullet);
-                }
-            }
 
             _spawnedBullets.Clear();
         }
@@ -291,12 +258,8 @@ namespace Items.Guns.Ammo
             {
                 // Edit mode: destroy immediately
                 foreach (var bullet in _spawnedBullets)
-                {
                     if (bullet != null)
-                    {
                         DestroyImmediate(bullet);
-                    }
-                }
 
                 _spawnedBullets.Clear();
             }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Art.Shaders;
 using EventBus;
 using General.Extensions;
 using Player;
@@ -51,6 +52,8 @@ namespace Items.Guns.Ammo
         private bool HasSpareAmmo => _magazines.Count > 1;
 
         public bool CurrentMagazineEmpty => !CurrentMagazine || CurrentMagazine.IsEmpty;
+
+        public MagazineBulletSpawner MagazineBulletSpawner { get; set; }
 
         // Properties
         public Magazine CurrentMagazine { get; private set; }
@@ -119,6 +122,17 @@ namespace Items.Guns.Ammo
             CurrentMagazine = null;
         }
 
+        public async void ToggleMagazineXRayVisibility(bool b)
+        {
+            if (b)
+            {
+                await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, .022f, 0.5f);
+                return;
+            }
+
+            await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, 0f, 0.5f);
+        }
+
         public void Update()
         {
             // noop
@@ -185,7 +199,6 @@ namespace Items.Guns.Ammo
             _reloadCoroutine = null;
         }
 
-
         // Factory
         private Magazine CreateMagazine()
         {
@@ -194,6 +207,12 @@ namespace Items.Guns.Ammo
             // Ensure required components
             magazineObject.GetOrAdd<Rigidbody>();
             magazineObject.GetOrAdd<BoxCollider>();
+            // this really requires setup so it hopefully gets it instead of adding.
+            MagazineBulletSpawner = magazineObject.GetOrAdd<MagazineBulletSpawner>();
+            MagazineBulletSpawner.bulletCount = _gun.ammoSettings.magazineSize;
+            MagazineBulletSpawner.SpawnBullets();
+            ShaderController.Instance.ToggleXrayShaderOnObject(magazineObject, false);
+
 
             return magazineObject.GetOrAdd<Magazine>();
         }
