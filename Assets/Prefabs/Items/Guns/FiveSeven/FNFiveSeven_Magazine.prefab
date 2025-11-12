@@ -106,15 +106,16 @@ MonoBehaviour:
   bulletCount: 15
   bulletRotationEuler: {x: 90, y: 0, z: 0}
   followCurve: 1
-  lastBulletPosition: {x: 0, y: 0, z: 0}
-  lastBulletRotation: {x: 0, y: 0, z: 0}
-  startPoint: {x: 0, y: -0.06, z: -0.01}
-  endPoint: {x: 0, y: 0.07, z: 0.01}
+  lastBulletPosition: {x: -0.0001, y: 0.0625, z: 0.0147}
+  lastBulletRotation: {x: 0, y: 0, z: 23}
+  startPoint: {x: -0.003, y: -0.05, z: -0.01}
+  endPoint: {x: -0.003, y: 0.057, z: 0.015}
   controlPoint1: {x: 0, y: 0.07, z: 0.01}
   controlPoint2: {x: 0, y: -0.06, z: -0.01}
-  spacingMode: 0
-  bulletGapParameter: 0.05
-  useStacking: 0
+  curveMode: 0
+  spacingMode: 1
+  bulletGapParameter: 0.03
+  useStacking: 1
   bulletsPerStack: 2
   stackOffset: {x: 0.005, y: 0, z: 0}
   showInEditMode: 1
