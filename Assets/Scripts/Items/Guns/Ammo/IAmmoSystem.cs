@@ -20,6 +20,7 @@ namespace Items.Guns.Ammo
         public Action OnOutOfAmmo { get; set; }
 
         public Magazine CurrentMagazine { get; }
+        bool IsCheckingAmmo { get; set; }
 
         void StartReload();
 

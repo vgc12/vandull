@@ -54,6 +54,7 @@ namespace Items.Guns.Ammo
         public bool CurrentMagazineEmpty => !CurrentMagazine || CurrentMagazine.IsEmpty;
 
         public MagazineBulletSpawner MagazineBulletSpawner { get; set; }
+        public bool IsCheckingAmmo { get; set; }
 
         // Properties
         public Magazine CurrentMagazine { get; private set; }
@@ -71,7 +72,10 @@ namespace Items.Guns.Ammo
         // Public Methods
         public void StartReload()
         {
-            if (!CanReload || _reloadCoroutine != null) return;
+            if (!CanReload || _reloadCoroutine != null || IsCheckingAmmo)
+            {
+                return;
+            }
 
             IsReloading = true;
             var length =
@@ -81,7 +85,10 @@ namespace Items.Guns.Ammo
 
         public void StartQuickReload()
         {
-            if (!CanReload || _reloadCoroutine != null) return;
+            if (!CanReload || _reloadCoroutine != null || IsCheckingAmmo)
+            {
+                return;
+            }
 
             IsReloading = true;
             var length = _gun.ItemAnimationSystem.PlayAnimationAndGetLength(_gun.quickReloadAnimation);
@@ -91,21 +98,33 @@ namespace Items.Guns.Ammo
         public void ConsumeAmmo()
         {
             if (!CurrentMagazineEmpty)
+            {
                 CurrentMagazine.ConsumeAmmo();
+            }
             else if (_bulletInChamber)
+            {
                 _bulletInChamber = false;
+            }
             else
+            {
                 OnOutOfAmmo?.Invoke();
+            }
         }
 
 
         public void DropMagazine()
         {
             var magazineToDrop = CurrentMagazine;
-            if (magazineToDrop != null) magazineToDrop.Drop();
+            if (magazineToDrop != null)
+            {
+                magazineToDrop.Drop();
+            }
 
             if (_currentMagazineIndex >= 0 && _currentMagazineIndex < _magazines.Count)
+            {
                 _magazines.RemoveAt(_currentMagazineIndex);
+            }
+
             CurrentMagazine = null;
         }
 
@@ -117,7 +136,11 @@ namespace Items.Guns.Ammo
 
         public void RemoveCurrentMagazine()
         {
-            if (!CurrentMagazine) return;
+            if (!CurrentMagazine)
+            {
+                return;
+            }
+
             CurrentMagazine.UnEquip();
 
             CurrentMagazine = null;
@@ -125,23 +148,24 @@ namespace Items.Guns.Ammo
 
         public async void ToggleMagazineXRayVisibility(bool b)
         {
-            if (!CurrentMagazine || _gun.Owner != OwnerStatus.Player) return;
-
-            if (b)
+            if (!CurrentMagazine || _gun.Owner != OwnerStatus.Player || IsReloading || _gun.AimingSystem.IsAiming)
             {
-                MagazineBulletSpawner.SpawnBullets(CurrentAmmo);
-                await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, .022f, 0.5f);
                 return;
             }
 
-            await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, 0f, 0.5f);
+            IsCheckingAmmo = b;
+            if (b)
+            {
+                MagazineBulletSpawner.SpawnBullets(CurrentAmmo);
+                await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, .03f, 0.5f);
+                return;
+            }
+
+            await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, 0f, 0.25f);
             MagazineBulletSpawner.ReleaseAllBulletsToPool();
         }
 
-        public void CheckAmmo()
-        {
-            _gun.ItemAnimationSystem.PlayAnimation(_gun.checkingAmmoAnimation);
-        }
+        public void CheckAmmo() { _gun.ItemAnimationSystem.PlayAnimation(_gun.checkingAmmoAnimation); }
 
         public void Update()
         {
@@ -149,10 +173,7 @@ namespace Items.Guns.Ammo
         }
 
 
-        ~AmmoSystem()
-        {
-            EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedBinding);
-        }
+        ~AmmoSystem() { EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedBinding); }
 
         // Magazine Management
         private void InitializeMagazines()
@@ -173,14 +194,18 @@ namespace Items.Guns.Ammo
         private void EquipCurrentMagazine()
         {
             if (MagazineBulletSpawner != null && _gun.Owner is OwnerStatus.Player)
+            {
                 MagazineBulletSpawner.ReturnBulletsToPool();
+            }
 
             CurrentMagazine = _magazines[_currentMagazineIndex];
 
             CurrentMagazine.Equip();
 
             if (_gun.Owner is OwnerStatus.Player)
+            {
                 MagazineBulletSpawner = CurrentMagazine.GetComponent<MagazineBulletSpawner>();
+            }
         }
 
         // Reload Logic
@@ -197,7 +222,11 @@ namespace Items.Guns.Ammo
             yield return seconds;
 
 
-            if (_gun.Owner == OwnerStatus.Enemy) EquipNewMagazine();
+            if (_gun.Owner == OwnerStatus.Enemy)
+            {
+                EquipNewMagazine();
+            }
+
             IsReloading = false;
 
 
@@ -232,29 +261,30 @@ namespace Items.Guns.Ammo
         }
 
         // Debug/Display
-        public override string ToString()
-        {
-            return GetAllMagsStatus();
-        }
+        public override string ToString() => GetAllMagsStatus();
 
         public string GetAllMagsStatus()
         {
             var sb = new StringBuilder();
             sb.AppendLine(GetCurrentMagazineStatus());
 
-            for (var i = 0; i < _magazines.Count; i++) sb.AppendLine(GetMagazineStatus(i));
+            for (var i = 0; i < _magazines.Count; i++)
+            {
+                sb.AppendLine(GetMagazineStatus(i));
+            }
 
             return sb.ToString();
         }
 
-        private string GetCurrentMagazineStatus()
-        {
-            return $"{CurrentMagazine.CurrentAmmo}/{_gun.ammoSettings.magazineSize} | Magazines: {_magazines.Count}";
-        }
+        private string GetCurrentMagazineStatus() =>
+            $"{CurrentMagazine.CurrentAmmo}/{_gun.ammoSettings.magazineSize} | Magazines: {_magazines.Count}";
 
         private string GetMagazineStatus(int index)
         {
-            if (index < 0 || index >= _magazines.Count) return string.Empty;
+            if (index < 0 || index >= _magazines.Count)
+            {
+                return string.Empty;
+            }
 
             var mag = _magazines[index];
             return $"Magazine {index + 1}: {mag.CurrentAmmo}/{_gun.ammoSettings.magazineSize}";

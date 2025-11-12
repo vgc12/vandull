@@ -22,7 +22,7 @@ namespace Items.Guns
         /// <summary>
         ///     Initializer responsible for creating and wiring up all gun systems.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Initializer responsible for creating and wiring up all gun systems")]
+        [SerializeField, Required, Tooltip("Initializer responsible for creating and wiring up all gun systems")]  
         private GunInitializer initializer;
 
         #endregion
@@ -45,65 +45,66 @@ namespace Items.Guns
         public void StartReload(bool quickReload)
         {
             AimingSystem.StopAiming();
-            if (quickReload) AmmoSystem.StartQuickReload();
+            if (quickReload)
+            {
+                AmmoSystem.StartQuickReload();
+            }
+
             AmmoSystem.StartReload();
         }
 
         #endregion
 
-        public void CheckAmmo()
-        {
-            AmmoSystem.CheckAmmo();
-        }
+        public void CheckAmmo() { AmmoSystem.CheckAmmo(); }
 
         #region Settings
 
         /// <summary>
         ///     Configuration for available fire modes (semi-auto, burst, full-auto).
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Configuration for available fire modes (semi-auto, burst, full-auto)")]
+        [SerializeField, Required, Tooltip("Configuration for available fire modes (semi-auto, burst, full-auto)")]  
         public FireModeSettings fireModeSettings;
 
         /// <summary>
         ///     General firing behavior settings including fire rate and spread.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("General firing behavior settings including fire rate and spread")]
+        [SerializeField, Required, Tooltip("General firing behavior settings including fire rate and spread")]  
         public FiringSettings firingSettings;
 
         /// <summary>
         ///     Aiming down sights configuration including FOV and speed.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Aiming down sights configuration including FOV and speed")]
+        [SerializeField, Required, Tooltip("Aiming down sights configuration including FOV and speed")]  
         public AimSettings aimSettings;
 
         /// <summary>
         ///     Damage values and falloff configuration.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Damage values and falloff configuration")]
+        [SerializeField, Required, Tooltip("Damage values and falloff configuration")]  
         public DamageSettings damageSettings;
 
         /// <summary>
         ///     Ammunition capacity, reload times, and magazine settings.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Ammunition capacity, reload times, and magazine settings")]
+        [SerializeField, Required, Tooltip("Ammunition capacity, reload times, and magazine settings")]  
         public AmmoSettings ammoSettings;
 
         /// <summary>
         ///     Recoil pattern and intensity configuration.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Recoil pattern and intensity configuration")]
+        [SerializeField, Required, Tooltip("Recoil pattern and intensity configuration")]  
         public RecoilSettings recoilSettings;
 
         /// <summary>
         ///     Visual bullet trail settings including color and lifetime.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Visual bullet trail settings including color and lifetime")]
+        [SerializeField, Required, Tooltip("Visual bullet trail settings including color and lifetime")]  
         public TrailSettings trailSettings;
 
         /// <summary>
         ///     Audio clips for firing, reloading, and other gun sounds.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Audio clips for firing, reloading, and other gun sounds")]
+        [SerializeField, Required, Tooltip("Audio clips for firing, reloading, and other gun sounds")]  
         public AudioSettings audioSettings;
 
         #endregion
@@ -113,25 +114,25 @@ namespace Items.Guns
         /// <summary>
         ///     Position where the magazine model attaches during reload animations.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Position where the magazine model attaches during reload animations")]
+        [SerializeField, Required, Tooltip("Position where the magazine model attaches during reload animations")]  
         public Transform magazinePosition;
 
         /// <summary>
         ///     Transform used for gun positioning when firing from the hip.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Transform used for gun positioning when firing from the hip")]
+        [SerializeField, Required, Tooltip("Transform used for gun positioning when firing from the hip")]  
         public Transform hipFireTransform;
 
         /// <summary>
         ///     Transform used for gun positioning when aiming down sights.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Transform used for gun positioning when aiming down sights")]
+        [SerializeField, Required, Tooltip("Transform used for gun positioning when aiming down sights")]  
         public Transform aimTransform;
 
         /// <summary>
         ///     Position where bullets spawn and muzzle flash appears.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Position where bullets spawn and muzzle flash appears")]
+        [SerializeField, Required, Tooltip("Position where bullets spawn and muzzle flash appears")]  
         public Transform muzzleTransform;
 
         #endregion
@@ -141,16 +142,16 @@ namespace Items.Guns
         /// <summary>
         ///     Standard reload animation for this weapon.
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Standard reload animation for this weapon")]
+        [SerializeField, Required, Tooltip("Standard reload animation for this weapon")]  
         public ItemAnimation reloadAnimation;
 
         /// <summary>
         ///     Faster reload animation (may retain ammo in magazine).
         /// </summary>
-        [SerializeField] [Required] [Tooltip("Faster reload animation (may retain ammo in magazine)")]
+        [SerializeField, Required, Tooltip("Faster reload animation (may retain ammo in magazine)")]  
         public ItemAnimation quickReloadAnimation;
 
-        [SerializeField] [Required] [Tooltip("Animation played when checking ammo")]
+        [SerializeField, Required, Tooltip("Animation played when checking ammo")]  
         public ItemAnimation checkingAmmoAnimation;
 
         #endregion
@@ -200,12 +201,14 @@ namespace Items.Guns
         /// </summary>
         public bool IsAiming => AimingSystem.IsAiming;
 
-        public override bool CanBeSwappedFrom => !IsReloading;
+        public override bool CanBeSwappedFrom => !IsReloading && !IsCheckingAmmo;
 
         /// <summary>
         ///     Gets whether the gun is currently in a reload animation.
         /// </summary>
         public bool IsReloading => AmmoSystem.IsReloading;
+
+        public bool IsCheckingAmmo => AmmoSystem.IsCheckingAmmo;
 
         #endregion
 
@@ -238,8 +241,12 @@ namespace Items.Guns
         {
             // Unsubscribe from fire mode events
             if (FireModeSystem?.AvailableFireModes != null)
+            {
                 foreach (var fireMode in FireModeSystem.AvailableFireModes)
+                {
                     fireMode.OnShotFired = null;
+                }
+            }
 
             // Unsubscribe from ammo events
             if (AmmoSystem != null)
@@ -264,15 +271,9 @@ namespace Items.Guns
         /// <summary>
         ///     This method is called when the gun is used (fired).
         /// </summary>
-        public override void Use()
-        {
-            Fire();
-        }
+        public override void Use() { Fire(); }
 
-        public override void StopUse()
-        {
-            StopFiring();
-        }
+        public override void StopUse() { StopFiring(); }
 
         #endregion
 
@@ -283,7 +284,11 @@ namespace Items.Guns
         /// </summary>
         public void StartAiming()
         {
-            if (IsReloading || !IsEquipped) return;
+            if (IsReloading || !IsEquipped)
+            {
+                return;
+            }
+
             AimingSystem.StartAiming();
         }
 
@@ -292,7 +297,11 @@ namespace Items.Guns
         /// </summary>
         public void StopAiming()
         {
-            if (!IsEquipped) return;
+            if (!IsEquipped)
+            {
+                return;
+            }
+
             AimingSystem.StopAiming();
         }
 
@@ -304,35 +313,23 @@ namespace Items.Guns
         ///     Gets a read-only list of available fire modes for this weapon.
         /// </summary>
         /// <returns>List of available fire types (semi-auto, burst, full-auto, etc.).</returns>
-        public IReadOnlyList<FireType> GetAvailableFireModes()
-        {
-            return fireModeSettings.availableFireModes;
-        }
+        public IReadOnlyList<FireType> GetAvailableFireModes() => fireModeSettings.availableFireModes;
 
         /// <summary>
         ///     Cycles to the next available fire mode.
         /// </summary>
-        public void CycleFireMode()
-        {
-            FireModeSystem.CycleFireMode();
-        }
+        public void CycleFireMode() { FireModeSystem.CycleFireMode(); }
 
         #endregion
 
         #region Firing
 
-        private void Fire()
-        {
-            FireModeSystem.CurrentFireSystem.Fire();
-        }
+        private void Fire() { FireModeSystem.CurrentFireSystem.Fire(); }
 
         /// <summary>
         ///     Immediately stops all firing activity.
         /// </summary>
-        private void StopFiring()
-        {
-            FireModeSystem.CurrentFireSystem.StopFire();
-        }
+        private void StopFiring() { FireModeSystem.CurrentFireSystem.StopFire(); }
 
         #endregion
 
@@ -348,7 +345,10 @@ namespace Items.Guns
 
             // Ensure there's a collider
             var colliderCount = transform.GetComponentsInChildren<Collider>();
-            if (colliderCount.Length == 0) transform.GetOrAdd<BoxCollider>();
+            if (colliderCount.Length == 0)
+            {
+                transform.GetOrAdd<BoxCollider>();
+            }
 
             // Detach from parent
             transform.SetParent(null);
@@ -367,11 +367,20 @@ namespace Items.Guns
             IsEquipped = true;
             AimingSystem.ResetPosition();
             if (ItemAnimationSystem != null && holdingItemAnimation != null && Owner == OwnerStatus.Player)
+            {
                 ItemAnimationSystem.PlayAnimation(holdingItemAnimation);
+            }
 
-            if (AimingSystem != null) StopAiming();
+            if (AimingSystem != null)
+            {
+                StopAiming();
+            }
 
-            if (FireModeSystem != null) StopFiring();
+            if (FireModeSystem != null)
+            {
+                StopFiring();
+            }
+
             EventBus<ItemEquippedEvent>.Raise(new ItemEquippedEvent(this));
         }
 
@@ -383,9 +392,15 @@ namespace Items.Guns
         {
             AimingSystem.ResetPosition();
 
-            if (AimingSystem != null) StopAiming();
+            if (AimingSystem != null)
+            {
+                StopAiming();
+            }
 
-            if (FireModeSystem != null) StopFiring();
+            if (FireModeSystem != null)
+            {
+                StopFiring();
+            }
 
             base.UnEquip();
         }

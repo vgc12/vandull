@@ -11668,14 +11668,6 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2085590868824028915, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2085590868824028915, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
-      propertyPath: showInEditMode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2085590868824028915, guid: 5f62b7314978c1b43b2f889212482c36, type: 3}
       propertyPath: arcLengthSamples
       value: 480
       objectReference: {fileID: 0}

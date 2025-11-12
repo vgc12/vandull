@@ -5,11 +5,7 @@ using UnityEngine.Pool;
 
 namespace Items.Guns.Ammo
 {
-    public enum CurveMode
-    {
-        AnimationCurves,
-        BezierCurve
-    }
+    public enum CurveMode { AnimationCurves, BezierCurve }
 
     public enum SpacingMode
     {
@@ -26,6 +22,7 @@ namespace Items.Guns.Ammo
         public Vector3 bulletRotationEuler = Vector3.zero;
         public bool followCurve = true;
         public Vector3 lastBulletPosition = Vector3.zero;
+        public Vector3 lastBulletRotation = Vector3.zero;
 
         [Header("Bezier Curve Layout")] public Vector3 startPoint = Vector3.zero;
 
@@ -54,8 +51,15 @@ namespace Items.Guns.Ammo
 
         private void OnEnable()
         {
-            if (Application.isPlaying || !showInEditMode) return;
-            if (_spawnedBullets.Count == 0) SpawnBullets();
+            if (Application.isPlaying || !showInEditMode)
+            {
+                return;
+            }
+
+            if (_spawnedBullets.Count == 0)
+            {
+                SpawnBullets();
+            }
         }
 
 #endif
@@ -71,8 +75,12 @@ namespace Items.Guns.Ammo
             {
                 // Edit mode: destroy immediately
                 foreach (var bullet in _spawnedBullets)
+                {
                     if (bullet != null)
+                    {
                         DestroyImmediate(bullet);
+                    }
+                }
 
                 _spawnedBullets.Clear();
             }
@@ -134,9 +142,13 @@ namespace Items.Guns.Ammo
 
         private ObjectPool<GameObject> GetOrCreatePool()
         {
-            if (bulletPrefab == null) return null;
+            if (bulletPrefab == null)
+            {
+                return null;
+            }
 
             if (_bulletPool == null)
+            {
                 _bulletPool = new ObjectPool<GameObject>(
                     () => Instantiate(bulletPrefab),
                     obj => obj.SetActive(true),
@@ -146,6 +158,7 @@ namespace Items.Guns.Ammo
                     30,
                     100
                 );
+            }
 
             return _bulletPool;
         }
@@ -153,13 +166,19 @@ namespace Items.Guns.Ammo
         private void UpdateSpacing()
         {
             for (var i = 0; i < _spawnedBullets.Count; i++)
+            {
                 if (_spawnedBullets[i] != null)
                 {
                     _spawnedBullets[i].transform.localPosition = GetBulletPosition(i);
                     _spawnedBullets[i].transform.localRotation = GetBulletRotation(i);
                     if (i == _spawnedBullets.Count - 1)
+                    {
                         _spawnedBullets[i].transform.localPosition = lastBulletPosition;
+
+                        _spawnedBullets[i].transform.localRotation = Quaternion.Euler(lastBulletRotation);
+                    }
                 }
+            }
         }
 
         private float GetTForBullet(int i)
@@ -191,11 +210,17 @@ namespace Items.Guns.Ammo
 
         private Quaternion GetBulletRotation(int i)
         {
-            if (!followCurve) return Quaternion.Euler(bulletRotationEuler);
+            if (!followCurve)
+            {
+                return Quaternion.Euler(bulletRotationEuler);
+            }
 
             var tangent = GetBezierTangent(i);
 
-            if (tangent.sqrMagnitude < 0.0001f) return Quaternion.Euler(bulletRotationEuler);
+            if (tangent.sqrMagnitude < 0.0001f)
+            {
+                return Quaternion.Euler(bulletRotationEuler);
+            }
 
             // Create rotation that points the bullet along the tangent
             var rotation = Quaternion.LookRotation(tangent.normalized);
@@ -250,7 +275,10 @@ namespace Items.Guns.Ammo
                 {
                     // Use object pool in play mode
                     var pool = GetOrCreatePool();
-                    if (pool == null) continue;
+                    if (pool == null)
+                    {
+                        continue;
+                    }
 
                     bullet = pool.Get();
                     bullet.transform.SetParent(transform);
@@ -273,24 +301,31 @@ namespace Items.Guns.Ammo
         public void ReleaseAllBulletsToPool()
         {
             var pool = GetOrCreatePool();
-            if (pool == null) return;
+            if (pool == null)
+            {
+                return;
+            }
 
             foreach (var bullet in _spawnedBullets)
             {
                 if (bullet != null)
+                {
+                    bullet.SetActive(false);
                     pool.Release(bullet);
+                }
             }
 
             _spawnedBullets.Clear();
-          
         }
-        
-        
+
 
         public void ReturnBulletsToPool()
         {
             var pool = GetOrCreatePool();
-            if (pool == null) return;
+            if (pool == null)
+            {
+                return;
+            }
 
             pool.Clear();
             _spawnedBullets.Clear();
@@ -307,8 +342,12 @@ namespace Items.Guns.Ammo
             {
                 // Edit mode: destroy immediately
                 foreach (var bullet in _spawnedBullets)
+                {
                     if (bullet != null)
+                    {
                         DestroyImmediate(bullet);
+                    }
+                }
 
                 _spawnedBullets.Clear();
             }
