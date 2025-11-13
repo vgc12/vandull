@@ -17,10 +17,16 @@ namespace Art.Shaders
             var renderers = obj.GetComponentsInChildren<Renderer>();
             foreach (var renderer in renderers)
             foreach (var mat in renderer.materials)
+            {
                 if (enable)
+                {
                     mat.EnableKeyword("_XRayEnabled");
+                }
                 else
+                {
                     mat.DisableKeyword("_XRayEnabled");
+                }
+            }
         }
 
         public async UniTask FadeXrayShader(GameObject obj, float targetIntensity, float duration,
@@ -35,7 +41,10 @@ namespace Art.Shaders
             foreach (var mat in renderer.materials)
             {
                 if (!mat.HasProperty(XRayEnabled))
+                {
                     continue;
+                }
+
                 mat.EnableKeyword("_XRayEnabled");
 
                 initalAlphas[mat] = mat.GetFloat(XRayAlpha);

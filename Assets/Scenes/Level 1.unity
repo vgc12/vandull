@@ -22841,7 +22841,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8201054483336920023}
-  m_Layer: 6
+  m_Layer: 11
   m_Name: FiveSeven
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -31953,7 +31953,7 @@ Transform:
   m_GameObject: {fileID: 8503083122900722705}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.004, z: -0.065}
+  m_LocalPosition: {x: 0, y: -0.0203, z: -0.0656}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -40822,7 +40822,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1962071525225253746}
-  m_Layer: 6
+  m_Layer: 11
   m_Name: AimPoint (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -42368,7 +42368,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3943907054116770172}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: LeftHand_Hint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -51321,7 +51321,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7032709015993436282}
-  m_Layer: 6
+  m_Layer: 11
   m_Name: HipFirePoint (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54258,7 +54258,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6711854675590813166}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: RightHand_target
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -69711,7 +69711,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9184559797187704101}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: LeftHand_target
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -82398,7 +82398,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 243747540195741065}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: RightHand_hint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
