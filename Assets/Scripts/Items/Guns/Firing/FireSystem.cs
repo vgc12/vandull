@@ -107,13 +107,13 @@ namespace Items.Guns.Firing
             if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
             {
                 damageable.TakeDamage(_gun.damageSettings.damage * bodyPart.damageMultiplier,
-                    MuzzleTransform.forward);
+                    MuzzleTransform.forward, MuzzleTransform.position);
                 EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
                     _gun.damageSettings.damage));
             }
             else
             {
-                damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward);
+                damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward, MuzzleTransform.position);
             }
         }
 
@@ -140,13 +140,14 @@ namespace Items.Guns.Firing
                 if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
                 {
                     damageable.TakeDamage(_gun.damageSettings.damage * bodyPart.damageMultiplier,
-                        MuzzleTransform.forward);
+                        MuzzleTransform.forward, MuzzleTransform.position);
                     EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
                         _gun.damageSettings.damage));
                 }
                 else
                 {
-                    damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward);
+                    damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward,
+                        MuzzleTransform.position);
                 }
             }
         }

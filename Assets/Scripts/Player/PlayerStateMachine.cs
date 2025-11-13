@@ -58,33 +58,29 @@ namespace Player
             InitializeStateMachine();
         }
 
-        private void Update()
-        {
-            _stateMachine.Update();
-        }
+        private void Update() { _stateMachine.Update(); }
 
-        private void FixedUpdate()
-        {
-            _stateMachine.FixedUpdate();
-        }
+        private void FixedUpdate() { _stateMachine.FixedUpdate(); }
 
-        public void TakeDamage(float amount, Vector3 direction)
+        public void TakeDamage(float amount, Vector3 direction, Vector3 damageLocation)
         {
-            if (Invulnerable || IsDead) return;
+            if (Invulnerable || IsDead)
+            {
+                return;
+            }
 
             _logger.Log($"Player took {amount} damage");
             health -= amount;
-            EventBus<PlayerHitEvent>.Raise(new PlayerHitEvent(health));
-            if (Health <= 0) Die();
+            EventBus<PlayerHitEvent>.Raise(new PlayerHitEvent(health, direction, damageLocation));
+            if (Health <= 0)
+            {
+                Die();
+            }
         }
 
         public bool Invulnerable => invulnerable;
 
-        public float Health
-        {
-            get => health;
-            set => health = Mathf.Clamp(value, 0, maxHealth);
-        }
+        public float Health { get => health; set => health = Mathf.Clamp(value, 0, maxHealth); }
 
         public float MaxHealth => maxHealth;
         public bool IsDead { get; private set; }
@@ -143,14 +139,10 @@ namespace Player
         {
             private readonly PlayerStateMachine _sm;
 
-            public Factory(PlayerStateMachine sm)
-            {
-                _sm = sm;
-            }
+            public Factory(PlayerStateMachine sm) => _sm = sm;
 
-            public PlayerStates Create()
-            {
-                return new PlayerStates
+            public PlayerStates Create() =>
+                new()
                 {
                     IdleState = new IdleState(_sm),
                     WalkState = new WalkState(_sm),
@@ -159,7 +151,6 @@ namespace Player
                     CrouchState = new CrouchState(_sm),
                     CrouchWalkState = new CrouchWalkState(_sm)
                 };
-            }
         }
     }
 }
