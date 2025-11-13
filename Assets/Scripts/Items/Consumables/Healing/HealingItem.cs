@@ -40,10 +40,12 @@ namespace Items.Consumables.Healing
         {
             if (AnimationPlaying) return;
             _rigHandler.LeftHandFollowItemTarget = false;
+            _rigHandler.LeftHandFollowItemHint = false;
             _playerKillable.Health += healingAmount;
             var length = ItemAnimationSystem.PlayAnimationAndGetLength(useAnimation);
             await WaitUntilAnimationComplete(length);
             _rigHandler.LeftHandFollowItemTarget = true;
+            _rigHandler.LeftHandFollowItemHint = true;
             SpawnEmptySyringe();
             charges -= 1;
             ItemAnimationSystem.PlayAnimation(holdingItemAnimation);

@@ -87,10 +87,16 @@ namespace Items
             EquippedItem = item;
             EquippedItem.Equip();
 
-            rigHandler.LeftHandTarget = EquippedItem.leftHandTarget;
-            rigHandler.LeftHandHint = EquippedItem.leftHandHint;
-            rigHandler.RightHandTarget = EquippedItem.rightHandTarget;
-            rigHandler.RightHandHint = EquippedItem.rightHandHint;
+            rigHandler.leftHandTarget = EquippedItem.leftHandTarget;
+            rigHandler.leftHandHint = EquippedItem.leftHandHint;
+            rigHandler.rightHandTarget = EquippedItem.rightHandTarget;
+            rigHandler.rightHandHint = EquippedItem.rightHandHint;
+
+            rigHandler.LeftHandFollowItemHint = true;
+            rigHandler.LeftHandFollowItemTarget = true;
+            rigHandler.RightHandFollowItemHint = true;
+            rigHandler.RightHandFollowItemTarget = true;
+
             rigHandler.RebuildRigs();
             EventBus<ItemSwitchedEvent>.Raise(new ItemSwitchedEvent(EquippedItem));
         }

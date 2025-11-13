@@ -62,7 +62,7 @@ Material:
     - _ZTestMode: 8
     m_Floats:
     - _AO: 1
-    - _Alpha: 0.178
+    - _Alpha: 0.724
     - _ColorX: 0
     - _ColorY: 0
     - _ColorZ: 0

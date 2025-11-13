@@ -66,20 +66,7 @@ namespace Items.Guns.Ammo
 
         private void OnDisable()
         {
-            // Return bullets to pool when disabled
-            if (Application.isPlaying)
-            {
-                ReturnBulletsToPool();
-            }
-            else
-            {
-                // Edit mode: destroy immediately
-                foreach (var bullet in _spawnedBullets)
-                    if (bullet != null)
-                        DestroyImmediate(bullet);
-
-                _spawnedBullets.Clear();
-            }
+            ClearBullets();
         }
 
         private void OnDrawGizmosSelected()
@@ -105,10 +92,17 @@ namespace Items.Guns.Ammo
             Gizmos.DrawSphere(transform.TransformPoint(startPoint), 0.005f);
             Gizmos.DrawSphere(transform.TransformPoint(endPoint), 0.005f);
             Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(transform.TransformPoint(controlPoint1), 0.004f);
-            Gizmos.DrawSphere(transform.TransformPoint(controlPoint2), 0.004f);
-            Gizmos.DrawLine(transform.TransformPoint(startPoint), transform.TransformPoint(controlPoint1));
-            Gizmos.DrawLine(transform.TransformPoint(endPoint), transform.TransformPoint(controlPoint2));
+            if (curveMode == CurveMode.BezierCurve)
+            {
+                Gizmos.DrawSphere(transform.TransformPoint(controlPoint1), 0.004f);
+                Gizmos.DrawSphere(transform.TransformPoint(controlPoint2), 0.004f);
+                Gizmos.DrawLine(transform.TransformPoint(startPoint), transform.TransformPoint(controlPoint1));
+                Gizmos.DrawLine(transform.TransformPoint(endPoint), transform.TransformPoint(controlPoint2));
+            }
+            else if (curveMode == CurveMode.StraightLine)
+            {
+                Gizmos.DrawLine(transform.TransformPoint(startPoint), transform.TransformPoint(endPoint));
+            }
 
             // Draw bullet positions
             Gizmos.color = Color.red;
@@ -121,7 +115,7 @@ namespace Items.Guns.Ammo
                 if (followCurve)
                 {
                     Gizmos.color = Color.green;
-                    var tangent = GetBezierTangent(i);
+                    var tangent = GetTangent(i);
                     var worldPos = transform.TransformPoint(pos);
                     var worldTangent = transform.TransformDirection(tangent.normalized * 0.01f);
                     Gizmos.DrawLine(worldPos, worldPos + worldTangent);
@@ -142,7 +136,12 @@ namespace Items.Guns.Ammo
 
             if (_bulletPool == null)
                 _bulletPool = new ObjectPool<GameObject>(
-                    () => Instantiate(bulletPrefab),
+                    () =>
+                    {
+                        var bullet = Instantiate(bulletPrefab);
+                        bullet.SetActive(true);
+                        return bullet;
+                    },
                     obj => obj.SetActive(true),
                     obj => obj.SetActive(false),
                     Destroy,
@@ -197,11 +196,17 @@ namespace Items.Guns.Ammo
             return tangent;
         }
 
+
+        private Vector3 GetTangent(int i)
+        {
+            return curveMode == CurveMode.BezierCurve ? GetBezierTangent(i) : endPoint - startPoint;
+        }
+
         private Quaternion GetBulletRotation(int i)
         {
             if (!followCurve) return Quaternion.Euler(bulletRotationEuler);
 
-            var tangent = curveMode == CurveMode.BezierCurve ? GetBezierTangent(i) : endPoint - startPoint;
+            var tangent = GetTangent(i);
 
             if (tangent.sqrMagnitude < 0.0001f) return Quaternion.Euler(bulletRotationEuler);
 
@@ -275,9 +280,11 @@ namespace Items.Guns.Ammo
                 bullet.layer = gameObject.layer;
                 bullet.transform.localPosition = position;
                 bullet.transform.localRotation = GetBulletRotation(i);
-                bullet.SetActive(true);
+
                 _spawnedBullets.Add(bullet);
             }
+
+            _spawnedBullets.ForEach(b => b.SetActive(true));
         }
 
         public void ReleaseAllBulletsToPool()
@@ -296,21 +303,12 @@ namespace Items.Guns.Ammo
         }
 
 
-        public void ReturnBulletsToPool()
-        {
-            var pool = GetOrCreatePool();
-            if (pool == null) return;
-
-            pool.Clear();
-            _spawnedBullets.Clear();
-        }
-
         [ContextMenu("Clear Bullets")]
         public void ClearBullets()
         {
             if (Application.isPlaying)
             {
-                ReturnBulletsToPool();
+                ReleaseAllBulletsToPool();
             }
             else
             {

@@ -1,7 +1,9 @@
 ﻿using System.Linq;
+using Attributes;
 using Audio;
 using EventBus;
 using Items.Guns;
+using Player;
 using UnityEngine;
 using AudioSettings = Items.Guns.AudioSettings;
 
@@ -9,6 +11,7 @@ namespace Npcs.Shared
 {
     public class ReloadAnimationHandler : MonoBehaviour
     {
+        [SerializeField] [Required] private RigHandler rigHandler;
         private Gun _currentGun;
 
         private bool GunPresent => _currentGun && _currentGun.AmmoSystem.CurrentMagazine;
@@ -90,6 +93,27 @@ namespace Npcs.Shared
         {
             if (!_currentGun) return;
             _currentGun.AmmoSystem.ToggleMagazineXRayVisibility(false);
+        }
+
+
+        public void MakeLeftHandFollowItemTarget()
+        {
+            rigHandler.LeftHandFollowItemTarget = true;
+        }
+
+        public void MakeLeftHandNotFollowItemTarget()
+        {
+            rigHandler.LeftHandFollowItemTarget = false;
+        }
+
+        public void MakeLeftHandFollowItemHint()
+        {
+            rigHandler.LeftHandFollowItemHint = true;
+        }
+
+        public void MakeLeftHandNotFollowItemHint()
+        {
+            rigHandler.LeftHandFollowItemHint = false;
         }
     }
 }
