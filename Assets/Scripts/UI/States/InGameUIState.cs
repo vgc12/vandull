@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using DependencyInjection;
 using EventBus;
 using Items;
 using Items.Guns;
@@ -8,27 +9,32 @@ using Shared;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+using ILogger = General.Logging.ILogger;
 
 namespace UI.States
 {
     public class InGameUIState : UIBaseState
     {
-        private readonly List<DamageIndicator> _activeIndicators = new();
+        private const int MaxIndicators = 5;
+        private const float FadeDuration = 2f;
+        private readonly List<DamageIndicator> _activeIndicators = new(MaxIndicators);
         private readonly VisualElement _crosshair;
         private readonly Color _damageColor = new(1f, 0.2f, 0.2f, 0.8f);
-        private readonly float _fadeDuration = 2f;
         private readonly ProgressBar _healthBar;
         private readonly VisualElement _indicatorContainer;
 
         // Damage indicator settings
         private readonly float _indicatorDistance = 150f;
+        private readonly Texture2D _indicatorTexture = Resources.Load<Texture2D>("UI/Images/DamageIndicator");
         private readonly EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
+        private readonly ILogger _logger;
         private readonly EventBinding<PlayerHitEvent> _playerHitEventBinding;
+        private readonly Camera _cam;
 
         private Gun _gun;
         private bool _isAiming;
         private IKillable _playerDamageable;
-        private Transform _playerTransform;
+
 
         public InGameUIState(VisualElement rootElement, UIStateMachine stateMachine) : base(rootElement, stateMachine,
             UIStateType.InGame)
@@ -56,9 +62,11 @@ namespace UI.States
             _indicatorContainer.style.left = 0;
             _indicatorContainer.style.top = 0;
 
-            rootElement.Add(_indicatorContainer);
+            RuntimeResolver.Instance.TryResolve(out _logger);
 
-            Debug.Log("Damage indicator system initialized");
+            rootElement.Add(_indicatorContainer);
+            _cam = Camera.main;
+            _logger.Log("Damage indicator system initialized");
         }
 
         [CanBeNull]
@@ -66,38 +74,27 @@ namespace UI.States
         {
             get
             {
-                if (_playerDamageable != null)
-                {
-                    return _playerDamageable;
-                }
+                if (_playerDamageable != null) return _playerDamageable;
 
                 _playerDamageable = Object.FindFirstObjectByType<PlayerStateMachine>();
-                if (_playerDamageable != null)
-                {
-                    _playerTransform = ((MonoBehaviour)_playerDamageable).transform;
-                    Debug.Log($"Found player at: {_playerTransform.position}");
-                }
+
 
                 return _playerDamageable;
             }
         }
 
+
         private void OnItemSwitched(ItemSwitchedEvent obj)
         {
             if (obj.NewItem is Gun gun)
-            {
                 _gun = gun;
-            }
             else
-            {
                 _gun = null;
-            }
         }
 
         private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
             _playerDamageable = null;
-            _playerTransform = null;
             _healthBar.value = PlayerDamageable?.Health ?? 100;
 
             ClearAllIndicators();
@@ -117,22 +114,18 @@ namespace UI.States
         {
             _healthBar.value = obj.NewHealth;
 
-            Debug.Log($"Player hit! Health: {obj.NewHealth}, Hit source: {obj.DamageLocation}");
+            _logger.Log($"Player hit! Health: {obj.NewHealth}, Hit source: {obj.DamageLocation}");
 
             // Show damage indicator if hit source position is available
             if (obj.DamageLocation != Vector3.zero)
-            {
                 ShowDamageIndicator(obj.DamageLocation);
-            }
             else
-            {
-                Debug.LogWarning("PlayerHitEvent has no HitSource position!");
-            }
+                _logger.LogWarning("PlayerHitEvent has no HitSource position!");
         }
 
         private void ShowDamageIndicator(Vector3 damageSourcePosition)
         {
-            Debug.Log($"Creating damage indicator for source at: {damageSourcePosition}");
+            _logger.Log($"Creating damage indicator for source at: {damageSourcePosition}");
 
             var indicator = CreateIndicatorElement();
 
@@ -140,72 +133,65 @@ namespace UI.States
             {
                 Element = indicator,
                 DamageSource = damageSourcePosition,
-                Timer = _fadeDuration
+                Timer = FadeDuration
             };
 
             _activeIndicators.Add(ind);
             _indicatorContainer.Add(indicator);
 
-            Debug.Log($"Active indicators: {_activeIndicators.Count}");
+            _logger.Log($"Active indicators: {_activeIndicators.Count}");
         }
 
         private VisualElement CreateIndicatorElement()
         {
+            if (_activeIndicators.Count >= MaxIndicators)
+            {
+                // Remove oldest indicator
+                var oldest = _activeIndicators[0];
+                _indicatorContainer.Remove(oldest.Element);
+                _activeIndicators.RemoveAt(0);
+            }
+
             var indicator = new VisualElement
             {
                 pickingMode = PickingMode.Ignore
             };
 
             indicator.style.position = Position.Absolute;
-            indicator.style.width = 64; // Adjust to your image size
-            indicator.style.height = 64; // Adjust to your image size
+            indicator.style.width = 128;
+            indicator.style.height = 128;
 
-            // Load your damage indicator image
-            // Place your image in Resources folder: Assets/Resources/UI/DamageIndicator.png
-            var indicatorTexture = Resources.Load<Texture2D>("UI/DamageIndicator");
 
-            if (indicatorTexture != null)
+            if (_indicatorTexture != null)
             {
-                indicator.style.backgroundImage = new StyleBackground(indicatorTexture);
-                // Optional: tint the image with your damage color
+                indicator.style.backgroundImage = new StyleBackground(_indicatorTexture);
+
                 indicator.style.unityBackgroundImageTintColor = _damageColor;
             }
             else
             {
-                Debug.LogError("Damage indicator texture not found! Check Resources/UI/Images/DamageIndicator.png");
-                // Fallback to colored square if image not found
+                _logger.LogError("Damage indicator texture not found! Check Resources/Images/UI/DamageIndicator.png");
+
                 indicator.style.backgroundColor = _damageColor;
             }
+
+            indicator.style.display = DisplayStyle.None;
 
             return indicator;
         }
 
         private void UpdateDamageIndicators()
         {
-            if (_activeIndicators.Count == 0)
+            if (_activeIndicators.Count == 0) return;
+
+            if (_cam == null)
             {
+                _logger.LogWarning("No main camera found!");
                 return;
             }
 
-            var cam = Camera.main;
-            if (cam == null)
-            {
-                Debug.LogWarning("No main camera found!");
-                return;
-            }
 
-            if (_playerTransform == null)
-            {
-                // Try to get player transform
-                var _ = PlayerDamageable;
-                if (_playerTransform == null)
-                {
-                    Debug.LogWarning("No player transform found!");
-                    return;
-                }
-            }
-
-            var playerPos = _playerTransform.position;
+            var playerPos = _cam.transform.position;
             var screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
 
             for (var i = _activeIndicators.Count - 1; i >= 0; i--)
@@ -221,41 +207,49 @@ namespace UI.States
                     continue;
                 }
 
-                ind.DamageSource.y = playerPos.y; // Ignore vertical difference
-                var toDamageSource = (ind.DamageSource - playerPos).normalized;
+                // Flatten to horizontal plane for direction calculation
+                var damageSourceFlat = ind.DamageSource;
+                damageSourceFlat.y = playerPos.y;
 
-                var angle = Vector3.SignedAngle(toDamageSource, _playerTransform.forward, Vector3.up);
+                var toDamageSource = (damageSourceFlat - playerPos).normalized;
+
+                // Calculate angle between player forward and damage source direction
+                // Negative angle because UI coordinates have Y increasing downward
+                var angle = Vector3.SignedAngle(_cam.transform.forward, toDamageSource, Vector3.up);
+
+                // Calculate position on circle around screen center
                 var indicatorPos = screenCenter + new Vector2(
                     Mathf.Sin(angle * Mathf.Deg2Rad),
                     -Mathf.Cos(angle * Mathf.Deg2Rad)
                 ) * _indicatorDistance;
-                // Update position (center the 40x40 indicator)
-                ind.Element.style.left = indicatorPos.x - 20;
-                ind.Element.style.top = indicatorPos.y - 20;
+
+                // Center the indicator (256x256 image, so offset by half = 128)
+                const float halfSize = 64f;
+                ind.Element.style.left = indicatorPos.x - halfSize;
+                ind.Element.style.top = indicatorPos.y - halfSize;
 
                 // Rotate to point toward damage source
+                // The indicator image should point upward by default, so angle directly maps
                 ind.Element.style.rotate = new Rotate(angle);
 
                 // Fade out over time
-                var alpha = Mathf.Clamp01(ind.Timer / _fadeDuration);
-                var fadeColor = _damageColor;
-                fadeColor.a = alpha * _damageColor.a;
-                ind.Element.style.borderTopColor = fadeColor;
+                var alpha = Mathf.Clamp01(ind.Timer / FadeDuration);
+                ind.Element.style.display = DisplayStyle.Flex;
                 ind.Element.style.opacity = alpha;
             }
         }
 
         private void ClearAllIndicators()
         {
-            foreach (var indicator in _activeIndicators)
-            {
-                _indicatorContainer.Remove(indicator.Element);
-            }
+            foreach (var indicator in _activeIndicators) _indicatorContainer.Remove(indicator.Element);
 
             _activeIndicators.Clear();
         }
 
-        protected override void ChangeMouseState() { LockCursorAndHideMouse(); }
+        protected override void ChangeMouseState()
+        {
+            LockCursorAndHideMouse();
+        }
 
         ~InGameUIState()
         {

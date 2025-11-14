@@ -10,8 +10,7 @@ namespace Player.Movement
     [RequireComponent(typeof(Rigidbody), typeof(GroundChecker))]
     public class PlayerMovement : MonoBehaviour
     {
-        [Header("Transforms")] [SerializeField] [Required]
-        private Transform orientation;
+        [Header("Transforms")] [Required] public Transform orientation;
 
         [SerializeField] [Required] private Transform playerModel;
         [SerializeField] [Required] private Transform crouchPositionTransform;

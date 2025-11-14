@@ -16,7 +16,7 @@ namespace Npcs
     [RequireComponent(typeof(RigHandler))]
     public class Enemy : Npc
     {
-        [Header("Movement Settings"), SerializeField] 
+        [Header("Movement Settings")] [SerializeField]
         private float strafeDistance = 8f;
 
         [SerializeField] private float closeRangeMultiplier = 0.7f;
@@ -26,14 +26,14 @@ namespace Npcs
         [SerializeField] private float engagementRange = 7f;
         [SerializeField] private float pointFollowSpeed = 5f;
 
-        [Header("Combat Settings"), SerializeField] 
+        [Header("Combat Settings")] [SerializeField]
         private float damagedDuration = 4f;
 
         [SerializeField] private float lookAtSpeed = 10f;
 
-        [SerializeField, Required]  private Transform aimPoint;
-        [SerializeField, Required]  private RaycastObjectSensor playerSensor;
-        [SerializeField, Required]  private CoverPointSensor coverPointSensor;
+        [SerializeField] [Required] private Transform aimPoint;
+        [SerializeField] [Required] private RaycastObjectSensor playerSensor;
+        [SerializeField] [Required] private CoverPointSensor coverPointSensor;
         [SerializeField] private Gun gun;
         private CountdownTimer _damagedTimer;
 
@@ -103,10 +103,7 @@ namespace Npcs
         {
             var distanceToTarget = Vector3.Distance(_transform.position, playerSensor.Target.transform.position);
 
-            if (NavMeshAgent.hasPath && NavMeshAgent.remainingDistance > pathCompletionThreshold)
-            {
-                return;
-            }
+            if (NavMeshAgent.hasPath && NavMeshAgent.remainingDistance > pathCompletionThreshold) return;
 
             var strafePosition = GetStrafePosition(distanceToTarget);
             NavMeshAgent.SetDestination(strafePosition);
@@ -140,7 +137,10 @@ namespace Npcs
             return Random.value > 0.5f ? rightDirection : -rightDirection;
         }
 
-        public void LookAtDamageDirection() { LookAtTarget(playerSensor.Target.position, lookAtSpeed); }
+        public void LookAtDamageDirection()
+        {
+            LookAtTarget(playerSensor.Target.position, lookAtSpeed);
+        }
 
         public void LookAtTarget(Vector3 target, float turnSpeed)
         {
@@ -151,10 +151,7 @@ namespace Npcs
 
         public override void TakeDamage(float amount, Vector3 direction, Vector3 damageLocation)
         {
-            if (IsDead)
-            {
-                return;
-            }
+            if (IsDead) return;
 
             base.TakeDamage(amount, direction, damageLocation);
             _lastDamageDirection = -direction;
