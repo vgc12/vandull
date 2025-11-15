@@ -1,94 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3003262908516260267
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4535190292725893924}
-  - component: {fileID: 3895190213315986231}
-  - component: {fileID: 4203077254946065211}
-  m_Layer: 0
-  m_Name: HK_MP5_Bullet
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4535190292725893924
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003262908516260267}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.21010119, w: 0.97767967}
-  m_LocalPosition: {x: 0.0567, y: 0.0806, z: -0.0006}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2586042383514319209}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -24.257}
---- !u!33 &3895190213315986231
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003262908516260267}
-  m_Mesh: {fileID: -4559364782500162290, guid: b7e98af8a925cb24b952f2a6d311fd15, type: 3}
---- !u!23 &4203077254946065211
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003262908516260267}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 85d326b2256c4314285f335f7e2b4bb7, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &8083715352898168017
 GameObject:
   m_ObjectHideFlags: 0
@@ -100,6 +11,7 @@ GameObject:
   - component: {fileID: 2586042383514319209}
   - component: {fileID: 6776704196918337493}
   - component: {fileID: 4721149694527593523}
+  - component: {fileID: 2085590868824028915}
   m_Layer: 11
   m_Name: HK_MP5_Magazine
   m_TagString: Untagged
@@ -119,8 +31,7 @@ Transform:
   m_LocalPosition: {x: -0.123, y: -0.0507, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 4535190292725893924}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6776704196918337493
@@ -179,3 +90,31 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &2085590868824028915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8083715352898168017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4d34e99cb34486a8bada9e9aff300e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.Ammo.MagazineBulletSpawner
+  bulletPrefab: {fileID: 6408913237257441349, guid: 9b717e2540f6ea045b165b70f69c51ad, type: 3}
+  bulletCount: 30
+  bulletRotationEuler: {x: 0, y: 0, z: -90}
+  followCurve: 1
+  lastBulletPosition: {x: 0.057, y: 0.084, z: 0}
+  lastBulletRotation: {x: 0, y: 0, z: -22.7}
+  startPoint: {x: 0.058, y: 0.079, z: -0.0025}
+  endPoint: {x: -0.054, y: -0.065, z: -0.0025}
+  controlPoint1: {x: 0.04, y: 0.04, z: -0.0025}
+  controlPoint2: {x: -0.01, y: -0.03, z: -0.0025}
+  spacingMode: 0
+  bulletGapParameter: 0.033
+  useStacking: 1
+  bulletsPerStack: 2
+  stackOffset: {x: 0, y: 0, z: 0.0067}
+  showInEditMode: 1

@@ -119,6 +119,7 @@ namespace Items.Guns
 
             private GunSystems CreateSystems()
             {
+                _gun.Owner = _factories.GetOwner();
                 var ammoSystem = _factories.CreateAmmoSystem();
                 var trailSystem = _factories.CreateTrailSystem();
                 var recoilSystem = _factories.CreateRecoilSystem();
@@ -130,7 +131,7 @@ namespace Items.Guns
 
                 var fireModes = _fireModeConfig.CreateFireModes(_gun, _eventHandlers.ShotFiredHandlers);
                 var fireModeSystem = _factories.CreateFireModeSystem(fireModes);
-                _gun.Owner = _factories.GetOwner();
+
                 return new GunSystems
                 {
                     TrailSystem = trailSystem,

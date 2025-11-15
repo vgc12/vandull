@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 
 namespace Items.Guns.Ammo
 {
@@ -20,6 +21,7 @@ namespace Items.Guns.Ammo
         public Action OnOutOfAmmo { get; set; }
 
         public Magazine CurrentMagazine { get; }
+        bool IsCheckingAmmo { get; set; }
 
         void StartReload();
 
@@ -31,5 +33,7 @@ namespace Items.Guns.Ammo
 
         void EquipNewMagazine();
         void RemoveCurrentMagazine();
+        void ToggleMagazineXRayVisibility(bool b);
+        UniTask CheckAmmo();
     }
 }

@@ -15,6 +15,8 @@ namespace Items.Guns
         public GunAudioClip magRemoved;
         public GunAudioClip magInserted;
         public GunAudioClip equip;
+        public GunAudioClip bodyPartHit;
+        public GunAudioClip headPartHit;
 
 
         [Serializable]

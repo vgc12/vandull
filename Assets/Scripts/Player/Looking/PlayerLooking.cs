@@ -107,9 +107,11 @@ namespace Player.Looking
 
         public void Look()
         {
-            var mouseX = _mouseDelta.x * Time.deltaTime * config.Sensitivity * config.InputMultiplier *
+            var deltaXSensitivity = Time.deltaTime * config.Sensitivity * config.inputMultiplier;
+            var mouseX = _mouseDelta.x * deltaXSensitivity *
                          (int)config.xAimType;
-            var mouseY = _mouseDelta.y * Time.deltaTime * config.Sensitivity * (int)config.yAimType;
+            var mouseY = _mouseDelta.y * deltaXSensitivity *
+                         (int)config.yAimType;
 
             _cameraRotation.y += mouseX;
             _cameraRotation.x -= mouseY;

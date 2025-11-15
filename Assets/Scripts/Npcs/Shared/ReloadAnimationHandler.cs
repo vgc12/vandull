@@ -1,7 +1,9 @@
 ﻿using System.Linq;
+using Attributes;
 using Audio;
 using EventBus;
 using Items.Guns;
+using Player;
 using UnityEngine;
 using AudioSettings = Items.Guns.AudioSettings;
 
@@ -9,8 +11,7 @@ namespace Npcs.Shared
 {
     public class ReloadAnimationHandler : MonoBehaviour
     {
-        [SerializeField] private GameObject leftHand;
-
+        [SerializeField] [Required] private RigHandler rigHandler;
         private Gun _currentGun;
 
         private bool GunPresent => _currentGun && _currentGun.AmmoSystem.CurrentMagazine;
@@ -35,6 +36,7 @@ namespace Npcs.Shared
         public void UnEquipMagazine()
         {
             if (!GunPresent) return;
+            PlayMagazineRemovedSound();
 
             _currentGun.AmmoSystem.RemoveCurrentMagazine();
         }
@@ -42,12 +44,14 @@ namespace Npcs.Shared
         public void DropMagazine()
         {
             if (!GunPresent) return;
+            PlayMagazineRemovedSound();
             _currentGun.AmmoSystem.CurrentMagazine.Drop();
         }
 
         public void EquipNewMagazine()
         {
             if (!_currentGun) return;
+            PlayMagazineInsertedSound();
             _currentGun.AmmoSystem.EquipNewMagazine();
         }
 
@@ -74,9 +78,42 @@ namespace Npcs.Shared
 
         private void PlayGunSound(AudioSettings.GunAudioClip sound)
         {
-            if (!GunPresent || !sound.clip) return;
+            if (!sound.clip) return;
 
-            AudioManager.Instance.PlaySfx(sound.clip, leftHand.transform.position, pitch: sound.RandomPitch);
+            AudioManager.Instance.PlaySfx(sound.clip, _currentGun.transform.position, pitch: sound.RandomPitch);
+        }
+
+        public void TurnOnXRay()
+        {
+            if (!_currentGun) return;
+            _currentGun.AmmoSystem.ToggleMagazineXRayVisibility(true);
+        }
+
+        public void TurnOffXRay()
+        {
+            if (!_currentGun) return;
+            _currentGun.AmmoSystem.ToggleMagazineXRayVisibility(false);
+        }
+
+
+        public void MakeLeftHandFollowItemTarget()
+        {
+            rigHandler.LeftHandFollowItemTarget = true;
+        }
+
+        public void MakeLeftHandNotFollowItemTarget()
+        {
+            rigHandler.LeftHandFollowItemTarget = false;
+        }
+
+        public void MakeLeftHandFollowItemHint()
+        {
+            rigHandler.LeftHandFollowItemHint = true;
+        }
+
+        public void MakeLeftHandNotFollowItemHint()
+        {
+            rigHandler.LeftHandFollowItemHint = false;
         }
     }
 }

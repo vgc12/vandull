@@ -14,14 +14,17 @@ namespace Player.Input
 {
     public class InputManager : IInputService, IPlayerActions, IUIActions
     {
+        private readonly float _checkMagazineHoldTime = 0.5f;
         private readonly EventBinding<SettingsUIState.ControlSettingsChangedEvent> _controlsChangedEventBinding;
         private readonly float _crouchInputBuffer = 0.002f;
         private readonly float _doubleTapWindow = 0.3f;
         private readonly EventBinding<UIStateSwitchedEvent> _uiStateChangedEventBinding;
 
         private bool _aimToggled;
+        private CancellationTokenSource _checkAmmoCts;
         private bool _crouchToggled;
         private SettingsUIState.ControlSettingsChangedEvent _currentControlSettings;
+        private double _holdTime;
         private float _lastAimInputTime;
         private float _lastCrouchInputTime;
 
@@ -31,6 +34,7 @@ namespace Player.Input
 
         [Inject] private ILogger _logger;
         private CancellationTokenSource _reloadCts;
+        private bool _reloadCurrentlyHeld;
 
         private bool _sprintToggled;
         private UIStateType _uiState;
@@ -46,7 +50,6 @@ namespace Player.Input
             _controlsChangedEventBinding =
                 new EventBinding<SettingsUIState.ControlSettingsChangedEvent>(OnControlsChanged);
             EventBus<SettingsUIState.ControlSettingsChangedEvent>.Register(_controlsChangedEventBinding);
-            
         }
 
         public PlayerInputActions InputActions { get; private set; }
@@ -68,7 +71,8 @@ namespace Player.Input
         public event UnityAction<bool> Aim = delegate { };
         public event UnityAction<float> SwitchItem = delegate { };
         public event UnityAction Reload = delegate { };
-        public event UnityAction QuickReload = delegate { }; // New event for double-tap
+        public event UnityAction QuickReload = delegate { };
+        public event UnityAction CheckAmmo = delegate { };
         public event UnityAction SwitchFireMode = delegate { };
         public event UnityAction Restart = delegate { };
 
@@ -149,16 +153,6 @@ namespace Player.Input
             if (context.started || context.canceled) Jump.Invoke(context.started);
         }
 
-        public void OnPrevious(InputAction.CallbackContext context)
-        {
-            if (context.performed) Previous.Invoke();
-        }
-
-        public void OnNext(InputAction.CallbackContext context)
-        {
-            if (context.performed) Next.Invoke();
-        }
-
         public void OnSprint(InputAction.CallbackContext context)
         {
             if (_currentControlSettings.ToggleSprint && context.started &&
@@ -208,26 +202,34 @@ namespace Player.Input
 
         public void OnReload(InputAction.CallbackContext context)
         {
+            if (context.canceled)
+            {
+                _checkAmmoCts?.Cancel();
+                _reloadCurrentlyHeld = false;
+                _holdTime = 0;
+                return;
+            }
+
+
             if (!context.started) return;
+            _reloadCurrentlyHeld = true;
+            _checkAmmoCts = new CancellationTokenSource();
+            ReloadHeldCounter().Forget();
 
             var timeSinceLastTap = Time.time - _lastReloadTapTime;
+
 
             if (timeSinceLastTap <= _doubleTapWindow)
             {
                 // Double tap detected - cancel pending normal reload
-                _reloadCts?.Cancel();
-                _reloadCts?.Dispose();
-                _reloadCts = null;
 
+                CancelReload();
                 QuickReload.Invoke();
                 _lastReloadTapTime = 0; // Reset to prevent triple-tap issues
             }
             else
             {
-                // Start delayed normal reload
-                _reloadCts?.Cancel();
-                _reloadCts?.Dispose();
-                _reloadCts = new CancellationTokenSource();
+                CancelReload(new CancellationTokenSource());
 
                 DelayedReload(_reloadCts.Token).Forget();
                 _lastReloadTapTime = Time.time;
@@ -303,13 +305,54 @@ namespace Player.Input
             if (context.performed) TrackedDeviceOrientation.Invoke(context.ReadValue<Quaternion>());
         }
 
+        private void CancelReload(CancellationTokenSource token = null)
+        {
+            _reloadCts?.Cancel();
+            _reloadCts?.Dispose();
+            _reloadCts = token;
+        }
+
+        private async UniTask ReloadHeldCounter()
+        {
+            try
+            {
+                while (_holdTime <= _checkMagazineHoldTime && _reloadCurrentlyHeld)
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update, _checkAmmoCts.Token);
+                    _holdTime += Time.deltaTime;
+                }
+
+                if (_reloadCurrentlyHeld)
+                {
+                    CancelReload();
+                    CheckAmmo.Invoke();
+                }
+
+                _holdTime = 0;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when reload is released early - do nothing
+            }
+        }
+
+        public void OnPrevious(InputAction.CallbackContext context)
+        {
+            if (context.performed) Previous.Invoke();
+        }
+
+        public void OnNext(InputAction.CallbackContext context)
+        {
+            if (context.performed) Next.Invoke();
+        }
+
         private async UniTaskVoid DelayedReload(CancellationToken ct)
         {
             try
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(_doubleTapWindow), cancellationToken: ct);
 
-                if (!ct.IsCancellationRequested) Reload.Invoke();
+                if (!ct.IsCancellationRequested && !_reloadCurrentlyHeld) Reload.Invoke();
             }
             catch (OperationCanceledException)
             {

@@ -30,6 +30,7 @@ namespace Items.Guns.Ammo
         {
             if (!IsInitialized()) return;
 
+            name = "EquippedMagazine";
             transform.SetParent(_equipPosition);
             transform.SetPositionAndRotation(_equipPosition.position, _equipPosition.rotation);
 
@@ -41,7 +42,7 @@ namespace Items.Guns.Ammo
         public void UnEquip()
         {
             if (!IsInitialized()) return;
-
+            name = "s";
             transform.SetParent(null);
             SetVisibility(false);
             SetPhysicsState(true, false);
@@ -78,17 +79,14 @@ namespace Items.Guns.Ammo
 
         private void SetPhysicsState(bool isKinematic, bool colliderEnabled)
         {
-            if (_rigidbody != null)
-                _rigidbody.isKinematic = isKinematic;
+            if (_rigidbody != null) _rigidbody.isKinematic = isKinematic;
 
-            if (_collider != null)
-                _collider.enabled = colliderEnabled;
+            if (_collider != null) _collider.enabled = colliderEnabled;
         }
 
         private void SetVisibility(bool visible)
         {
-            if (_meshRenderer != null)
-                _meshRenderer.enabled = visible;
+            if (_meshRenderer != null) _meshRenderer.enabled = visible;
         }
 
         private bool IsInitialized()
@@ -101,6 +99,7 @@ namespace Items.Guns.Ammo
 
             return true;
         }
+
 
         private bool ValidateInitialization(AmmoSettings settings, Transform equipPosition)
         {

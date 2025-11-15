@@ -46,10 +46,16 @@ namespace Items.Guns
         {
             AimingSystem.StopAiming();
             if (quickReload) AmmoSystem.StartQuickReload();
+
             AmmoSystem.StartReload();
         }
 
         #endregion
+
+        public async void CheckAmmo()
+        {
+            await AmmoSystem.CheckAmmo();
+        }
 
         #region Settings
 
@@ -145,6 +151,9 @@ namespace Items.Guns
         [SerializeField] [Required] [Tooltip("Faster reload animation (may retain ammo in magazine)")]
         public ItemAnimation quickReloadAnimation;
 
+        [SerializeField] [Required] [Tooltip("Animation played when checking ammo")]
+        public ItemAnimation checkingAmmoAnimation;
+
         #endregion
 
         #region Properties
@@ -192,12 +201,14 @@ namespace Items.Guns
         /// </summary>
         public bool IsAiming => AimingSystem.IsAiming;
 
-        public override bool CanBeSwappedFrom => !IsReloading;
+        public override bool CanBeSwappedFrom => !IsReloading && !IsCheckingAmmo;
 
         /// <summary>
         ///     Gets whether the gun is currently in a reload animation.
         /// </summary>
         public bool IsReloading => AmmoSystem.IsReloading;
+
+        public bool IsCheckingAmmo => AmmoSystem.IsCheckingAmmo;
 
         #endregion
 
@@ -275,7 +286,8 @@ namespace Items.Guns
         /// </summary>
         public void StartAiming()
         {
-            if (IsReloading || !IsEquipped) return;
+            if (IsReloading || IsCheckingAmmo || !IsEquipped) return;
+
             AimingSystem.StartAiming();
         }
 
@@ -285,6 +297,7 @@ namespace Items.Guns
         public void StopAiming()
         {
             if (!IsEquipped) return;
+
             AimingSystem.StopAiming();
         }
 
@@ -364,6 +377,7 @@ namespace Items.Guns
             if (AimingSystem != null) StopAiming();
 
             if (FireModeSystem != null) StopFiring();
+
             EventBus<ItemEquippedEvent>.Raise(new ItemEquippedEvent(this));
         }
 

@@ -80,7 +80,7 @@ namespace Npcs
             var attackState = new AttackPlayerState(this);
             var damagedState = new EnemyDamagedState(this);
             var deadState = new EnemyDeadState(this);
-            // StateMachine.AddAnyTransition(idleState, () => true);
+
 
             StateMachine.AddAnyTransition(deadState, () => IsDead);
             StateMachine.AddAnyTransition(attackState, () => playerSensor.CanSeeTarget && !IsDead);
@@ -103,8 +103,7 @@ namespace Npcs
         {
             var distanceToTarget = Vector3.Distance(_transform.position, playerSensor.Target.transform.position);
 
-            if (NavMeshAgent.hasPath && NavMeshAgent.remainingDistance > pathCompletionThreshold)
-                return;
+            if (NavMeshAgent.hasPath && NavMeshAgent.remainingDistance > pathCompletionThreshold) return;
 
             var strafePosition = GetStrafePosition(distanceToTarget);
             NavMeshAgent.SetDestination(strafePosition);
@@ -132,7 +131,7 @@ namespace Npcs
             return currentPos + strafeDirection * strafeDistance;
         }
 
-        private Vector3 GetRandomStrafeDirection(Vector3 toTarget)
+        private static Vector3 GetRandomStrafeDirection(Vector3 toTarget)
         {
             var rightDirection = Vector3.Cross(toTarget, Vector3.up).normalized;
             return Random.value > 0.5f ? rightDirection : -rightDirection;
@@ -150,10 +149,11 @@ namespace Npcs
         }
 
 
-        public override void TakeDamage(float amount, Vector3 direction)
+        public override void TakeDamage(float amount, Vector3 direction, Vector3 damageLocation)
         {
             if (IsDead) return;
-            base.TakeDamage(amount, direction);
+
+            base.TakeDamage(amount, direction, damageLocation);
             _lastDamageDirection = -direction;
             _damagedTimer.Start();
         }

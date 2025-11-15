@@ -1,148 +1,12 @@
-﻿#ifndef VANDULL_FUNCTIONS_INCLUDED
-#define VANDULL_FUNCTIONS_INCLUDED
+﻿#ifndef VANDULL_PBR_INCLUDED
+#define VANDULL_PBR_INCLUDED
 
-// ============================================================================
-// STRUCTURES
-// ============================================================================
-
-struct EdgeConstants
-{
-    float diffuse;
-    float specular;
-    float rim;
-    float distanceAttenuation;
-    float shadowAttenuation;
-};
-
-struct SurfaceVariables
-{
-    float roughness;
-    float shininess;
-    float rimStrength;
-    float rimAmount;
-    float rimThreshold;
-    float3 normal;
-    float3 view;
-    EdgeConstants ec;
-};
-
-
-#ifndef VANDULL_CEL_BANDS_RADIANCE
-#define VANDULL_CEL_BANDS_RADIANCE 6.0
-#endif
-float _VandullCelBandsRadiance;
-
-float GetCelBandsRadiance()
-{
-    return _VandullCelBandsRadiance > 0 ? _VandullCelBandsRadiance : VANDULL_CEL_BANDS_RADIANCE;
-}
-
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
-half3 celBanding(half3 value, half bands)
-{
-    return floor(value * bands) / bands;
-}
-
-float celBanding(float value, float bands)
-{
-    return floor(value * bands) / bands;
-}
-
-float color_mask(float3 mask, float3 color, float mask_threshold, float mask_fuzziness)
-{
-    float d = distance(mask, color);
-    return saturate(1.0 - smoothstep(mask_threshold, mask_threshold + mask_fuzziness, d));
-}
-
-bool checkNormalThreshold(float normal, float threshold)
-{
-    return abs(normal > threshold);
-}
-
-
-float3 ApplyHolographicEffect(
-    float2 uv,
-    float3 baseColor,
-    float3 texColor,
-    sampler2D foilMask,
-    sampler2D holoGradient,
-    sampler2D holoNoise,
-    float3 foilColor,
-    float holoThreshold,
-    float holoFuzziness,
-    float holoPeriod,
-    float holoScroll,
-    float holoDirection,
-    float holoStrength,
-    float time)
-{
-    float4 mask = tex2D(foilMask, uv);
-    float4 noiseTex = tex2D(holoNoise, uv);
-
-    // Calculate color similarity
-    float textureSimilarity = color_mask(foilColor, texColor, holoThreshold, holoFuzziness);
-
-    // Calculate gradient sample with time-based animation
-    float2 gradientSample = float2(
-        (uv.y * holoDirection + uv.x * (1.0 - holoDirection)) / 2.0,
-        0.0
-    );
-
-    gradientSample += float2(time * holoScroll * 0.1, 0.0);
-    gradientSample = frac(gradientSample + uv * holoPeriod);
-
-    float4 gradientTex = tex2D(holoGradient, gradientSample);
-
-    // Calculate effect strength
-    float strength = holoStrength * mask.r * textureSimilarity;
-
-    // Mix holographic color with base color
-    float3 holoColor = gradientTex.rgb * (noiseTex.rgb * 2.0);
-    return lerp(baseColor, holoColor, strength);
-}
-
-// ============================================================================
-// MANDELBROT FUNCTIONS
-// ============================================================================
-
-float CalculateMandelbrot(float2 c, int maxIter)
-{
-    float2 z = float2(0.0, 0.0);
-    int iter = 0;
-
-    for (iter = 0; iter < maxIter; iter++)
-    {
-        // z = z^2 + c
-        float x = (z.x * z.x - z.y * z.y) + c.x;
-        float y = (2.0 * z.x * z.y) + c.y;
-        z = float2(x, y);
-
-        // Check if escaped
-        if (length(z) > 2.0)
-            break;
-    }
-
-    // Smooth coloring for better gradients
-    if (iter < maxIter)
-    {
-        float log_zn = log(length(z));
-        float nu = log(log_zn / log(2.0)) / log(2.0);
-        return float(iter) + 1.0 - nu;
-    }
-
-    return float(iter);
-}
-
-// ============================================================================
-// PBR Lighting Alternatives
-// ============================================================================
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/BRDF.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/GlobalIllumination.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RealtimeLights.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+#include "VandullVFXFunctions.hlsl"
+
 
 half3 VandullLightingPBR(BRDFData brdfData, BRDFData brdfDataClearCoat,
                          half3 lightColor, half3 lightDirectionWS, float lightAttenuation,
@@ -331,4 +195,168 @@ half4 VandullPBR(InputData inputData, SurfaceData surfaceData)
     #endif
 }
 
-#endif // VANDULL_FUNCTIONS_INCLUDED
+struct Attributes
+{
+    float3 positionOS : POSITION;
+    float3 normalOS : NORMAL;
+    float4 tangentOS : TANGENT;
+    float2 uv : TEXCOORD0;
+    float2 staticLightmapUV : TEXCOORD1;
+    float2 dynamicLightmapUV : TEXCOORD2;
+};
+
+struct Varyings
+{
+    float4 positionCS : SV_POSITION;
+    float3 positionWS : TEXCOORD0;
+    float3 normalWS : TEXCOORD1;
+    float4 tangentWS : TEXCOORD2;
+    float fogFactor : TEXCOORD3;
+    float2 staticLightmapUV : TEXCOORD4;
+    float2 dynamicLightmapUV : TEXCOORD5;
+    half3 vertexSH : TEXCOORD6;
+    float2 uv : TEXCOORD7;
+};
+
+TEXTURE2D(_AlbedoMap);
+SAMPLER(sampler_AlbedoMap);
+TEXTURE2D(_MetallicMap);
+SAMPLER(sampler_MetallicMap);
+TEXTURE2D(_SpecularMap);
+SAMPLER(sampler_SpecularMap);
+TEXTURE2D(_RoughnessMap);
+SAMPLER(sampler_RoughnessMap);
+TEXTURE2D(_AOMap);
+SAMPLER(sampler_AOMap);
+TEXTURE2D(_NormalMap);
+SAMPLER(sampler_NormalMap);
+TEXTURE2D(_EmissionMap);
+SAMPLER(sampler_EmissionMap);
+
+CBUFFER_START(UnityPerMaterial)
+    float4 _AlbedoMap_ST;
+    float4 _Albedo;
+    float4 _EmissionColor;
+    float4 _NormalEffectsColor;
+    float4 _SpecularColor;
+    float _Metallic;
+    float _Roughness;
+    float _AO;
+    float _NormalStrength;
+    float _EmissionStrength;
+    float _CellBands;
+    float _NormalThreshold;
+    float _ColorX;
+    float _ColorY;
+    float _ColorZ;
+CBUFFER_END
+
+Varyings VandullPBRVert(Attributes input)
+{
+    Varyings output = (Varyings)0;
+
+    VertexPositionInputs positionInputs = GetVertexPositionInputs(input.positionOS);
+    VertexNormalInputs normalInputs = GetVertexNormalInputs(input.normalOS, input.tangentOS);
+
+    output.positionCS = positionInputs.positionCS;
+    output.positionWS = positionInputs.positionWS;
+    output.normalWS = normalInputs.normalWS;
+    output.tangentWS = float4(normalInputs.tangentWS, input.tangentOS.w);
+    output.fogFactor = ComputeFogFactor(positionInputs.positionCS.z);
+    output.uv = TRANSFORM_TEX(input.uv, _AlbedoMap);
+
+    // Lightmap UVs
+    OUTPUT_LIGHTMAP_UV(input.staticLightmapUV, unity_LightmapST, output.staticLightmapUV);
+    OUTPUT_LIGHTMAP_UV(input.dynamicLightmapUV, unity_DynamicLightmapST, output.dynamicLightmapUV);
+
+    // SH/Light probe data for dynamic objects
+    OUTPUT_SH(output.normalWS, output.vertexSH);
+
+    return output;
+}
+
+
+float4 VandullPBRFrag(Varyings input) : SV_Target
+{
+    // Sample textures
+    float4 albedoSample = SAMPLE_TEXTURE2D(_AlbedoMap, sampler_AlbedoMap, input.uv);
+    half3 albedo = albedoSample.rgb * _Albedo.rgb;
+
+    half metallic = 0.0h;
+    half3 specular = half3(0.0h, 0.0h, 0.0h);
+
+    // Sample based on workflow mode
+    #if defined(_WORKFLOWMODE_SPECULAR)
+                    // Specular workflow
+                    specular = SAMPLE_TEXTURE2D(_SpecularMap, sampler_SpecularMap, input.uv).rgb * _SpecularColor.rgb;
+                    metallic = 0.0h;
+    #else
+    // Metallic workflow (default)
+    metallic = SAMPLE_TEXTURE2D(_MetallicMap, sampler_MetallicMap, input.uv).r * _Metallic;
+    specular = half3(0.0h, 0.0h, 0.0h);
+    #endif
+
+    half roughness = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_RoughnessMap, input.uv).r * _Roughness;
+    half smoothness = 1.0h - roughness;
+    half occlusion = SAMPLE_TEXTURE2D(_AOMap, sampler_AOMap, input.uv).r;
+    occlusion = lerp(1.0h, occlusion, _AO);
+    half3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv).rgb
+        * _EmissionColor.rgb * _EmissionStrength;
+
+    // === SAMPLE AND TRANSFORM NORMAL MAP ===
+    half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.uv));
+    normalTS.xy *= _NormalStrength;
+    normalTS = normalize(normalTS);
+
+    if ((checkNormalThreshold(normalTS.x, _NormalThreshold) && _ColorX) ||
+        (checkNormalThreshold(normalTS.y, _NormalThreshold) && _ColorY) ||
+        (checkNormalThreshold(normalTS.z, _NormalThreshold) && _ColorZ))
+    {
+        return _NormalEffectsColor;
+    }
+
+    // Build tangent-to-world matrix
+    half3 bitangent = cross(input.normalWS, input.tangentWS.xyz) * input.tangentWS.w;
+    half3x3 tangentToWorld = half3x3(input.tangentWS.xyz, bitangent, input.normalWS);
+
+    // Transform normal from tangent space to world space
+    half3 normalWS = normalize(mul(normalTS, tangentToWorld));
+
+    // Setup InputData
+    InputData inputData;
+    inputData.positionWS = input.positionWS;
+    inputData.positionCS = input.positionCS;
+    inputData.normalWS = normalWS;
+    inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
+    inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
+    inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
+    inputData.vertexLighting = half3(0, 0, 0);
+
+    #if defined(LIGHTMAP_ON)
+                inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS);
+    #else
+    inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.vertexSH, inputData.normalWS);
+    #endif
+
+    inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+    inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
+    inputData.tangentToWorld = tangentToWorld;
+
+    // Setup SurfaceData
+    SurfaceData surfaceData = (SurfaceData)0;
+    surfaceData.albedo = albedo;
+    surfaceData.metallic = metallic;
+    surfaceData.specular = specular;
+    surfaceData.smoothness = smoothness;
+    surfaceData.occlusion = occlusion;
+    surfaceData.emission = emission;
+    surfaceData.normalTS = normalTS;
+    surfaceData.alpha = 1.0;
+
+    float4 color = VandullPBR(inputData, surfaceData);
+
+    return color;
+}
+
+
+#endif

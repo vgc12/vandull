@@ -23,7 +23,7 @@ MonoBehaviour:
   groundDrag: 8
   crouchHeight: 0.704
   crouchCameraPosition: 1
-  initialHeight: 1
+  initialHeight: 0.78
   initialCrouchCameraPosition: 1.62
   crouchSpeed: 0.15
   crouchCheckRadius: 0.31

@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Art.Shaders;
+using Cysharp.Threading.Tasks;
 using EventBus;
 using General.Extensions;
 using Player;
@@ -52,6 +54,9 @@ namespace Items.Guns.Ammo
 
         public bool CurrentMagazineEmpty => !CurrentMagazine || CurrentMagazine.IsEmpty;
 
+        public MagazineBulletSpawner MagazineBulletSpawner { get; set; }
+        public bool IsCheckingAmmo { get; set; }
+
         // Properties
         public Magazine CurrentMagazine { get; private set; }
         public bool IsReloading { get; private set; }
@@ -68,7 +73,7 @@ namespace Items.Guns.Ammo
         // Public Methods
         public void StartReload()
         {
-            if (!CanReload || _reloadCoroutine != null) return;
+            if (!CanReload || _reloadCoroutine != null || IsCheckingAmmo) return;
 
             IsReloading = true;
             var length =
@@ -78,7 +83,7 @@ namespace Items.Guns.Ammo
 
         public void StartQuickReload()
         {
-            if (!CanReload || _reloadCoroutine != null) return;
+            if (!CanReload || _reloadCoroutine != null || IsCheckingAmmo) return;
 
             IsReloading = true;
             var length = _gun.ItemAnimationSystem.PlayAnimationAndGetLength(_gun.quickReloadAnimation);
@@ -103,6 +108,7 @@ namespace Items.Guns.Ammo
 
             if (_currentMagazineIndex >= 0 && _currentMagazineIndex < _magazines.Count)
                 _magazines.RemoveAt(_currentMagazineIndex);
+
             CurrentMagazine = null;
         }
 
@@ -115,8 +121,41 @@ namespace Items.Guns.Ammo
         public void RemoveCurrentMagazine()
         {
             if (!CurrentMagazine) return;
+
             CurrentMagazine.UnEquip();
+
             CurrentMagazine = null;
+        }
+
+        public async void ToggleMagazineXRayVisibility(bool b)
+        {
+            if (b)
+            {
+                await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, 0.3f, 0.5f);
+                return;
+            }
+
+            await ShaderController.Instance.FadeXrayShader(CurrentMagazine.gameObject, 0f, 0.25f);
+        }
+
+        public async UniTask CheckAmmo()
+        {
+            if (!CurrentMagazine || _gun.Owner != OwnerStatus.Player || IsReloading ||
+                _gun.AimingSystem.IsAiming || IsCheckingAmmo)
+                return;
+
+            _rigHandler.LeftHandFollowItemHint = false;
+
+            MagazineBulletSpawner.SpawnBullets(CurrentAmmo);
+            IsCheckingAmmo = true;
+            var length = _gun.ItemAnimationSystem.PlayAnimationAndGetLength(_gun.checkingAmmoAnimation);
+            await UniTask.WaitForSeconds(length);
+            await UniTask.WaitForEndOfFrame();
+            IsCheckingAmmo = false;
+
+            _rigHandler.LeftHandFollowItemHint = true;
+
+            MagazineBulletSpawner.ReleaseAllBulletsToPool();
         }
 
         public void Update()
@@ -151,6 +190,9 @@ namespace Items.Guns.Ammo
             CurrentMagazine = _magazines[_currentMagazineIndex];
 
             CurrentMagazine.Equip();
+
+            if (_gun.Owner is OwnerStatus.Player)
+                MagazineBulletSpawner = CurrentMagazine.GetComponent<MagazineBulletSpawner>();
         }
 
         // Reload Logic
@@ -160,6 +202,7 @@ namespace Items.Guns.Ammo
 
 
             _rigHandler.LeftHandFollowItemTarget = false;
+            _rigHandler.LeftHandFollowItemHint = false;
 
             var seconds = new WaitForSeconds(length);
 
@@ -168,6 +211,7 @@ namespace Items.Guns.Ammo
 
 
             if (_gun.Owner == OwnerStatus.Enemy) EquipNewMagazine();
+
             IsReloading = false;
 
 
@@ -179,12 +223,12 @@ namespace Items.Guns.Ammo
             }
 
             _rigHandler.LeftHandFollowItemTarget = true;
+            _rigHandler.LeftHandFollowItemHint = true;
             _gun.ItemAnimationSystem.PlayAnimation(_gun.holdingItemAnimation);
 
             OnReloadComplete?.Invoke(new ReloadEvent(CurrentMagazine));
             _reloadCoroutine = null;
         }
-
 
         // Factory
         private Magazine CreateMagazine()
@@ -194,6 +238,10 @@ namespace Items.Guns.Ammo
             // Ensure required components
             magazineObject.GetOrAdd<Rigidbody>();
             magazineObject.GetOrAdd<BoxCollider>();
+            // this really requires setup so it hopefully gets it instead of adding.
+
+            ShaderController.Instance.ToggleXrayShaderOnObject(magazineObject, false);
+
 
             return magazineObject.GetOrAdd<Magazine>();
         }

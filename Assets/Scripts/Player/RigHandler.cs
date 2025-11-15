@@ -11,63 +11,115 @@ namespace Player
 
         public RigBuilder rigBuilder;
 
-        public Transform LeftHandTarget;
-        public Transform LeftHandHint;
-        public Transform RightHandTarget;
-        public Transform RightHandHint;
-        [SerializeField] private bool _leftHandFollowItemTarget = true;
-        [SerializeField] private bool _rightHandFollowItemTarget = true;
+        public Transform leftHandTarget;
+        public Transform leftHandHint;
+        public Transform rightHandTarget;
+        public Transform rightHandHint;
+
+        [Header("Left Hand Following")] [SerializeField]
+        private bool leftHandFollowItemTarget = true;
+
+        [SerializeField] private bool leftHandFollowItemHint = true;
+
+        [Header("Right Hand Following")] [SerializeField]
+        private bool rightHandFollowItemTarget = true;
+
+        [SerializeField] private bool rightHandFollowItemHint = true;
 
 
         public bool LeftHandFollowItemTarget
         {
-            get => _leftHandFollowItemTarget;
+            get => leftHandFollowItemTarget;
             set
             {
                 RebuildRigs();
-                _leftHandFollowItemTarget = value;
+                leftHandFollowItemTarget = value;
+            }
+        }
+
+        public bool LeftHandFollowItemHint
+        {
+            get => leftHandFollowItemHint;
+            set
+            {
+                RebuildRigs();
+                leftHandFollowItemHint = value;
             }
         }
 
         public bool RightHandFollowItemTarget
         {
-            get => _rightHandFollowItemTarget;
+            get => rightHandFollowItemTarget;
             set
             {
                 RebuildRigs();
-                _rightHandFollowItemTarget = value;
+                rightHandFollowItemTarget = value;
+            }
+        }
+
+        public bool RightHandFollowItemHint
+        {
+            get => rightHandFollowItemHint;
+            set
+            {
+                RebuildRigs();
+                rightHandFollowItemHint = value;
             }
         }
 
 
         private void Update()
         {
-            if (LeftHandFollowItemTarget && leftHandConstraint && LeftHandTarget && LeftHandHint)
-                ConstraintFollowTransform(leftHandConstraint, LeftHandTarget, LeftHandHint);
+            if (leftHandConstraint && leftHandTarget && leftHandHint)
+                ConstraintFollowTransform(
+                    leftHandConstraint,
+                    leftHandTarget,
+                    leftHandHint,
+                    LeftHandFollowItemTarget,
+                    LeftHandFollowItemHint
+                );
 
 
-            if (RightHandFollowItemTarget && rightHandConstraint && RightHandTarget && RightHandHint)
-                ConstraintFollowTransform(rightHandConstraint, RightHandTarget, RightHandHint);
+            if (rightHandConstraint && rightHandTarget && rightHandHint)
+                ConstraintFollowTransform(
+                    rightHandConstraint,
+                    rightHandTarget,
+                    rightHandHint,
+                    RightHandFollowItemTarget,
+                    RightHandFollowItemHint
+                );
         }
 
 
-        public void SetLeftHandData(Transform leftHandTarget, Transform leftHandHint)
+        public async void SetLeftHandData(Transform leftHandTarget, Transform leftHandHint)
         {
             ApplyConstraint(leftHandConstraint, leftHandTarget, leftHandHint);
         }
 
-        public void SetRightHandData(Transform rightHandTarget, Transform rightHandHint)
+        public async void SetRightHandData(Transform rightHandTarget, Transform rightHandHint)
         {
             ApplyConstraint(rightHandConstraint, rightHandTarget, rightHandHint);
         }
 
 
-        public void ConstraintFollowTransform(TwoBoneIKConstraint constraint, Transform target, Transform hint)
+        public void ConstraintFollowTransform(
+            TwoBoneIKConstraint constraint,
+            Transform target,
+            Transform hint,
+            bool followTarget,
+            bool followHint)
         {
-            constraint.data.target.position = target.position;
-            constraint.data.target.rotation = target.rotation;
-            constraint.data.hint.position = hint.position;
-            constraint.data.hint.rotation = hint.rotation;
+            if (followTarget)
+            {
+                constraint.data.target.position = target.position;
+                constraint.data.target.rotation = target.rotation;
+            }
+
+            if (followHint)
+            {
+                constraint.data.hint.position = hint.position;
+                constraint.data.hint.rotation = hint.rotation;
+            }
         }
 
 

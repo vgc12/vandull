@@ -10,8 +10,7 @@ namespace Player.Movement
     [RequireComponent(typeof(Rigidbody), typeof(GroundChecker))]
     public class PlayerMovement : MonoBehaviour
     {
-        [Header("Transforms")] [SerializeField] [Required]
-        private Transform orientation;
+        [Header("Transforms")] [Required] public Transform orientation;
 
         [SerializeField] [Required] private Transform playerModel;
         [SerializeField] [Required] private Transform crouchPositionTransform;
@@ -225,8 +224,6 @@ namespace Player.Movement
         public void Jump()
         {
             Rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
-            Rigidbody.AddForce(Rigidbody.linearVelocity / 3 * (config.JumpForce * config.JumpMultiplier),
-                ForceMode.Impulse);
         }
 
         #endregion

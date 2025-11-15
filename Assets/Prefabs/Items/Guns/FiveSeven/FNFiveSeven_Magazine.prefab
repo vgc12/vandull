@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 69443983002385623}
   - component: {fileID: 7290867995743764119}
   - component: {fileID: 5257912558908575337}
+  - component: {fileID: 8063881163472551758}
   m_Layer: 0
   m_Name: FNFiveSeven_Magazine
   m_TagString: Untagged
@@ -89,3 +90,32 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &8063881163472551758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 516922541925748006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4d34e99cb34486a8bada9e9aff300e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.Ammo.MagazineBulletSpawner
+  bulletPrefab: {fileID: 2450424410989916432, guid: 33070e6abb038d544a025ffe372f16fe, type: 3}
+  bulletCount: 15
+  bulletRotationEuler: {x: 90, y: 0, z: 0}
+  followCurve: 1
+  lastBulletPosition: {x: -0.0001, y: 0.0625, z: 0.0147}
+  lastBulletRotation: {x: 0, y: 0, z: 23}
+  startPoint: {x: -0.003, y: -0.05, z: -0.01}
+  endPoint: {x: -0.003, y: 0.05, z: 0.015}
+  controlPoint1: {x: 0, y: 0.07, z: 0.01}
+  controlPoint2: {x: 0, y: -0.06, z: -0.01}
+  curveMode: 0
+  spacingMode: 1
+  bulletGapParameter: 0.03
+  useStacking: 1
+  bulletsPerStack: 2
+  stackOffset: {x: 0.005, y: 0, z: 0}
+  showInEditMode: 1
