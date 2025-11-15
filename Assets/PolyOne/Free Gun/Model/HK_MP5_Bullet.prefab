@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5741113832219771594}
   - component: {fileID: 5139396395194092249}
   - component: {fileID: 5406825789518054101}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: HK_MP5_Bullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}

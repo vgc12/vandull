@@ -189,7 +189,7 @@ Material:
     - _NormalThreshold: 0.99999
     - _OcclusionStrength: 1
     - _OutlineMethod: 1
-    - _OutlineWidth: 0.0016
+    - _OutlineWidth: 0.0005
     - _Parallax: 0.02
     - _PosterizationCount: 99
     - _Posterize: 1

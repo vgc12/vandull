@@ -28,15 +28,9 @@ namespace Items.Guns.Firing
             Behaviour = gun;
             MuzzleTransform = gun.muzzleTransform;
             _logger = RuntimeResolver.Instance.Resolve<ILogger>();
-            if (onShotFiredSubscribers == null)
-            {
-                return;
-            }
+            if (onShotFiredSubscribers == null) return;
 
-            foreach (var subscriber in onShotFiredSubscribers)
-            {
-                OnShotFired += subscriber;
-            }
+            foreach (var subscriber in onShotFiredSubscribers) OnShotFired += subscriber;
         }
 
         public Transform MuzzleTransform { get; }
@@ -52,7 +46,9 @@ namespace Items.Guns.Firing
 
         public abstract void StopFire();
 
-        public virtual void Update() { }
+        public virtual void Update()
+        {
+        }
 
         public abstract void Fire();
 
@@ -60,10 +56,7 @@ namespace Items.Guns.Firing
         protected void PerformShot()
         {
             var sound = _gun.audioSettings.fire;
-            if (!FireRateTimeElapsed || _gun.AmmoSystem.IsReloading || _gun.AmmoSystem.IsCheckingAmmo)
-            {
-                return;
-            }
+            if (!FireRateTimeElapsed || _gun.AmmoSystem.IsReloading || _gun.AmmoSystem.IsCheckingAmmo) return;
 
             if (OutOfAmmo)
             {
@@ -99,21 +92,31 @@ namespace Items.Guns.Firing
 
         protected void ApplyDamage(RaycastHit hit)
         {
-            if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable))
-            {
-                return;
-            }
+            if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable)) return;
 
             if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
             {
+                // This is probably the head of the enemy or at least a critical part either way it should make the crit sound
+
+                // var clip = _gun.audioSettings.bodyPartHit;
+                // if (clip != null)
+                // {
+                //     if (bodyPart.damageMultiplier > 2f) clip = _gun.audioSettings.headPartHit;
+                //
+                //     var randomRange = clip.RandomPitch;
+                //
+                //
+                //     AudioManager.Instance.PlaySfx(clip.clip, hit.point, pitch: randomRange);
+                // }
+
                 damageable.TakeDamage(_gun.damageSettings.damage * bodyPart.damageMultiplier,
-                    MuzzleTransform.forward);
+                    MuzzleTransform.forward, MuzzleTransform.position);
                 EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
                     _gun.damageSettings.damage));
             }
             else
             {
-                damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward);
+                damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward, MuzzleTransform.position);
             }
         }
 
@@ -123,30 +126,26 @@ namespace Items.Guns.Firing
             {
                 var hit = HitResults[i];
 
-                if (hit.collider == null)
-                {
-                    continue;
-                }
+                if (hit.collider == null) continue;
 
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
 
 
                 if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable) &&
                     !hit.collider.transform.root.TryGetComponent(out damageable))
-                {
                     continue;
-                }
 
                 if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
                 {
                     damageable.TakeDamage(_gun.damageSettings.damage * bodyPart.damageMultiplier,
-                        MuzzleTransform.forward);
+                        MuzzleTransform.forward, MuzzleTransform.position);
                     EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
                         _gun.damageSettings.damage));
                 }
                 else
                 {
-                    damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward);
+                    damageable.TakeDamage(_gun.damageSettings.damage, MuzzleTransform.forward,
+                        MuzzleTransform.position);
                 }
             }
         }
