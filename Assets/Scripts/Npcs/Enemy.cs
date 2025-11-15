@@ -80,7 +80,7 @@ namespace Npcs
             var attackState = new AttackPlayerState(this);
             var damagedState = new EnemyDamagedState(this);
             var deadState = new EnemyDeadState(this);
-            // StateMachine.AddAnyTransition(idleState, () => true);
+
 
             StateMachine.AddAnyTransition(deadState, () => IsDead);
             StateMachine.AddAnyTransition(attackState, () => playerSensor.CanSeeTarget && !IsDead);
@@ -131,7 +131,7 @@ namespace Npcs
             return currentPos + strafeDirection * strafeDistance;
         }
 
-        private Vector3 GetRandomStrafeDirection(Vector3 toTarget)
+        private static Vector3 GetRandomStrafeDirection(Vector3 toTarget)
         {
             var rightDirection = Vector3.Cross(toTarget, Vector3.up).normalized;
             return Random.value > 0.5f ? rightDirection : -rightDirection;

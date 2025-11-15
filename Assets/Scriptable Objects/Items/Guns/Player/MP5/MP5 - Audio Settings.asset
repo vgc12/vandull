@@ -33,3 +33,9 @@ MonoBehaviour:
   equip:
     clip: {fileID: 8300000, guid: 7197eeeec20df674096bb76e4908c4f4, type: 3}
     pitchRange: {x: 0, y: 0}
+  bodyPartHit:
+    clip: {fileID: 8300000, guid: f3533c62887639442b6c7edde66d1cb1, type: 3}
+    pitchRange: {x: 0.97, y: 1.02}
+  headPartHit:
+    clip: {fileID: 8300000, guid: f3533c62887639442b6c7edde66d1cb1, type: 3}
+    pitchRange: {x: 0.97, y: 1.02}

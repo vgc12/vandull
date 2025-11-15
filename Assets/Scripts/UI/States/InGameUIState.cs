@@ -29,7 +29,7 @@ namespace UI.States
         private readonly EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
         private readonly ILogger _logger;
         private readonly EventBinding<PlayerHitEvent> _playerHitEventBinding;
-        private readonly Camera _cam;
+        private Camera _cam;
 
         private Gun _gun;
         private bool _isAiming;
@@ -39,6 +39,7 @@ namespace UI.States
         public InGameUIState(VisualElement rootElement, UIStateMachine stateMachine) : base(rootElement, stateMachine,
             UIStateType.InGame)
         {
+            _cam = Object.FindFirstObjectByType<Camera>();
             _playerHitEventBinding = new EventBinding<PlayerHitEvent>(OnPlayerHit);
             _itemSwitchedEventBinding = new EventBinding<ItemSwitchedEvent>(OnItemSwitched);
 
@@ -65,7 +66,7 @@ namespace UI.States
             RuntimeResolver.Instance.TryResolve(out _logger);
 
             rootElement.Add(_indicatorContainer);
-            _cam = Camera.main;
+
             _logger.Log("Damage indicator system initialized");
         }
 
@@ -94,6 +95,7 @@ namespace UI.States
 
         private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
+            _cam = Object.FindFirstObjectByType<Camera>();
             _playerDamageable = null;
             _healthBar.value = PlayerDamageable?.Health ?? 100;
 
@@ -192,7 +194,11 @@ namespace UI.States
 
 
             var playerPos = _cam.transform.position;
-            var screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            // var screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            var screenCenter = new Vector2(
+                _indicatorContainer.resolvedStyle.width / 2f,
+                _indicatorContainer.resolvedStyle.height / 2f
+            );
 
             for (var i = _activeIndicators.Count - 1; i >= 0; i--)
             {

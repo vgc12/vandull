@@ -232,8 +232,9 @@ namespace Player.Looking
 
             var horizontalSpeed = new Vector3(velocity.x, 0, velocity.z).magnitude;
             var isMoving = horizontalSpeed > movementThreshold;
+            var isInAir = velocity.y is > 0.1f or < -0.1f;
 
-            if (!isMoving) return;
+            if (!isMoving || isInAir) return;
 
             UpdateBobTimer(cameraBobSetting, horizontalSpeed);
             ApplyBobMovement(cameraBobSetting, horizontalSpeed);

@@ -224,8 +224,6 @@ namespace Player.Movement
         public void Jump()
         {
             Rigidbody.AddForce(Vector3.up * (config.JumpForce * config.JumpMultiplier), ForceMode.Impulse);
-            Rigidbody.AddForce(Rigidbody.linearVelocity / 3 * (config.JumpForce * config.JumpMultiplier),
-                ForceMode.Impulse);
         }
 
         #endregion
