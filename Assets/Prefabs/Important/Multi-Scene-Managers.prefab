@@ -269,11 +269,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 539898bb51dfab94c941ce5188e41769, type: 2}
   - {fileID: 11400000, guid: 024132a90407cb042893cada92508602, type: 2}
   - {fileID: 11400000, guid: fdb895c6f44c91d488c804186539df9a, type: 2}
+  - {fileID: 11400000, guid: 559f1de3628c9cc499e2231d66e95e2b, type: 2}
+  - {fileID: 11400000, guid: 1991ac40f03627b49ade98712814641d, type: 2}
   initialPoolSize: 15
   maxPoolSize: 40
-  masterVolume: 1
   musicMixerGroup: {fileID: 9015768300531846232, guid: 10a4c4dfd549cad479166ee6f262b2f0, type: 2}
-  musicVolume: 0.7
   defaultCategory: {fileID: 11400000, guid: fdb895c6f44c91d488c804186539df9a, type: 2}
 --- !u!1 &4091036155568979018
 GameObject:

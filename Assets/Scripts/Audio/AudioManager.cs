@@ -4,11 +4,13 @@ using System.Threading;
 using Attributes;
 using Cysharp.Threading.Tasks;
 using EventBus;
+using Reflex.Attributes;
 using Singletons;
 using UI.States;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Pool;
+using ILogger = General.Logging.ILogger;
 
 namespace Audio
 {
@@ -338,13 +340,16 @@ namespace Audio
 
         #region Volume Control
 
+        [Inject] private readonly ILogger _logger;
+
         /// <summary>
         ///     Sets the volume for a specific mixer group (0-100 scale).
         /// </summary>
         public void SetVolume(AudioMixerGroup mixerGroup, float volume)
         {
             var name = mixerGroup.name + "Volume";
-            mixerGroup.audioMixer.SetFloat(name, volume > 0 ? 20f * Mathf.Log10(volume / 100f) : -80f);
+            var success = mixerGroup.audioMixer.SetFloat(name, volume > 0 ? 20f * Mathf.Log10(volume / 100f) : -80f);
+            _logger.Log($"Setting volume of {name} successful?: {success}");
         }
 
         /// <summary>

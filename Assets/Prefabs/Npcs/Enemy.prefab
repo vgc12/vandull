@@ -2062,6 +2062,8 @@ MonoBehaviour:
   obstructionLayers:
     serializedVersion: 2
     m_Bits: 385
+  pollingInterval: 0.1
+  detectionSpeed: 7
   sensorOrigin: {fileID: 3427365045773360119}
   showDebugRays: 1
   visibleColor: {r: 0, g: 1, b: 0, a: 1}
@@ -4740,6 +4742,7 @@ MonoBehaviour:
   muzzleTransform: {fileID: 7325545705130402683}
   reloadAnimation: {fileID: 11400000, guid: 2f4945bcdc2fea54fa0067f1e42bb08e, type: 2}
   quickReloadAnimation: {fileID: 0}
+  checkingAmmoAnimation: {fileID: 0}
 --- !u!1 &8332220634124605992
 GameObject:
   m_ObjectHideFlags: 0
@@ -5271,6 +5274,7 @@ MonoBehaviour:
   minIdleTime: 2
   maxIdleTime: 5
   animationController: {fileID: 2093523934041871373}
+  maxHealth: 100
   strafeDistance: 8
   closeRangeMultiplier: 0.7
   farRangeMultiplier: 1.3
@@ -5299,9 +5303,11 @@ MonoBehaviour:
   leftHandConstraint: {fileID: 3666139922913144962}
   rightHandConstraint: {fileID: 3708334418410789584}
   rigBuilder: {fileID: 7761680354427572273}
-  LeftHandTarget: {fileID: 7465632516935847963}
-  LeftHandHint: {fileID: 7838422798809225917}
-  RightHandTarget: {fileID: 4120483105033436027}
-  RightHandHint: {fileID: 8027652258170360390}
-  _leftHandFollowItemTarget: 1
-  _rightHandFollowItemTarget: 1
+  leftHandTarget: {fileID: 0}
+  leftHandHint: {fileID: 0}
+  rightHandTarget: {fileID: 0}
+  rightHandHint: {fileID: 0}
+  leftHandFollowItemTarget: 1
+  leftHandFollowItemHint: 1
+  rightHandFollowItemTarget: 1
+  rightHandFollowItemHint: 1

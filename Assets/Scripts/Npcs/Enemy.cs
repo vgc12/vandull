@@ -25,6 +25,7 @@ namespace Npcs
         [SerializeField] private float pathCompletionThreshold = 2f;
         [SerializeField] private float engagementRange = 7f;
         [SerializeField] private float pointFollowSpeed = 5f;
+        
 
         [Header("Combat Settings")] [SerializeField]
         private float damagedDuration = 4f;
