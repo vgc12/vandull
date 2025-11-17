@@ -62,7 +62,7 @@ namespace Player
 
         private void FixedUpdate() { _stateMachine.FixedUpdate(); }
 
-        public void TakeDamage(float amount, Vector3 direction, Vector3 damageLocation)
+        public void TakeDamage(float amount, Vector3 direction, Transform damageLocation)
         {
             if (Invulnerable || IsDead)
             {

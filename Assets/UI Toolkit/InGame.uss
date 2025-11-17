@@ -89,3 +89,22 @@
     border-top-color: rgb(255, 255, 255);
     border-bottom-color: rgb(255, 255, 255);
 }
+
+.indicator-container {
+    position: absolute;
+    flex-grow: 1;
+    flex-shrink: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+}
+
+.indicator-image {
+    background-image: resource('UI/Images/DamageIndicator');
+    width: 128px;
+    height: 128px;
+    flex-shrink: 0;
+    align-self: center;
+    justify-content: flex-start;
+    margin-bottom: 184px;
+}

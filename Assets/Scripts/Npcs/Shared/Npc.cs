@@ -22,7 +22,7 @@ namespace Npcs.Shared
         [SerializeField] private bool invulnerable;
         [SerializeField] protected float minIdleTime = 2f;
         [SerializeField] protected float maxIdleTime = 5f;
-        [SerializeField, Required]  public AnimationController animationController;
+        [SerializeField, Required] public AnimationController animationController;
 
         #endregion
 
@@ -97,7 +97,7 @@ namespace Npcs.Shared
 
         #region Health & Damage
 
-        public virtual void TakeDamage(float amount, Vector3 direction, Vector3 damageLocation)
+        public virtual void TakeDamage(float amount, Vector3 direction, Transform damageLocation)
         {
             if (invulnerable || IsDead)
             {

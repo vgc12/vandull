@@ -9,4 +9,7 @@
             <ui:VisualElement class="crosshair-line crosshair-left" />
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="IndicatorContainer" class="indicator-container">
+        <ui:VisualElement name="IndicatorImage" class="indicator-image" />
+    </ui:VisualElement>
 </ui:UXML>

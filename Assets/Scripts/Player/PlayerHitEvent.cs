@@ -5,15 +5,15 @@ namespace Player
 {
     public class PlayerHitEvent : IEvent
     {
-        public readonly Vector3 DamageLocation;
+        public readonly Transform DamageTransform;
         public readonly Vector3 HitDirection;
         public readonly float NewHealth;
 
-        public PlayerHitEvent(float newHealth, Vector3 hitDirection, Vector3 damageLocation)
+        public PlayerHitEvent(float newHealth, Vector3 hitDirection, Transform damageTransform)
         {
             NewHealth = newHealth;
             HitDirection = hitDirection;
-            DamageLocation = damageLocation;
+            DamageTransform = damageTransform;
         }
     }
 }
