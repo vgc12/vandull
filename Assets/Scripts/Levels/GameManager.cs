@@ -1,4 +1,5 @@
-﻿using EventBus;
+﻿using System.Collections.Generic;
+using EventBus;
 using General.Game;
 using Levels.Strategies;
 using Npcs;
@@ -32,10 +33,12 @@ namespace Levels
         private EventBinding<UIStateSwitchedEvent> _uiStateSwitchedEventBinding;
 
         private UIStateType _uiStateType;
+        private EventBinding<PlayerDetectionChangedEvent> _playerDetectionChangedEventBinding;
 
         private StateMachine.StateMachine StateMachine { get; set; }
 
-        private bool _playerSeen;
+        public bool PlayerCaught { get; private set; }
+        public List<Enemy> EnemiesThatSeePlayer { get; } = new List<Enemy>();
 
         protected override void Awake()
         {
@@ -49,6 +52,7 @@ namespace Levels
             _playerCaughtState = new PlayerCaughtGameState(this);
 
 
+            _playerDetectionChangedEventBinding = new EventBinding<PlayerDetectionChangedEvent>(OnPlayerDetectionChanged);
             _uiStateSwitchedEventBinding = new EventBinding<UIStateSwitchedEvent>(OnUISwitched);
 
             _levelLostEventBinding = new EventBinding<LevelLostEvent>(OnLevelLost);
@@ -56,7 +60,7 @@ namespace Levels
 
             EventBus<LevelWonEvent>.Register(_levelWonEventBinding);
             EventBus<LevelLostEvent>.Register(_levelLostEventBinding);
-
+            EventBus<PlayerDetectionChangedEvent>.Register(_playerDetectionChangedEventBinding);
             EventBus<UIStateSwitchedEvent>.Register(_uiStateSwitchedEventBinding);
 
 
@@ -67,7 +71,7 @@ namespace Levels
                 () => !LevelManager.Instance.IsLoading && _uiStateType == UIStateType.InGame);
 
             StateMachine.AddTransition(_inGame, _pauseState, () => _uiStateType == UIStateType.Paused);
-            StateMachine.AddTransition(_inGame, _playerCaughtState, () => _playerSeen);
+            StateMachine.AddTransition(_inGame, _playerCaughtState, () => PlayerCaught);
             
             StateMachine.AddTransition(_pauseState, _inGame, () => _uiStateType == UIStateType.InGame);
 
@@ -79,6 +83,22 @@ namespace Levels
             StateMachine.AddTransition(_levelOver, _mainMenuState, () => _uiStateType == UIStateType.MainMenu);
 
             StateMachine.SetState(_inGame);
+        }
+
+        private void OnPlayerDetectionChanged(PlayerDetectionChangedEvent obj)
+        {
+            if (obj.Detected)
+            {
+                if (!EnemiesThatSeePlayer.Contains(obj.Enemy))
+                    EnemiesThatSeePlayer.Add(obj.Enemy);
+            }
+            else
+            {
+                if (EnemiesThatSeePlayer.Contains(obj.Enemy))
+                    EnemiesThatSeePlayer.Remove(obj.Enemy);
+            }
+
+            PlayerCaught = EnemiesThatSeePlayer.Count > 0;
         }
 
         private void OnLevelWon(LevelWonEvent obj)

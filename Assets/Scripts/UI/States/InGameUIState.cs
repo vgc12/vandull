@@ -7,6 +7,7 @@ using Items;
 using Items.Guns;
 using JetBrains.Annotations;
 using Levels;
+using Levels.Strategies;
 using Npcs.Sensors;
 using Player;
 using Shared;
@@ -24,7 +25,7 @@ namespace UI.States
         private const float DamageFadeDuration = 2f;
         private static readonly Color HighDetectionColor = new(1f, 0, 0, 1f);
         private static readonly Color LowDetectionColor = new(1f, 1f, 0f, 0.3f);
-        private readonly Dictionary<Transform, DirectionalIndicator> _activeDetectionIndicators = new();
+        private readonly Dictionary<RaycastObjectSensor, DirectionalIndicator> _activeDetectionIndicators = new();
 
         private readonly GameObject _crosshair;
         private readonly Color _damageColor = new(1f, 0.2f, 0.2f, 1f);
@@ -49,6 +50,7 @@ namespace UI.States
         private Gun _gun;
         private bool _isAiming;
         private IKillable _playerDamageable;
+        private readonly EventBinding<EnemyKilledEvent> _enemyKilledEventBinding;
 
         public InGameUIState(VisualElement rootElement, GameObject inGameUI, UIStateMachine stateMachine) : base(
             rootElement, stateMachine, UIStateType.InGame)
@@ -99,16 +101,27 @@ namespace UI.States
             _playerHitEventBinding = new EventBinding<PlayerHitEvent>(OnPlayerHit);
             _itemSwitchedEventBinding = new EventBinding<ItemSwitchedEvent>(OnItemSwitched);
             _detectionMeterUpdatedEventBinding = new EventBinding<DetectionMeterUpdatedEvent>(OnDetectionMeterUpdated);
+            _enemyKilledEventBinding = new EventBinding<EnemyKilledEvent>(OnEnemyKilled);
 
             EventBus<ItemSwitchedEvent>.Register(_itemSwitchedEventBinding);
             EventBus<PlayerHitEvent>.Register(_playerHitEventBinding);
             EventBus<DetectionMeterUpdatedEvent>.Register(_detectionMeterUpdatedEventBinding);
-
+            EventBus<EnemyKilledEvent>.Register(_enemyKilledEventBinding);
+            
             SceneManager.sceneLoaded += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
 
             RuntimeResolver.Instance.TryResolve(out _logger);
             _logger.Log("Indicator system initialized");
+        }
+
+        private void OnEnemyKilled(EnemyKilledEvent obj)
+        {
+            if (_activeDetectionIndicators.Remove(obj.Enemy.PlayerSensor, out var indicator))
+            {
+                indicator.Container.SetActive(false);
+                _detectionIndicatorPool.Release(indicator);
+            }
         }
 
         [CanBeNull]
@@ -176,23 +189,28 @@ namespace UI.States
         // Replace your OnDetectionMeterUpdated method with this:
         private void OnDetectionMeterUpdated(DetectionMeterUpdatedEvent evt)
         {
+            if (!IsActive)
+            {
+                return;
+            }
 
             var threshold = evt.DetectionMeterMaximum * 0.01f;
 
-            if (evt.DetectionMeter > threshold)
+            if (evt.Sensor.enabled && evt.DetectionMeter > threshold)
             {
                 var meterProgress = evt.DetectionMeter / evt.DetectionMeterMaximum;
 
+             
                 // Get or create indicator for this sensor
-                if (!_activeDetectionIndicators.TryGetValue(evt.SensorTransform, out var indicator))
+                if (!_activeDetectionIndicators.TryGetValue(evt.Sensor, out var indicator))
                 {
                     indicator = _detectionIndicatorPool.Get();
                     indicator.SourcePosition = evt.SensorTransform;
                     indicator.Container.SetActive(true);
-                    _activeDetectionIndicators[evt.SensorTransform] = indicator;
+                    _activeDetectionIndicators[evt.Sensor] = indicator;
 
                     // Start the continuous update coroutine
-                    AnimateDetectionIndicator(indicator, evt.SensorTransform).Forget();
+                    AnimateDetectionIndicator(indicator, evt.Sensor).Forget();
                 }
 
                 // Update the fill amount based on the meters normalized progress
@@ -204,21 +222,21 @@ namespace UI.States
             else
             {
                 // Remove indicator when detection drops below threshold
-                if (_activeDetectionIndicators.Remove(evt.SensorTransform, out var indicator))
+                if (_activeDetectionIndicators.Remove(evt.Sensor, out var indicator))
                     _detectionIndicatorPool.Release(indicator);
             }
         }
 
 // New method to continuously update indicator position/rotation
-        private async UniTask AnimateDetectionIndicator(DirectionalIndicator indicator, Transform sensorTransform)
+        private async UniTask AnimateDetectionIndicator(DirectionalIndicator indicator, RaycastObjectSensor sensor)
         {
-            while (_activeDetectionIndicators.ContainsKey(sensorTransform) &&
+            while (_activeDetectionIndicators.ContainsKey(sensor) &&
                    !_cancellationTokenSource.IsCancellationRequested)
             {
                 // Check if source was destroyed
                 if (indicator.SourcePosition == null || _cam == null)
                 {
-                    _activeDetectionIndicators.Remove(sensorTransform);
+                    _activeDetectionIndicators.Remove(sensor);
                     _detectionIndicatorPool.Release(indicator);
                     return;
                 }

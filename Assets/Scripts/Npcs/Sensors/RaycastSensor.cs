@@ -138,6 +138,7 @@ namespace Npcs.Sensors
 
         public bool CanSeeTarget => canSeeTarget;
         public Transform Target => targetObject;
+        public bool EmitEvents { get; set; } = true;
 
         private void HandleDetectionTimer()
         {
@@ -152,12 +153,11 @@ namespace Npcs.Sensors
 
             _detectionMeter = Mathf.Clamp(_detectionMeter, 0f, detectionMeterMaximum);
 
+            if(!EmitEvents) return;
             UpdateDetectionMeterEvent();
             EventBus<DetectionMeterUpdatedEvent>.Raise(_detectionMeterUpdatedEvent);
 
-/*            _logger.Log(
-                $"Detection: {_detectionMeter:F2}/{detectionMeterMaximum:F2} ({_detectionMeter / detectionMeterMaximum * 100:F0}%)");
-                */
+
         }
 
         private void UpdateDetectionMeterEvent()
@@ -165,6 +165,7 @@ namespace Npcs.Sensors
             _detectionMeterUpdatedEvent.DetectionMeter = _detectionMeter;
             _detectionMeterUpdatedEvent.DetectionMeterMaximum = detectionMeterMaximum;
             _detectionMeterUpdatedEvent.SensorTransform = sensorOrigin;
+            _detectionMeterUpdatedEvent.Sensor = this;
         }
 
 
@@ -278,12 +279,7 @@ namespace Npcs.Sensors
         public float DetectionMeter { get; set; }
         public float DetectionMeterMaximum { get; set; }
         public Transform SensorTransform { get; set; }
-
-        public DetectionMeterUpdatedEvent(float detectionMeter, float detectionMeterMaximum, Transform sensorTransform)
-        {
-            DetectionMeter = detectionMeter;
-            DetectionMeterMaximum = detectionMeterMaximum;
-            SensorTransform = sensorTransform;
-        }
+        
+        public RaycastObjectSensor Sensor { get; set; }
     }
 }

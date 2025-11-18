@@ -53,6 +53,7 @@ namespace Npcs
         public float LookAtSpeed => lookAtSpeed;
 
         public float PointFollowSpeed => pointFollowSpeed;
+        public bool PlayerDetected => playerSensor.CanSeeTarget;
 
 
         private void Start()
@@ -171,6 +172,13 @@ namespace Npcs
         {
             base.Die();
             EventBus<EnemyKilledEvent>.Raise(new EnemyKilledEvent(this, transform.position));
+            playerSensor.EmitEvents = false;
+        }
+
+        public void StopSensors()
+        {
+            playerSensor.enabled = false;
+            coverPointSensor.enabled = false;
         }
     }
 }
