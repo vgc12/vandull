@@ -1,4 +1,5 @@
 ﻿using General.Game;
+using UnityEngine;
 
 namespace Levels
 {
@@ -6,6 +7,19 @@ namespace Levels
     {
         public PauseGameState(GameManager gameManager) : base(gameManager)
         {
+        }
+
+        public override void Enter()
+        {
+            base.Enter();
+            Time.timeScale = 0f;
+        }
+
+
+        public override void Exit()
+        {
+            base.Exit();
+            Time.timeScale = 1f;
         }
     }
 }

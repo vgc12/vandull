@@ -1,3 +1,4 @@
+using Attributes;
 using EventBus;
 using Levels;
 using Levels.Strategies;
@@ -13,6 +14,8 @@ namespace UI
     [RequireComponent(typeof(UIDocument))]
     public class UIStateMachine : PersistentSingleton<UIStateMachine>
     {
+        // This is the start of the refactor to usin uGUI becausse UI Toolkit is proving to be dogshit for the usecases i have.
+        [SerializeField] [Required] private GameObject _inGameUIPanel;
         private UIDocument _document;
         private UIBaseState _inGameState;
 
@@ -93,7 +96,7 @@ namespace UI
 
             _loadingState = new LoadingUIState(Root.Q<VisualElement>("loading"), this);
 
-            _inGameState = new InGameUIState(Root.Q<VisualElement>("in-game"), this);
+            _inGameState = new InGameUIState(Root.Q<VisualElement>("in-game"), _inGameUIPanel, this);
             var settingsElement = Root.Q<VisualElement>("settings");
             _mainMenuSettingsState = new MainMenuUISettingsState(settingsElement, this);
             _pausedState = new PausedUIState(Root.Q<VisualElement>("paused"), this);

@@ -1,52 +1,100 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using DependencyInjection;
 using EventBus;
 using Items;
 using Items.Guns;
 using JetBrains.Annotations;
+using Levels;
 using Npcs.Sensors;
 using Player;
 using Shared;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using ILogger = General.Logging.ILogger;
+using Image = UnityEngine.UI.Image;
 
 namespace UI.States
 {
     public class InGameUIState : UIBaseState
     {
-        private const int MaxIndicatorsPerType = 5;
         private const float DamageFadeDuration = 2f;
-        private const float DetectionFadeDuration = 3f;
+        private static readonly Color HighDetectionColor = new(1f, 0, 0, 1f);
+        private static readonly Color LowDetectionColor = new(1f, 1f, 0f, 0.3f);
+        private readonly Dictionary<Transform, DirectionalIndicator> _activeDetectionIndicators = new();
 
-        private readonly VisualElement _crosshair;
+        private readonly GameObject _crosshair;
         private readonly Color _damageColor = new(1f, 0.2f, 0.2f, 1f);
 
-        private readonly Dictionary<Transform, DirectionalIndicator> _damageIndicators = new();
-        private readonly Color _detectionColor = new(1f, 0.8f, 0f, 1f);
-        private readonly Dictionary<Transform, DirectionalIndicator> _detectionIndicators = new();
+
+        private readonly ObjectPool<DirectionalIndicator> _damageIndicatorPool;
+        private readonly GameObject _damageIndicatorPrefab;
+
+        private readonly ObjectPool<DirectionalIndicator> _detectionIndicatorPool;
+        private readonly GameObject _detectionIndicatorPrefab;
 
         private readonly EventBinding<DetectionMeterUpdatedEvent> _detectionMeterUpdatedEventBinding;
+        private readonly Image _healthBar;
 
-        private readonly ProgressBar _healthBar;
-
-        private readonly float _indicatorDistance = 150f;
-        private readonly VisualElement _indicatorsRoot;
-        private readonly VisualElement _indicatorTemplate;
-
+        private readonly GameObject _inGameUIRoot;
         private readonly EventBinding<ItemSwitchedEvent> _itemSwitchedEventBinding;
         private readonly ILogger _logger;
         private readonly EventBinding<PlayerHitEvent> _playerHitEventBinding;
 
         private Camera _cam;
+        private CancellationTokenSource _cancellationTokenSource;
         private Gun _gun;
         private bool _isAiming;
         private IKillable _playerDamageable;
 
-        public InGameUIState(VisualElement rootElement, UIStateMachine stateMachine) : base(rootElement, stateMachine,
-            UIStateType.InGame)
+        public InGameUIState(VisualElement rootElement, GameObject inGameUI, UIStateMachine stateMachine) : base(
+            rootElement, stateMachine, UIStateType.InGame)
         {
+            _inGameUIRoot = inGameUI;
+
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            foreach (Transform child in _inGameUIRoot.transform)
+                switch (child.name)
+                {
+                    case "Crosshair":
+                        _crosshair = child.gameObject;
+                        break;
+                    case "HealthBar":
+                        _healthBar = child.GetComponentInChildren<Image>();
+                        _healthBar.fillAmount = 1f;
+                        break;
+                    case "DamageIndicator":
+                        _damageIndicatorPrefab = child.gameObject;
+                        break;
+                    case "DetectionIndicator":
+                        _detectionIndicatorPrefab = child.gameObject;
+                        break;
+                }
+            // Get a MonoBehaviour for running coroutines
+
+
+            _detectionIndicatorPool = new ObjectPool<DirectionalIndicator>(
+                () => CreateDirectionalIndicator(_detectionIndicatorPrefab),
+                ind => ind.Container?.SetActive(true),
+                ind => ind.Container?.SetActive(false),
+                ind => Object.Destroy(ind.Container),
+                false,
+                5,
+                5);
+
+            _damageIndicatorPool = new ObjectPool<DirectionalIndicator>(
+                () => CreateDamageIndicatorWrapper(_damageIndicatorPrefab),
+                ind => ind.Container?.SetActive(true),
+                ind => ind.Container?.SetActive(false),
+                ind => Object.Destroy(ind.Container),
+                false,
+                10,
+                20);
+
             _cam = Object.FindFirstObjectByType<Camera>();
             _playerHitEventBinding = new EventBinding<PlayerHitEvent>(OnPlayerHit);
             _itemSwitchedEventBinding = new EventBinding<ItemSwitchedEvent>(OnItemSwitched);
@@ -57,26 +105,9 @@ namespace UI.States
             EventBus<DetectionMeterUpdatedEvent>.Register(_detectionMeterUpdatedEventBinding);
 
             SceneManager.sceneLoaded += OnSceneLoaded;
-
-            _healthBar = rootElement.Q<VisualElement>("health-bar") as ProgressBar;
-            _crosshair = rootElement.Q<VisualElement>("crosshair");
-
-            // Get the template and root container
-            _indicatorsRoot = rootElement;
-            _indicatorTemplate = rootElement.Q<VisualElement>("IndicatorContainer");
-
-            if (_indicatorTemplate == null)
-            {
-                Debug.LogError("IndicatorContainer not found in UI document!");
-            }
-            else
-            {
-                // Hide the template
-                _indicatorTemplate.style.display = DisplayStyle.None;
-            }
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
 
             RuntimeResolver.Instance.TryResolve(out _logger);
-
             _logger.Log("Indicator system initialized");
         }
 
@@ -85,308 +116,226 @@ namespace UI.States
         {
             get
             {
-                if (_playerDamageable != null)
-                {
-                    return _playerDamageable;
-                }
+                if (_playerDamageable != null) return _playerDamageable;
 
                 _playerDamageable = Object.FindFirstObjectByType<PlayerStateMachine>();
                 return _playerDamageable;
             }
         }
 
+        // Update OnSceneLoaded to clear the dictionary
+        private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
+        {
+            _cancellationTokenSource = new CancellationTokenSource();
+            _activeDetectionIndicators.Clear(); // Add this line
+            _damageIndicatorPool.Clear();
+            _detectionIndicatorPool.Clear();
+            _cam = Object.FindFirstObjectByType<Camera>();
+            _playerDamageable = null;
+            _healthBar.fillAmount = PlayerDamageable?.Health / PlayerDamageable?.MaxHealth ?? 1;
+        }
+
+// Update OnSceneUnloaded to clear the dictionary
+        private void OnSceneUnloaded(Scene arg0)
+        {
+            _cancellationTokenSource.Cancel();
+            _activeDetectionIndicators.Clear(); // Add this line
+            _damageIndicatorPool.Clear();
+            _detectionIndicatorPool.Clear();
+        }
+
+        public override void Enter()
+        {
+            IsActive = true;
+            _inGameUIRoot.SetActive(true);
+            ChangeMouseState();
+            EventBus<UIStateSwitchedEvent>.Raise(new UIStateSwitchedEvent(StateType));
+        }
+
+        private DamageIndicator CreateDamageIndicatorWrapper(GameObject prefab)
+        {
+            var container = Object.Instantiate(prefab, _inGameUIRoot.transform);
+            return new DamageIndicator
+            {
+                Container = container,
+                IndicatorImage = container.GetComponentInChildren<Image>()
+            };
+        }
+
+        private DetectionIndicator CreateDirectionalIndicator(GameObject prefab)
+        {
+            var container = Object.Instantiate(prefab, _inGameUIRoot.transform);
+
+            return new DetectionIndicator
+            {
+                Container = container,
+                IndicatorImage = container.transform.Find("Image").GetComponent<Image>()
+            };
+        }
+
+        // Replace your OnDetectionMeterUpdated method with this:
         private void OnDetectionMeterUpdated(DetectionMeterUpdatedEvent evt)
         {
-            // Only show indicator if detection is above threshold (e.g., 10% of max)
-            var threshold = evt.DetectionMeterMaximum * 0.1f;
+
+            var threshold = evt.DetectionMeterMaximum * 0.01f;
 
             if (evt.DetectionMeter > threshold)
             {
-                var intensity = evt.DetectionMeter / evt.DetectionMeterMaximum;
-                ShowOrUpdateDetectionIndicator(evt.SensorTransform, intensity);
+                var meterProgress = evt.DetectionMeter / evt.DetectionMeterMaximum;
+
+                // Get or create indicator for this sensor
+                if (!_activeDetectionIndicators.TryGetValue(evt.SensorTransform, out var indicator))
+                {
+                    indicator = _detectionIndicatorPool.Get();
+                    indicator.SourcePosition = evt.SensorTransform;
+                    indicator.Container.SetActive(true);
+                    _activeDetectionIndicators[evt.SensorTransform] = indicator;
+
+                    // Start the continuous update coroutine
+                    AnimateDetectionIndicator(indicator, evt.SensorTransform).Forget();
+                }
+
+                // Update the fill amount based on the meters normalized progress
+                var detectionColor = Color.Lerp(LowDetectionColor, HighDetectionColor, meterProgress);
+                detectionColor.a = meterProgress;
+                indicator.IndicatorImage.color = detectionColor;
+                indicator.IndicatorImage.fillAmount = meterProgress;
             }
+            else
+            {
+                // Remove indicator when detection drops below threshold
+                if (_activeDetectionIndicators.Remove(evt.SensorTransform, out var indicator))
+                    _detectionIndicatorPool.Release(indicator);
+            }
+        }
+
+// New method to continuously update indicator position/rotation
+        private async UniTask AnimateDetectionIndicator(DirectionalIndicator indicator, Transform sensorTransform)
+        {
+            while (_activeDetectionIndicators.ContainsKey(sensorTransform) &&
+                   !_cancellationTokenSource.IsCancellationRequested)
+            {
+                // Check if source was destroyed
+                if (indicator.SourcePosition == null || _cam == null)
+                {
+                    _activeDetectionIndicators.Remove(sensorTransform);
+                    _detectionIndicatorPool.Release(indicator);
+                    return;
+                }
+
+                var newAngle = GetIndicatorAngle(indicator);
+
+                indicator.Container.transform.localEulerAngles = new Vector3(0, 0, -newAngle);
+
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
+            }
+        }
+
+        private float GetIndicatorAngle(DirectionalIndicator indicator)
+        {
+            var playerPos = _cam.transform.position;
+            var toSource = (indicator.SourcePosition.position - playerPos).normalized;
+
+            // Project the direction onto the camera's view plane
+            var projected = toSource - Vector3.Dot(toSource, _cam.transform.forward) * _cam.transform.forward;
+            projected.Normalize();
+
+            // Calculate angle using camera's right and up vectors
+            var screenRight = Vector3.Dot(projected, _cam.transform.right);
+            var screenUp = Vector3.Dot(projected, _cam.transform.up);
+            var angle = Mathf.Atan2(screenRight, screenUp) * Mathf.Rad2Deg;
+
+            // Smooth rotation
+            var currentAngle = indicator.Container.transform.localEulerAngles.z;
+            var angleDiff = Mathf.DeltaAngle(currentAngle, angle);
+            var targetAngle = currentAngle + angleDiff;
+            var newAngle = Mathf.Lerp(currentAngle, targetAngle, Time.deltaTime * 300f);
+            newAngle = Mathf.Repeat(newAngle + 180f, 360f) - 180f;
+            return newAngle;
         }
 
         private void OnItemSwitched(ItemSwitchedEvent obj)
         {
             if (obj.NewItem is Gun gun)
-            {
                 _gun = gun;
-            }
             else
-            {
                 _gun = null;
-            }
-        }
-
-        private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
-        {
-            _cam = Object.FindFirstObjectByType<Camera>();
-            _playerDamageable = null;
-            _healthBar.value = PlayerDamageable?.Health ?? 100;
-
-            ClearAllIndicators();
         }
 
         public override void Update()
         {
             base.Update();
-            _healthBar.value = PlayerDamageable?.Health ?? 100;
-            _crosshair.style.display = _isAiming ? DisplayStyle.None : DisplayStyle.Flex;
+            _healthBar.fillAmount = PlayerDamageable?.Health / PlayerDamageable?.MaxHealth ?? 1;
             _isAiming = _gun != null && _gun.IsAiming;
-
-            UpdateIndicators(_damageIndicators);
-            UpdateIndicators(_detectionIndicators);
+            _crosshair.SetActive(!_isAiming);
         }
 
         private void OnPlayerHit(PlayerHitEvent obj)
         {
-            _healthBar.value = obj.NewHealth;
+            _healthBar.fillAmount = obj.NewHealth / _playerDamageable.MaxHealth;
             _logger.Log($"Player hit! Health: {obj.NewHealth}, Hit source: {obj.DamageTransform}");
 
             if (obj.DamageTransform != null)
-            {
-                ShowOrUpdateDamageIndicator(obj.DamageTransform);
-            }
+                ShowIndicator(_damageIndicatorPool, obj.DamageTransform, DamageFadeDuration, _damageColor).Forget();
             else
-            {
                 _logger.LogWarning("PlayerHitEvent has no HitSource transform!");
-            }
         }
 
-        private void ShowOrUpdateDamageIndicator(Transform damageSource)
-        {
-            if (_damageIndicators.TryGetValue(damageSource, out var existingIndicator))
-            {
-                // Reset timer for existing indicator
-                existingIndicator.Timer = DamageFadeDuration;
-                _logger.Log($"Updated existing damage indicator for: {damageSource.name}");
-            }
-            else
-            {
-                // Create new indicator
-                _logger.Log($"Creating new damage indicator for: {damageSource.name}");
-                CreateIndicator(
-                    _damageIndicators,
-                    damageSource,
-                    DamageFadeDuration,
-                    _damageColor
-                );
-            }
-
-            _logger.Log($"Active damage indicators: {_damageIndicators.Count}");
-        }
-
-        private void ShowOrUpdateDetectionIndicator(Transform detector, float intensity)
-        {
-            // Modulate color alpha based on detection intensity
-            var detectionColor = _detectionColor;
-            detectionColor.a = intensity;
-
-            if (_detectionIndicators.TryGetValue(detector, out var existingIndicator))
-            {
-                // Update existing indicator color
-                existingIndicator.Timer = DetectionFadeDuration;
-                var indicatorImage = existingIndicator.Container.Q<VisualElement>("IndicatorImage");
-                if (indicatorImage != null)
-                {
-                    indicatorImage.style.unityBackgroundImageTintColor = detectionColor;
-                }
-
-                _logger.Log($"Updated detection indicator for: {detector.name}, intensity: {intensity:F2}");
-            }
-            else
-            {
-                // Create new indicator
-                _logger.Log($"Creating detection indicator for: {detector.name}, intensity: {intensity:F2}");
-                CreateIndicator(
-                    _detectionIndicators,
-                    detector,
-                    DetectionFadeDuration,
-                    detectionColor
-                );
-            }
-
-            _logger.Log($"Active detection indicators: {_detectionIndicators.Count}");
-        }
-
-        private void CreateIndicator(
-            Dictionary<Transform, DirectionalIndicator> indicatorDict,
+        private async UniTask ShowIndicator(
+            ObjectPool<DirectionalIndicator> pool,
             Transform sourceTransform,
             float duration,
             Color color)
         {
-            if (_indicatorTemplate == null)
+            if (pool == null)
             {
-                _logger.LogError("Cannot create indicator: template is null");
+                _logger.LogError("Cannot create indicator: pool is null");
                 return;
             }
 
-            // Remove oldest if at max capacity
-            if (indicatorDict.Count >= MaxIndicatorsPerType)
-            {
-                Transform oldestKey = null;
-                var oldestTimer = float.MaxValue;
+            var indicator = pool.Get();
 
-                foreach (var kvp in indicatorDict)
-                {
-                    if (kvp.Value.Timer < oldestTimer)
-                    {
-                        oldestTimer = kvp.Value.Timer;
-                        oldestKey = kvp.Key;
-                    }
-                }
+            indicator.SourcePosition = sourceTransform;
+            indicator.IndicatorImage.color = color;
 
-                if (oldestKey != null)
-                {
-                    _indicatorsRoot.Remove(indicatorDict[oldestKey].Container);
-                    indicatorDict.Remove(oldestKey);
-                    _logger.Log("Removed oldest indicator to make room");
-                }
-            }
-
-            // Clone the template container
-            var container = new VisualElement
-            {
-                name = "IndicatorContainer-Clone",
-                pickingMode = PickingMode.Ignore
-            };
-
-            // Add the USS class for styling
-            container.AddToClassList("indicator-container");
-
-            // Override position to absolute for dynamic positioning
-            container.style.position = Position.Absolute;
-
-            // Clone the indicator image child
-            var indicatorImage = new VisualElement
-            {
-                name = "IndicatorImage",
-                pickingMode = PickingMode.Ignore
-            };
-
-            // Add the USS class for styling
-            indicatorImage.AddToClassList("indicator-image");
-
-            // Apply the color tint
-            indicatorImage.style.unityBackgroundImageTintColor = color;
-
-            container.Add(indicatorImage);
-
-            var indicator = new DirectionalIndicator
-            {
-                Container = container,
-                SourcePosition = sourceTransform,
-                Timer = duration,
-                MaxDuration = duration
-            };
-
-            indicatorDict[sourceTransform] = indicator;
-            _indicatorsRoot.Add(container);
+            // Start the coroutine to update position/rotation and auto-return
+            await AnimateDamageIndicator(indicator, pool, duration, color);
         }
 
-        private void UpdateIndicators(Dictionary<Transform, DirectionalIndicator> indicators)
+        private async UniTask AnimateDamageIndicator(DirectionalIndicator indicator,
+            ObjectPool<DirectionalIndicator> pool,
+            float duration, Color baseColor)
         {
-            if (indicators.Count == 0)
+            var elapsed = 0f;
+
+            while (elapsed < duration && !_cancellationTokenSource.IsCancellationRequested)
             {
-                return;
+                elapsed += Time.deltaTime;
+
+                var newAngle = GetIndicatorAngle(indicator);
+                indicator.Container.transform.localEulerAngles = new Vector3(0, 0, -newAngle);
+
+
+                var alpha = Mathf.Clamp01((duration - elapsed) / duration);
+                indicator.IndicatorImage.color = new Color(
+                    baseColor.r,
+                    baseColor.g,
+                    baseColor.b,
+                    alpha * baseColor.a
+                );
+
+
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
             }
 
-            if (_cam == null)
-            {
-                _logger.LogWarning("No main camera found!");
-                return;
-            }
-
-            var playerPos = _cam.transform.position;
-            var screenCenter = new Vector2(
-                _indicatorsRoot.resolvedStyle.width / 2f,
-                _indicatorsRoot.resolvedStyle.height / 2f
-            );
-
-            var keysToRemove = new List<Transform>();
-
-            foreach (var kvp in indicators)
-            {
-                var transform = kvp.Key;
-                var ind = kvp.Value;
-
-                // Check if transform was destroyed
-                if (transform == null)
-                {
-                    keysToRemove.Add(transform);
-                    _indicatorsRoot.Remove(ind.Container);
-                    continue;
-                }
-
-                ind.Timer -= Time.deltaTime;
-
-                // Remove expired indicators
-                if (ind.Timer <= 0)
-                {
-                    keysToRemove.Add(transform);
-                    _indicatorsRoot.Remove(ind.Container);
-                    continue;
-                }
-
-
-                var toSource = (transform.position - playerPos).normalized;
-
-// Project the direction onto the camera's view plane (perpendicular to camera forward)
-// This removes the depth component, leaving only the screen-space direction
-                var projected = toSource - Vector3.Dot(toSource, _cam.transform.forward) * _cam.transform.forward;
-                projected.Normalize();
-
-// Calculate angle using camera's right and up vectors as reference frame
-                var screenRight = Vector3.Dot(projected, _cam.transform.right);
-                var screenUp = Vector3.Dot(projected, _cam.transform.up);
-                var angle = Mathf.Atan2(screenRight, screenUp) * Mathf.Rad2Deg;
-
-// Get current rotation angle
-                var currentAngle = ind.Container.style.rotate.value.angle.value;
-
-// Calculate the shortest angular distance
-                var angleDiff = Mathf.DeltaAngle(currentAngle, angle);
-                var targetAngle = currentAngle + angleDiff;
-
-// Lerp using the shortest path
-                var newAngle = Mathf.Lerp(currentAngle, targetAngle, Time.deltaTime * 30f);
-
-// Normalize to -180 to 180 range
-                newAngle = Mathf.Repeat(newAngle + 180f, 360f) - 180f;
-
-                ind.Container.style.rotate = new Rotate(newAngle);
-
-// Fade out over time
-                var alpha = Mathf.Clamp01(ind.Timer / ind.MaxDuration);
-                ind.Container.style.opacity = alpha;
-            }
-
-            // Clean up removed indicators
-            foreach (var key in keysToRemove)
-            {
-                indicators.Remove(key);
-            }
+            // Return to pool after duration
+            pool.Release(indicator);
         }
 
-        private void ClearAllIndicators()
+        protected override void ChangeMouseState()
         {
-            foreach (var kvp in _damageIndicators)
-            {
-                _indicatorsRoot.Remove(kvp.Value.Container);
-            }
-
-            _damageIndicators.Clear();
-
-            foreach (var kvp in _detectionIndicators)
-            {
-                _indicatorsRoot.Remove(kvp.Value.Container);
-            }
-
-            _detectionIndicators.Clear();
+            LockCursorAndHideMouse();
         }
-
-        protected override void ChangeMouseState() { LockCursorAndHideMouse(); }
 
         ~InGameUIState()
         {
@@ -394,15 +343,28 @@ namespace UI.States
             EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedEventBinding);
             EventBus<DetectionMeterUpdatedEvent>.Deregister(_detectionMeterUpdatedEventBinding);
             SceneManager.sceneLoaded -= OnSceneLoaded;
-            ClearAllIndicators();
+        }
+
+        public override void Exit()
+        {
+            IsActive = false;
+            _inGameUIRoot.SetActive(false);
+            UIStateMachine.ResetCommand();
         }
 
         private class DirectionalIndicator
         {
-            public VisualElement Container;
-            public float MaxDuration;
+            public GameObject Container;
+            public Image IndicatorImage;
             public Transform SourcePosition;
-            public float Timer;
+        }
+
+        private class DamageIndicator : DirectionalIndicator
+        {
+        }
+
+        private class DetectionIndicator : DirectionalIndicator
+        {
         }
     }
 }
