@@ -63,7 +63,6 @@ namespace UI.States
 
         private readonly List<VisualElement> _focusableElements = new();
 
-        private readonly float _inputDelay = 0.1f;
 
         private readonly KeyIconMappingConfig _keyIconMappingConfig = new();
         private readonly ILogger _logger = RuntimeResolver.Instance.Resolve<ILogger>();
@@ -72,7 +71,6 @@ namespace UI.States
         private Button _applyButton;
         private VisualElement _audioContainer;
         private Button _audioTabButton;
-        private int _bottomButtonFocusIndex;
         private Button _cancelRebindButton;
         private Button _closeButton;
         private VisualElement _controllerBindsContainer;
@@ -393,7 +391,6 @@ namespace UI.States
                 _closeButton.focusable = true;
 
                 _applyButton.Focus();
-                _bottomButtonFocusIndex = 1;
                 _isScrollViewFocused = false;
             }
         }
