@@ -140,12 +140,7 @@ namespace Npcs
             var strafeDirection = GetRandomStrafeDirection(toTarget);
             return currentPos + strafeDirection * strafeDistance;
         }
-
-        private void LateUpdate()
-        {
-            
-        }
-
+        
         private static Vector3 GetRandomStrafeDirection(Vector3 toTarget)
         {
             var rightDirection = Vector3.Cross(toTarget, Vector3.up).normalized;
@@ -166,6 +161,7 @@ namespace Npcs
 
         public override void TakeDamage(float amount, Vector3 direction, Transform damageLocation)
         {
+            
             if (IsDead) return;
 
             base.TakeDamage(amount, direction, damageLocation);

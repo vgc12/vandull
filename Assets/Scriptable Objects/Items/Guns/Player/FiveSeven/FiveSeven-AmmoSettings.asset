@@ -16,4 +16,4 @@ MonoBehaviour:
   magazineCount: 10
   reloadTime: 2
   magazineRotation: {x: 0, y: 90, z: 0}
-  magazinePrefab: {fileID: 516922541925748006, guid: 1046deac29062364bae731e2a0699b2c, type: 3}
+  magazinePrefab: {fileID: 516922541925748006, guid: 48710a02cd2d27a45b6cc6972bd5c7ed, type: 3}

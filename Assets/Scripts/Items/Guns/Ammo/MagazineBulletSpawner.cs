@@ -24,11 +24,11 @@ namespace Items.Guns.Ammo
         public Vector3 lastBulletPosition = Vector3.zero;
         public Vector3 lastBulletRotation = Vector3.zero;
 
-        [Header("Bezier Curve Layout")] public Vector3 startPoint = Vector3.zero;
+        [Header("Bezier Curve Layout")] public Transform startPoint;
 
-        public Vector3 endPoint = new(0, 0.3f, 0.3f);
-        public Vector3 controlPoint1 = new(0, 0.1f, 0.1f);
-        public Vector3 controlPoint2 = new(0, 0.2f, 0.2f);
+        public Transform endPoint;
+        public Transform controlPoint1;
+        public Transform controlPoint2;
 
         [Header("Modes")] public CurveMode curveMode = CurveMode.BezierCurve;
 
@@ -68,19 +68,19 @@ namespace Items.Guns.Ammo
 
         private void OnDisable() { ClearBullets(); }
 
-        private void OnDrawGizmosSelected()
+        private void OnDrawGizmos()
         {
             // Draw bezier curve
             Gizmos.color = Color.yellow;
-            var prevPos = transform.TransformPoint(startPoint);
+            var prevPos = transform.TransformPoint(startPoint.localPosition);
             for (var i = 20; i >= 1; i--)
             {
                 var t = i / 20f;
                 var oneMinusT = 1f - t;
-                var pos = oneMinusT * oneMinusT * oneMinusT * startPoint +
-                          3f * oneMinusT * oneMinusT * t * controlPoint1 +
-                          3f * oneMinusT * t * t * controlPoint2 +
-                          t * t * t * endPoint;
+                var pos = oneMinusT * oneMinusT * oneMinusT * startPoint.localPosition +
+                          3f * oneMinusT * oneMinusT * t * controlPoint1.localPosition +
+                          3f * oneMinusT * t * t * controlPoint2.localPosition +
+                          t * t * t * endPoint.localPosition;
                 var worldPos = transform.TransformPoint(pos);
                 Gizmos.DrawLine(prevPos, worldPos);
                 prevPos = worldPos;
@@ -88,19 +88,19 @@ namespace Items.Guns.Ammo
 
             // Draw control points
             Gizmos.color = Color.cyan;
-            Gizmos.DrawSphere(transform.TransformPoint(startPoint), 0.005f);
-            Gizmos.DrawSphere(transform.TransformPoint(endPoint), 0.005f);
+            Gizmos.DrawSphere(startPoint.position, 0.005f);
+            Gizmos.DrawSphere(endPoint.position, 0.005f);
             Gizmos.color = Color.blue;
             if (curveMode == CurveMode.BezierCurve)
             {
-                Gizmos.DrawSphere(transform.TransformPoint(controlPoint1), 0.004f);
-                Gizmos.DrawSphere(transform.TransformPoint(controlPoint2), 0.004f);
-                Gizmos.DrawLine(transform.TransformPoint(startPoint), transform.TransformPoint(controlPoint1));
-                Gizmos.DrawLine(transform.TransformPoint(endPoint), transform.TransformPoint(controlPoint2));
+                Gizmos.DrawSphere(controlPoint1.position, 0.004f);
+                Gizmos.DrawSphere(controlPoint2.position, 0.004f);
+                Gizmos.DrawLine(startPoint.position, controlPoint1.position);
+                Gizmos.DrawLine(endPoint.position, controlPoint2.position);
             }
             else if (curveMode == CurveMode.StraightLine)
             {
-                Gizmos.DrawLine(transform.TransformPoint(startPoint), transform.TransformPoint(endPoint));
+                Gizmos.DrawLine(startPoint.position, endPoint.position);
             }
 
             // Draw bullet positions
@@ -200,16 +200,16 @@ namespace Items.Guns.Ammo
 
             // Derivative of cubic Bezier curve: B'(t) = 3(1-t)^2(P1-P0) + 6(1-t)t(P2-P1) + 3t^2(P3-P2)
             var oneMinusT = 1f - t;
-            var tangent = 3f * oneMinusT * oneMinusT * (controlPoint1 - startPoint) +
-                          6f * oneMinusT * t * (controlPoint2 - controlPoint1) +
-                          3f * t * t * (endPoint - controlPoint2);
+            var tangent = 3f * oneMinusT * oneMinusT * (controlPoint1.localPosition - startPoint.localPosition) +
+                          6f * oneMinusT * t * (controlPoint2.localPosition - controlPoint1.localPosition) +
+                          3f * t * t * (endPoint.localPosition - controlPoint2.localPosition);
 
             return tangent;
         }
 
 
         private Vector3 GetTangent(int i) =>
-            curveMode == CurveMode.BezierCurve ? GetBezierTangent(i) : endPoint - startPoint;
+            curveMode == CurveMode.BezierCurve ? GetBezierTangent(i) : endPoint.localPosition - startPoint.localPosition;
 
         private Quaternion GetBulletRotation(int i)
         {
@@ -240,10 +240,10 @@ namespace Items.Guns.Ammo
 
             // Cubic Bezier curve: B(t) = (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3
             var oneMinusT = 1f - t;
-            var pos = oneMinusT * oneMinusT * oneMinusT * startPoint +
-                      3f * oneMinusT * oneMinusT * t * controlPoint1 +
-                      3f * oneMinusT * t * t * controlPoint2 +
-                      t * t * t * endPoint;
+            var pos = oneMinusT * oneMinusT * oneMinusT * startPoint.localPosition +
+                      3f * oneMinusT * oneMinusT * t * controlPoint1.localPosition +
+                      3f * oneMinusT * t * t * controlPoint2.localPosition +
+                      t * t * t * endPoint.localPosition;
 
             return pos;
         }
@@ -252,7 +252,7 @@ namespace Items.Guns.Ammo
         {
             var pos = curveMode == CurveMode.BezierCurve
                 ? GetBulletPositionFromBezier(i)
-                : Vector3.Lerp(startPoint, endPoint, GetTForBullet(i));
+                : Vector3.Lerp(startPoint.localPosition, endPoint.localPosition, GetTForBullet(i));
 
             if (useStacking)
             {
@@ -303,8 +303,13 @@ namespace Items.Guns.Ammo
             }
 
             _spawnedBullets.ForEach(b => b.SetActive(true));
-            ApplyLastBulletOffset();
+            if (lastBulletOffset)
+            {
+                ApplyLastBulletOffset();
+            }
         }
+
+        public bool lastBulletOffset;
 
 
         public void ReleaseAllBulletsToPool()
