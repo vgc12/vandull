@@ -2,16 +2,16 @@
 {
     public class EnemyDamagedState : NpcState
     {
-        private readonly Npcs.Enemy _enemy;
+        private readonly Npcs.Enemy _npc;
 
-        public EnemyDamagedState(Npcs.Enemy enemy) : base(enemy)
+        public EnemyDamagedState(Npcs.Enemy npc) : base(npc)
         {
-            _enemy = enemy;
+            _npc = npc;
         }
 
         public override void Update()
         {
-            _enemy.LookAtDamageDirection();
+            _npc.LookAtDamageDirection();
         }
     }
 }

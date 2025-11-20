@@ -1,300 +1,245 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Npcs.Sensors
 {
-    public class MultiTargetTypeSensor<T> : MonoBehaviour, ISensor where T : MonoBehaviour
+    public class MultiTargetSensor<T> : MonoBehaviour, ISensor where T : MonoBehaviour
     {
-        [Header("Detection Settings")] [SerializeField]
-        private float detectionRadius = 10f;
+        [Header("Patrol Settings")] [SerializeField]
+        private List<T> patrolPoints = new();
 
-        [SerializeField] private LayerMask detectionLayers = -1;
-        [SerializeField] private float updateInterval = 0.5f;
-
-        [Header("Line of Sight")] [SerializeField]
-        private bool requireLineOfSight = true;
-
-        [SerializeField] private LayerMask obstructionLayers = 1;
-        [SerializeField] private Transform sensorOrigin;
-
-        [Header("Target Selection")] [SerializeField]
-        private bool prioritizeClosest = true;
-
-        [SerializeField] private int maxTargets = 10;
+        [SerializeField] private bool loopPatrol = true;
+        [SerializeField] private bool randomizeStartPoint;
 
         [Header("Debug")] [SerializeField] private bool showDebugGizmos = true;
-        [SerializeField] private Color detectionRangeColor = Color.cyan;
-        [SerializeField] private Color visibleTargetColor = Color.green;
-        [SerializeField] private Color obstructedTargetColor = Color.red;
-        private readonly List<T> _allDetectedTargets = new();
-        private readonly List<T> _obstructedTargets = new();
+        [SerializeField] private Color patrolPointColor = Color.blue;
+        [SerializeField] private Color currentPointColor = Color.green;
+        [SerializeField] private Color lineColor = Color.cyan;
 
-        private readonly Dictionary<T, bool> _targetVisibilityStates = new();
-        private float _lastUpdateTime;
-        private T _previousPrimaryTarget;
+        public T CurrentPatrolPoint { get; private set; }
 
-        private List<T> _visibleTargets = new();
+        public int CurrentPointIndex { get; private set; } = -1;
 
-        // Multi-target properties
-        public List<T> VisibleTargets => new(_visibleTargets);
-        public List<T> AllDetectedTargets => new(_allDetectedTargets);
-        public List<T> ObstructedTargets => new(_obstructedTargets);
-        public int TargetCount => _visibleTargets.Count;
-        public T PrimaryTarget { get; private set; }
-
-        public Vector3 PrimaryTargetPosition => PrimaryTarget != null ? PrimaryTarget.transform.position : Vector3.zero;
+        public int TotalPoints => patrolPoints.Count;
 
         private void Awake()
         {
-            if (sensorOrigin == null)
-                sensorOrigin = transform;
+            InitializePatrolPoints();
         }
 
-        private void Start()
-        {
-            _lastUpdateTime = Time.time;
-            UpdateTargetDetection();
-        }
-
-        private void Update()
-        {
-            if (Time.time - _lastUpdateTime >= updateInterval)
-            {
-                UpdateTargetDetection();
-                _lastUpdateTime = Time.time;
-            }
-        }
-
-        // Debug visualization
         private void OnDrawGizmos()
         {
-            if (!showDebugGizmos) return;
+            if (!showDebugGizmos || patrolPoints.Count == 0) return;
 
-            var origin = sensorOrigin != null ? sensorOrigin.position : transform.position;
-
-            // Draw detection radius
-            Gizmos.color = detectionRangeColor;
-            Gizmos.DrawWireSphere(origin, detectionRadius);
-
-            if (Application.isPlaying)
+            // Draw patrol points
+            for (var i = 0; i < patrolPoints.Count; i++)
             {
-                // Draw lines to visible targets
-                Gizmos.color = visibleTargetColor;
-                foreach (var target in _visibleTargets)
-                    if (target != null)
-                    {
-                        Gizmos.DrawLine(origin, target.transform.position);
-                        Gizmos.DrawWireSphere(target.transform.position, 0.5f);
-                    }
+                if (patrolPoints[i] == null) continue;
 
-                // Draw lines to obstructed targets
-                Gizmos.color = obstructedTargetColor;
-                foreach (var target in _obstructedTargets)
-                    if (target != null)
-                    {
-                        Gizmos.DrawLine(origin, target.transform.position);
-                        Gizmos.DrawWireCube(target.transform.position, Vector3.one * 0.5f);
-                    }
+                var color = Application.isPlaying && i == CurrentPointIndex ? currentPointColor : patrolPointColor;
+                Gizmos.color = color;
+                Gizmos.DrawWireSphere(patrolPoints[i].transform.position, 0.5f);
+            }
 
-                // Highlight primary target
-                if (PrimaryTarget != null)
+            // Draw lines between patrol points
+            if (patrolPoints.Count <= 1) return;
+            {
+                Gizmos.color = lineColor;
+                for (var i = 0; i < patrolPoints.Count; i++)
                 {
-                    Gizmos.color = Color.yellow;
-                    Gizmos.DrawWireSphere(PrimaryTarget.transform.position, 1f);
+                    if (patrolPoints[i] == null) continue;
+
+                    var nextIndex = (i + 1) % patrolPoints.Count;
+                    if (patrolPoints[nextIndex] == null) continue;
+
+                    Gizmos.DrawLine(patrolPoints[i].transform.position, patrolPoints[nextIndex].transform.position);
                 }
             }
         }
 
-        // ISensor implementation
-        public bool CanSeeTarget => _visibleTargets.Count > 0;
-        public Transform Target => PrimaryTarget?.transform;
+        public bool CanSeeTarget => CurrentPatrolPoint != null;
+        public Transform Target => CurrentPatrolPoint?.transform;
 
-        // Events
-        public event Action<T> OnTargetDetected = delegate { };
-        public event Action<T> OnTargetLost = delegate { };
-        public event Action<T> OnTargetBecameVisible = delegate { };
-        public event Action<T> OnTargetBecameObstructed = delegate { };
-        public event Action<T> OnPrimaryTargetChanged = delegate { };
+        public event Action<T> OnPatrolPointChanged = delegate { };
+        public event Action OnPatrolLooped = delegate { };
 
-        private void UpdateTargetDetection()
+        private void InitializePatrolPoints()
         {
-            // Store previous states for comparison
-            var previousVisible = new List<T>(_visibleTargets);
-            var previousAll = new List<T>(_allDetectedTargets);
+            if (patrolPoints.Count == 0) patrolPoints.AddRange(GetComponentsInChildren<T>());
 
-            // Clear current lists
-            _visibleTargets.Clear();
-            _allDetectedTargets.Clear();
-            _obstructedTargets.Clear();
+            foreach (var p in patrolPoints)
+                p.transform.SetParent(null, true);
 
-            // Find all objects of type T in range
-            var colliders = Physics.OverlapSphere(sensorOrigin.position, detectionRadius, detectionLayers);
+            CurrentPointIndex = randomizeStartPoint ? Random.Range(0, patrolPoints.Count) : 0;
 
-            foreach (var collider in colliders)
+            CurrentPatrolPoint = patrolPoints[CurrentPointIndex].GetComponent<T>();
+        }
+
+        public T GetNextPatrolPoint()
+        {
+            if (patrolPoints.Count == 0) return null;
+
+            var nextIndex = CurrentPointIndex + 1;
+
+            // Check if we've looped
+            if (nextIndex >= patrolPoints.Count)
             {
-                var targetComponent = collider.GetComponent<T>();
-                if (targetComponent != null)
+                if (!loopPatrol)
+                    return null;
+
+                nextIndex = 0;
+                OnPatrolLooped.Invoke();
+            }
+
+            CurrentPointIndex = nextIndex;
+            CurrentPatrolPoint = patrolPoints[CurrentPointIndex].GetComponent<T>();
+            OnPatrolPointChanged.Invoke(CurrentPatrolPoint);
+
+            return CurrentPatrolPoint;
+        }
+
+        public T GetPreviousPatrolPoint()
+        {
+            if (patrolPoints.Count == 0) return null;
+
+            var prevIndex = CurrentPointIndex - 1;
+
+            // Check if we've looped backwards
+            if (prevIndex < 0)
+            {
+                if (!loopPatrol)
+                    return null;
+
+                prevIndex = patrolPoints.Count - 1;
+                OnPatrolLooped.Invoke();
+            }
+
+            CurrentPointIndex = prevIndex;
+            CurrentPatrolPoint = patrolPoints[CurrentPointIndex].GetComponent<T>();
+            OnPatrolPointChanged.Invoke(CurrentPatrolPoint);
+
+            return CurrentPatrolPoint;
+        }
+
+        public T GetPatrolPointAtIndex(int index)
+        {
+            if (index < 0 || index >= patrolPoints.Count) return null;
+
+            CurrentPointIndex = index;
+            CurrentPatrolPoint = patrolPoints[CurrentPointIndex].GetComponent<T>();
+            OnPatrolPointChanged.Invoke(CurrentPatrolPoint);
+
+            return CurrentPatrolPoint;
+        }
+
+        public void AddPatrolPoint(T point)
+        {
+            if (point != null && point.GetComponent<T>() != null)
+            {
+                patrolPoints.Add(point);
+                if (CurrentPatrolPoint == null)
+                    InitializePatrolPoints();
+            }
+        }
+
+        public void InsertPatrolPoint(T point, int index)
+        {
+            if (point != null && point.GetComponent<T>() != null && index >= 0 && index <= patrolPoints.Count)
+            {
+                patrolPoints.Insert(index, point);
+                if (CurrentPatrolPoint == null)
+                    InitializePatrolPoints();
+            }
+        }
+
+        public void RemovePatrolPoint(T point)
+        {
+            if (!patrolPoints.Remove(point)) return;
+            if (CurrentPatrolPoint == null || CurrentPatrolPoint != point) return;
+            CurrentPointIndex = Mathf.Max(0, CurrentPointIndex - 1);
+            CurrentPatrolPoint = patrolPoints.Count > 0 ? patrolPoints[CurrentPointIndex].GetComponent<T>() : null;
+        }
+
+        public void RemovePatrolPointAtIndex(int index)
+        {
+            if (index < 0 || index >= patrolPoints.Count) return;
+            patrolPoints.RemoveAt(index);
+            if (CurrentPointIndex >= patrolPoints.Count)
+                CurrentPointIndex = Mathf.Max(0, patrolPoints.Count - 1);
+
+            CurrentPatrolPoint = patrolPoints.Count > 0 ? patrolPoints[CurrentPointIndex].GetComponent<T>() : null;
+        }
+
+        public void ClearPatrolPoints()
+        {
+            patrolPoints.Clear();
+            CurrentPointIndex = -1;
+            CurrentPatrolPoint = null;
+        }
+
+        public List<T> GetAllPatrolPoints()
+        {
+            var result = new List<T>();
+            foreach (var point in patrolPoints)
+                if (point != null)
                 {
-                    _allDetectedTargets.Add(targetComponent);
+                    var component = point.GetComponent<T>();
+                    if (component != null)
+                        result.Add(component);
+                }
 
-                    var isVisible = !requireLineOfSight || HasLineOfSight(targetComponent);
+            return result;
+        }
 
-                    if (isVisible)
-                        _visibleTargets.Add(targetComponent);
-                    else
-                        _obstructedTargets.Add(targetComponent);
+        public T GetClosestPatrolPoint(Vector3 position)
+        {
+            if (patrolPoints.Count == 0) return null;
 
-                    // Check for visibility state changes
-                    CheckVisibilityStateChange(targetComponent, isVisible);
+            T closest = null;
+            var minDistance = float.MaxValue;
+
+            foreach (var point in patrolPoints)
+            {
+                if (point == null) continue;
+
+                var component = point.GetComponent<T>();
+                if (component == null) continue;
+
+                var distance = Vector3.Distance(position, point.transform.position);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closest = component;
                 }
             }
 
-            // Limit targets if necessary
-            if (_visibleTargets.Count > maxTargets)
-            {
-                if (prioritizeClosest)
-                    _visibleTargets = _visibleTargets
-                        .OrderBy(t => Vector3.Distance(sensorOrigin.position, t.transform.position))
-                        .Take(maxTargets)
-                        .ToList();
-                else
-                    _visibleTargets = _visibleTargets.Take(maxTargets).ToList();
-            }
-
-            // Update primary target
-            UpdatePrimaryTarget();
-
-            // Fire detection/loss events
-            CheckForTargetChanges(previousVisible, previousAll);
+            return closest;
         }
 
-        private bool HasLineOfSight(T target)
+        public float GetDistanceToCurrentPoint(Vector3 position)
         {
-            var directionToTarget = target.transform.position - sensorOrigin.position;
-            var distanceToTarget = directionToTarget.magnitude;
-
-            // Raycast to check for obstructions
-            RaycastHit hit;
-            if (Physics.Raycast(sensorOrigin.position, directionToTarget.normalized, out hit, distanceToTarget,
-                    obstructionLayers))
-                // Check if we hit the target itself (no obstruction)
-                return hit.collider.gameObject == target.gameObject;
-
-            return true; // No obstruction found
+            return CurrentPatrolPoint == null
+                ? float.MaxValue
+                : Vector3.Distance(position, CurrentPatrolPoint.transform.position);
         }
 
-        private void CheckVisibilityStateChange(T target, bool isCurrentlyVisible)
+
+        public void SpawnTarget()
         {
-            var wasVisible = _targetVisibilityStates.ContainsKey(target) && _targetVisibilityStates[target];
-            _targetVisibilityStates[target] = isCurrentlyVisible;
+            var newGameObject = new GameObject($"Target ({typeof(T).Name})");
+            newGameObject.transform.position = transform.position + Vector3.forward * 2f;
 
-            if (wasVisible != isCurrentlyVisible)
-            {
-                if (isCurrentlyVisible)
-                    OnTargetBecameVisible.Invoke(target);
-                else
-                    OnTargetBecameObstructed.Invoke(target);
-            }
-        }
+            newGameObject.AddComponent<T>();
+            newGameObject.transform.SetParent(transform);
+            var sphereCollider = newGameObject.AddComponent<SphereCollider>();
+            sphereCollider.isTrigger = true;
 
-        private void UpdatePrimaryTarget()
-        {
-            _previousPrimaryTarget = PrimaryTarget;
-
-            if (_visibleTargets.Count == 0)
-                PrimaryTarget = null;
-            else if (prioritizeClosest)
-                PrimaryTarget = _visibleTargets
-                    .OrderBy(t => Vector3.Distance(sensorOrigin.position, t.transform.position))
-                    .FirstOrDefault();
-            else
-                PrimaryTarget = _visibleTargets.FirstOrDefault();
-
-            // Fire primary target changed event
-            if (PrimaryTarget != _previousPrimaryTarget) OnPrimaryTargetChanged.Invoke(PrimaryTarget);
-        }
-
-        private void CheckForTargetChanges(List<T> previousVisible, List<T> previousAll)
-        {
-            // Check for newly detected targets
-            var newlyDetected = _allDetectedTargets.Except(previousAll);
-            foreach (var target in newlyDetected) OnTargetDetected.Invoke(target);
-
-            // Check for lost targets
-            var lostTargets = previousAll.Except(_allDetectedTargets);
-            foreach (var target in lostTargets)
-            {
-                OnTargetLost.Invoke(target);
-                // Remove from visibility states to prevent memory leaks
-                if (_targetVisibilityStates.ContainsKey(target)) _targetVisibilityStates.Remove(target);
-            }
-        }
-
-        // Public utility methods
-        public T GetClosestTarget()
-        {
-            if (_visibleTargets.Count == 0) return null;
-
-            return _visibleTargets
-                .OrderBy(t => Vector3.Distance(sensorOrigin.position, t.transform.position))
-                .FirstOrDefault();
-        }
-
-        public T GetFarthestTarget()
-        {
-            if (_visibleTargets.Count == 0) return null;
-
-            return _visibleTargets
-                .OrderByDescending(t => Vector3.Distance(sensorOrigin.position, t.transform.position))
-                .FirstOrDefault();
-        }
-
-        public List<T> GetTargetsInRange(float range)
-        {
-            return _visibleTargets
-                .Where(t => Vector3.Distance(sensorOrigin.position, t.transform.position) <= range)
-                .ToList();
-        }
-
-        public List<T> GetTargetsSortedByDistance()
-        {
-            return _visibleTargets
-                .OrderBy(t => Vector3.Distance(sensorOrigin.position, t.transform.position))
-                .ToList();
-        }
-
-        public bool IsTargetVisible(T target)
-        {
-            return _visibleTargets.Contains(target);
-        }
-
-        public bool IsTargetObstructed(T target)
-        {
-            return _obstructedTargets.Contains(target);
-        }
-
-        public float GetDistanceToTarget(T target)
-        {
-            if (target == null) return float.MaxValue;
-            return Vector3.Distance(sensorOrigin.position, target.transform.position);
-        }
-
-        // Configuration methods
-        public void SetDetectionRadius(float radius)
-        {
-            detectionRadius = Mathf.Max(0f, radius);
-        }
-
-        public void SetUpdateInterval(float interval)
-        {
-            updateInterval = Mathf.Max(0.1f, interval);
-        }
-
-        public void SetMaxTargets(int max)
-        {
-            maxTargets = Mathf.Max(1, max);
+#if UNITY_EDITOR
+            Undo.RegisterCreatedObjectUndo(newGameObject, $"Spawn {typeof(T).Name}");
+#endif
         }
     }
 }

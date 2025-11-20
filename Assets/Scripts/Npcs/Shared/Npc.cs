@@ -12,7 +12,10 @@ namespace Npcs.Shared
     {
         #region Animation
 
-        public void HandleMovementBlendTree() { animationController.HandleMovementBlendTree(NavMeshAgent.velocity); }
+        public void HandleMovementBlendTree()
+        {
+            animationController.HandleMovementBlendTree(NavMeshAgent.velocity);
+        }
 
         #endregion
 
@@ -22,7 +25,7 @@ namespace Npcs.Shared
         [SerializeField] private bool invulnerable;
         [SerializeField] protected float minIdleTime = 2f;
         [SerializeField] protected float maxIdleTime = 5f;
-        [SerializeField, Required] public AnimationController animationController;
+        [SerializeField] [Required] public AnimationController animationController;
 
         #endregion
 
@@ -30,7 +33,11 @@ namespace Npcs.Shared
 
         public bool Invulnerable => invulnerable;
 
-        public float Health { get => health; set => health = Mathf.Clamp(value, 0, maxHealth); }
+        public float Health
+        {
+            get => health;
+            set => health = Mathf.Clamp(value, 0, maxHealth);
+        }
 
         [SerializeField] private float maxHealth = 100f;
 
@@ -71,13 +78,13 @@ namespace Npcs.Shared
         protected virtual void Update()
         {
             StateMachine.Update();
-            foreach (var t in Timers)
-            {
-                t.Tick(Time.deltaTime);
-            }
+            foreach (var t in Timers) t.Tick(Time.deltaTime);
         }
 
-        protected virtual void FixedUpdate() { StateMachine.FixedUpdate(); }
+        protected virtual void FixedUpdate()
+        {
+            StateMachine.FixedUpdate();
+        }
 
         #endregion
 
@@ -88,9 +95,19 @@ namespace Npcs.Shared
         protected virtual void SetUpTimers()
         {
             _idleTimer = new CountdownTimer(Random.Range(minIdleTime, maxIdleTime));
-            _idleTimer.OnTimerStart += () => { CanWalk = false; };
-            _idleTimer.OnTimerStop += () => { CanWalk = true; };
+            _idleTimer.OnTimerStart += OnTimerStart;
+            _idleTimer.OnTimerStop += OnTimerStop;
             Timers.Add(_idleTimer);
+        }
+
+        private void OnTimerStart()
+        {
+            CanWalk = false;
+        }
+
+        private void OnTimerStop()
+        {
+            CanWalk = true;
         }
 
         #endregion
@@ -99,17 +116,11 @@ namespace Npcs.Shared
 
         public virtual void TakeDamage(float amount, Vector3 direction, Transform damageLocation)
         {
-            if (invulnerable || IsDead)
-            {
-                return;
-            }
+            if (invulnerable || IsDead) return;
 
             health -= amount;
             health = Mathf.Clamp(health, 0, float.MaxValue);
-            if (IsDead)
-            {
-                Die();
-            }
+            if (IsDead) Die();
         }
 
         public virtual void Die()
@@ -122,14 +133,14 @@ namespace Npcs.Shared
 
         #region Movement Methods
 
-        public void WalkToPoint(Vector3 point) { NavMeshAgent.SetDestination(point); }
+        public void WalkToPoint(Vector3 point)
+        {
+            NavMeshAgent.SetDestination(point);
+        }
 
         public void WalkToRandomPoint(float range)
         {
-            if (!NavMeshAgent.isActiveAndEnabled)
-            {
-                return;
-            }
+            if (!NavMeshAgent.isActiveAndEnabled) return;
 
             var randomDirection = Random.insideUnitSphere * range;
             randomDirection += transform.position;
@@ -140,10 +151,7 @@ namespace Npcs.Shared
 
         public bool MoveToRandomPositionAtDistance(float targetDistance, int maxAttempts)
         {
-            if (!NavMeshAgent.isActiveAndEnabled)
-            {
-                return false;
-            }
+            if (!NavMeshAgent.isActiveAndEnabled) return false;
 
             var startPosition = transform.position;
 
@@ -158,18 +166,12 @@ namespace Npcs.Shared
 
                 // Check if position is on NavMesh
                 NavMeshHit hit;
-                if (!NavMesh.SamplePosition(targetPosition, out hit, 2f, NavMesh.AllAreas))
-                {
-                    continue;
-                }
+                if (!NavMesh.SamplePosition(targetPosition, out hit, 2f, NavMesh.AllAreas)) continue;
 
                 // Verify the actual distance is close to desired
                 var actualDistance = Vector3.Distance(startPosition, hit.position);
 
-                if (!(Mathf.Abs(actualDistance - targetDistance) < 0.5f))
-                {
-                    continue;
-                }
+                if (!(Mathf.Abs(actualDistance - targetDistance) < 0.5f)) continue;
 
                 NavMeshAgent.SetDestination(hit.position);
                 return true;
@@ -180,16 +182,16 @@ namespace Npcs.Shared
 
         public virtual void StopMoving()
         {
-            if (!NavMeshAgent.isActiveAndEnabled)
-            {
-                return;
-            }
+            if (!NavMeshAgent.isActiveAndEnabled) return;
+            
+            CanWalk = false;
 
             NavMeshAgent.SetDestination(transform.position);
         }
 
         public void IdleWaitBeforeMoving()
         {
+            _idleTimer.Reset();
             _idleTimer.InitialTime = Random.Range(minIdleTime, maxIdleTime);
             _idleTimer.Start();
         }

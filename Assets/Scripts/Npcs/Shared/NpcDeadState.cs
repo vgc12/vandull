@@ -4,18 +4,18 @@ namespace Npcs.Shared
 {
     public class EnemyDeadState : NpcState
     {
-        private readonly Enemy _enemy;
+        private readonly Enemy _npc;
 
-        public EnemyDeadState(Enemy enemy) : base(enemy)
+        public EnemyDeadState(Enemy npc) : base(npc)
         {
-            _enemy = enemy;
+            _npc = npc;
         }
 
         public override void Enter()
         {
-            _enemy.Gun.StopUse();
-            _enemy.Gun.Drop();
-            _enemy.StopSensors();
+            _npc.Gun.StopUse();
+            _npc.Gun.Drop();
+            _npc.StopSensors();
         }
     }
 }

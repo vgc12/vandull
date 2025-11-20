@@ -4,19 +4,19 @@ namespace Npcs.States
 {
     public class NpcIdleState : NpcState
     {
-        public NpcIdleState(Npc enemy) : base(enemy)
+        public NpcIdleState(Npc npc) : base(npc)
         {
         }
 
         public override void Enter()
         {
-            Enemy.StopMoving();
-            Enemy.IdleWaitBeforeMoving();
+            Npc.StopMoving();
+            Npc.IdleWaitBeforeMoving();
         }
 
         public override void Update()
         {
-            Enemy.HandleMovementBlendTree();
+            Npc.HandleMovementBlendTree();
         }
 
         public override void FixedUpdate()

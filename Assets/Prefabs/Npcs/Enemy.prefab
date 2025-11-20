@@ -2064,6 +2064,7 @@ MonoBehaviour:
     m_Bits: 385
   pollingInterval: 0.1
   detectionSpeed: 7
+  detectionMeterMaximum: 10
   sensorOrigin: {fileID: 3427365045773360119}
   showDebugRays: 1
   visibleColor: {r: 0, g: 1, b: 0, a: 1}
@@ -2640,7 +2641,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3324784289774631830}
   - component: {fileID: 420647083235028961}
-  - component: {fileID: 3035588063202496987}
+  - component: {fileID: 4416301031949706060}
   m_Layer: 9
   m_Name: CoverPointSensor
   m_TagString: Untagged
@@ -2684,7 +2685,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3035588063202496987
+--- !u!114 &4416301031949706060
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2693,25 +2694,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 3751608695428831167}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6df0b697af464f5fa93490110679a151, type: 3}
+  m_Script: {fileID: 11500000, guid: a19f95eed10f42a8af875dc204799023, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NPC.GOAP.CoverPointSensor
-  detectionRadius: 191.09
-  detectionLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  updateInterval: 0.5
-  requireLineOfSight: 1
-  obstructionLayers:
-    serializedVersion: 2
-    m_Bits: 1
-  sensorOrigin: {fileID: 0}
-  prioritizeClosest: 1
-  maxTargets: 10
+  m_EditorClassIdentifier: Assembly-CSharp::Npcs.Sensors.WalkPointSensor
+  patrolPoints: []
+  loopPatrol: 1
+  randomizeStartPoint: 0
   showDebugGizmos: 1
-  detectionRangeColor: {r: 0, g: 1, b: 1, a: 1}
-  visibleTargetColor: {r: 0, g: 1, b: 0, a: 1}
-  obstructedTargetColor: {r: 1, g: 0, b: 0, a: 1}
+  patrolPointColor: {r: 0, g: 0, b: 1, a: 1}
+  currentPointColor: {r: 0, g: 1, b: 0, a: 1}
+  lineColor: {r: 0, g: 1, b: 1, a: 1}
 --- !u!1 &3758368270964385163
 GameObject:
   m_ObjectHideFlags: 0
@@ -3648,7 +3640,7 @@ Transform:
   m_GameObject: {fileID: 6273936982379248237}
   serializedVersion: 2
   m_LocalRotation: {x: -0.21687914, y: -0.6164015, z: -0.69422346, w: 0.30177236}
-  m_LocalPosition: {x: -0.04198786, y: 0.06400575, z: 0.08403419}
+  m_LocalPosition: {x: -0.042, y: 0.026, z: 0.126}
   m_LocalScale: {x: 0.08333329, y: 0.08333331, z: 0.08333332}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5286,8 +5278,8 @@ MonoBehaviour:
   lookAtSpeed: 2
   aimPoint: {fileID: 1912582748163065443}
   playerSensor: {fileID: 2912098870415815076}
-  coverPointSensor: {fileID: 3035588063202496987}
   gun: {fileID: 4358350862854275787}
+  walkPointSensor: {fileID: 4416301031949706060}
 --- !u!114 &7135763984546769117
 MonoBehaviour:
   m_ObjectHideFlags: 0

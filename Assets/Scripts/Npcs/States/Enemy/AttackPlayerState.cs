@@ -5,32 +5,32 @@ namespace Npcs.States.Enemy
 {
     public class AttackPlayerState : NpcState
     {
-        private readonly Npcs.Enemy _enemy;
         private readonly Gun _gun;
+        private readonly Npcs.Enemy _npc;
 
-        public AttackPlayerState(Npcs.Enemy enemy) : base(enemy)
+        public AttackPlayerState(Npcs.Enemy npc) : base(npc)
         {
-            _enemy = enemy;
-            _gun = enemy.Gun;
+            _npc = npc;
+            _gun = npc.Gun;
         }
 
         public override void Enter()
         {
             base.Enter();
-            _enemy.Gun.FireModeSystem.SetCurrentFireMode(FireType.Automatic);
+            _npc.Gun.FireModeSystem.SetCurrentFireMode(FireType.Automatic);
         }
 
         public override void Update()
         {
-            _enemy.HandleMovementBlendTree();
+            _npc.HandleMovementBlendTree();
 
 
-            var sensor = _enemy.PlayerSensor;
+            var sensor = _npc.PlayerSensor;
 
-            _enemy.Gun.StartAiming();
-            _enemy.LookAtTarget(sensor.Target.transform.position, _enemy.LookAtSpeed);
+            _npc.Gun.StartAiming();
+            _npc.LookAtTarget(sensor.Target.transform.position, _npc.LookAtSpeed);
 
-            _enemy.HandleTacticalMovement();
+            _npc.HandleTacticalMovement();
 
             if (_gun.AmmoSystem.OutOfAmmo)
             {

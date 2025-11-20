@@ -1,4 +1,6 @@
-﻿using Attributes;
+﻿using System;
+using Attributes;
+using Environment;
 using EventBus;
 using General;
 using Items.Guns;
@@ -16,7 +18,7 @@ namespace Npcs
     [RequireComponent(typeof(RigHandler))]
     public class Enemy : Npc
     {
-        [Header("Movement Settings"), SerializeField]
+        [Header("Movement Settings")] [SerializeField]
         private float strafeDistance = 8f;
 
         [SerializeField] private float closeRangeMultiplier = 0.7f;
@@ -27,15 +29,16 @@ namespace Npcs
         [SerializeField] private float pointFollowSpeed = 5f;
 
 
-        [Header("Combat Settings"), SerializeField]
+        [Header("Combat Settings")] [SerializeField]
         private float damagedDuration = 4f;
 
         [SerializeField] private float lookAtSpeed = 10f;
 
-        [SerializeField, Required] private Transform aimPoint;
-        [SerializeField, Required] private RaycastObjectSensor playerSensor;
-        [SerializeField, Required] private CoverPointSensor coverPointSensor;
+        [SerializeField] [Required] private Transform aimPoint;
+        [SerializeField] [Required] private RaycastObjectSensor playerSensor;
+
         [SerializeField] private Gun gun;
+        [SerializeField] [Required] private MultiTargetSensor<WalkPoint> walkPointSensor;
         private CountdownTimer _damagedTimer;
 
         private Vector3 _lastDamageDirection;
@@ -48,7 +51,7 @@ namespace Npcs
         public Gun Gun => gun;
         public Transform AimPoint => aimPoint;
         public RaycastObjectSensor PlayerSensor => playerSensor;
-        public CoverPointSensor CoverPointSensor => coverPointSensor;
+        public MultiTargetSensor<WalkPoint> WalkPointSensor => walkPointSensor;
 
         public float LookAtSpeed => lookAtSpeed;
 
@@ -110,10 +113,7 @@ namespace Npcs
         {
             var distanceToTarget = Vector3.Distance(_transform.position, playerSensor.Target.transform.position);
 
-            if (NavMeshAgent.hasPath && NavMeshAgent.remainingDistance > pathCompletionThreshold)
-            {
-                return;
-            }
+            if (NavMeshAgent.hasPath && NavMeshAgent.remainingDistance > pathCompletionThreshold) return;
 
             var strafePosition = GetStrafePosition(distanceToTarget);
             NavMeshAgent.SetDestination(strafePosition);
@@ -141,13 +141,21 @@ namespace Npcs
             return currentPos + strafeDirection * strafeDistance;
         }
 
+        private void LateUpdate()
+        {
+            
+        }
+
         private static Vector3 GetRandomStrafeDirection(Vector3 toTarget)
         {
             var rightDirection = Vector3.Cross(toTarget, Vector3.up).normalized;
             return Random.value > 0.5f ? rightDirection : -rightDirection;
         }
 
-        public void LookAtDamageDirection() { LookAtTarget(playerSensor.Target.position, lookAtSpeed); }
+        public void LookAtDamageDirection()
+        {
+            LookAtTarget(playerSensor.Target.position, lookAtSpeed);
+        }
 
         public void LookAtTarget(Vector3 target, float turnSpeed)
         {
@@ -158,10 +166,7 @@ namespace Npcs
 
         public override void TakeDamage(float amount, Vector3 direction, Transform damageLocation)
         {
-            if (IsDead)
-            {
-                return;
-            }
+            if (IsDead) return;
 
             base.TakeDamage(amount, direction, damageLocation);
             _lastDamageDirection = -direction;
@@ -178,7 +183,7 @@ namespace Npcs
         public void StopSensors()
         {
             playerSensor.enabled = false;
-            coverPointSensor.enabled = false;
+            walkPointSensor.enabled = false;
         }
     }
 }

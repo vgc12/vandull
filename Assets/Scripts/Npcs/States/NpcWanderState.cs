@@ -4,25 +4,25 @@ namespace Npcs.States
 {
     public abstract class NpcWanderState : NpcState
     {
-        protected NpcWanderState(Npc enemy) : base(enemy)
+        protected NpcWanderState(Npc npc) : base(npc)
         {
         }
 
 
         public override void Enter()
         {
-            if (Enemy.NavMeshAgent.pathPending) return;
+            if (Npc.NavMeshAgent.pathPending) return;
 
             const float range = 10f;
             const int attempts = 30;
 
-            Enemy.MoveToRandomPositionAtDistance(range, attempts);
+            Npc.MoveToRandomPositionAtDistance(range, attempts);
         }
 
 
         public override void Update()
         {
-            Enemy.HandleMovementBlendTree();
+            Npc.HandleMovementBlendTree();
         }
 
         public override void FixedUpdate()
