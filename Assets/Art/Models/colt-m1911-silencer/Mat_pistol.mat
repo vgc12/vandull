@@ -142,7 +142,7 @@ Material:
     - _NormalThreshold: 0.99999
     - _OcclusionStrength: 1
     - _OutlineMethod: 1
-    - _OutlineWidth: 0.00001
+    - _OutlineWidth: 0.000012
     - _Parallax: 0.02
     - _QueueOffset: 0
     - _ReceiveShadows: 1

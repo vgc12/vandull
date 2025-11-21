@@ -24,6 +24,7 @@ namespace Items.Guns
         {
             [Required] public AudioClip clip;
             public Vector2 pitchRange = new(1f, 1f);
+            public float spatialBlend = 1f;
 
             public float RandomPitch => Random.Range(
                 pitchRange.x,

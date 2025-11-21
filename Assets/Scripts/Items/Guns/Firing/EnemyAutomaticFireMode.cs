@@ -15,8 +15,8 @@ namespace Items.Guns.Firing
         protected override void PerformRaycast()
         {
             var startPoint = MuzzleTransform.position;
-            var horizontalSpread = _gun.recoilSettings.horizontalRecoil;
-            var verticalSpread = _gun.recoilSettings.verticalRecoil;
+            var horizontalSpread = Gun.recoilSettings.horizontalRecoil;
+            var verticalSpread = Gun.recoilSettings.verticalRecoil;
 
 
             var spread = Quaternion.Euler(
@@ -28,7 +28,7 @@ namespace Items.Guns.Firing
             var direction = spread * MuzzleTransform.forward;
 
 
-            if (Physics.Raycast(startPoint, direction, out var hit, _gun.damageSettings.range,
+            if (Physics.Raycast(startPoint, direction, out var hit, Gun.damageSettings.range,
                     ~LayerMask.GetMask("Ignore Raycast")))
             {
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
@@ -38,7 +38,7 @@ namespace Items.Guns.Firing
             }
             else
             {
-                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, direction * _gun.damageSettings.range,
+                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, direction * Gun.damageSettings.range,
                     new RaycastHit()));
             }
         }

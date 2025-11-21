@@ -14,12 +14,14 @@ using ILogger = General.Logging.ILogger;
 
 namespace Audio
 {
+    
     /// <summary>
     ///     Manages audio playback with object pooling and easy mixer group configuration.
     ///     Supports multiple audio categories with customizable settings per category.
     /// </summary>
     public class AudioManager : PersistentSingleton<AudioManager>
     {
+        
         #region Public API - Main Play Method
 
         /// <summary>
@@ -32,6 +34,7 @@ namespace Audio
         /// <param name="volume">Volume multiplier (0-1).</param>
         /// <param name="pitch">Pitch multiplier (default 1).</param>
         /// <param name="loop">Whether the audio should loop.</param>
+        /// <param name="spatialBlend">Whether the audio should play in 2D (0) or 3D (1)</param>
         /// <returns>Handle to the playing audio source, or null if pool is exhausted.</returns>
         public PooledAudioSource PlaySound(
             AudioClip clip,
@@ -39,24 +42,25 @@ namespace Audio
             Vector3 position = default,
             float volume = 1f,
             float pitch = 1f,
-            bool loop = false)
+            bool loop = false,
+            float spatialBlend = 1f)
         {
             if (clip == null)
             {
-                Debug.LogWarning("AudioManager: Attempted to play null AudioClip");
+                _logger.LogWarning("AudioManager: Attempted to play null AudioClip");
                 return null;
             }
 
             if (!_categoryLookup.TryGetValue(categoryName, out var category))
             {
-                Debug.LogWarning($"AudioManager: Category '{categoryName}' not found. Using default settings.");
+                _logger.LogWarning($"AudioManager: Category '{categoryName}' not found. Using default settings.");
                 category = defaultCategory;
             }
 
             var pooledSource = _audioPool.Get();
             if (pooledSource == null)
             {
-                Debug.LogWarning("AudioManager: Audio pool exhausted!");
+                _logger.LogWarning("AudioManager: Audio pool exhausted!");
                 return null;
             }
 
@@ -69,7 +73,9 @@ namespace Audio
             audioSource.volume = volume;
             audioSource.pitch = pitch;
             audioSource.loop = loop;
+            audioSource.spatialBlend = spatialBlend;
             pooledSource.transform.position = position;
+
 
             audioSource.Play();
 
@@ -128,7 +134,7 @@ namespace Audio
             for (var i = 0; i < initialPoolSize; i++) prewarmList.Add(_audioPool.Get());
             foreach (var source in prewarmList) _audioPool.Release(source);
 
-            Debug.Log($"AudioManager initialized with {audioCategories.Length} categories");
+            _logger.Log($"AudioManager initialized with {audioCategories.Length} categories");
         }
 
         private void OnAudioSettingsChanged(SettingsUIState.AudioSettingsChangedEvent obj)
@@ -158,7 +164,7 @@ namespace Audio
         private AudioMixerGroup musicMixerGroup;
 
 
-        [Header("Debug")] [SerializeField] private AudioCategory defaultCategory;
+        [Header("_logger")] [SerializeField] private AudioCategory defaultCategory;
 
         #endregion
 
@@ -171,6 +177,7 @@ namespace Audio
         private Transform _poolParent;
         private EventBinding<SettingsUIState.AudioSettingsChangedEvent> _audioSettingsChangedBinding;
 
+   
         #endregion
 
 
@@ -229,9 +236,10 @@ namespace Audio
         /// <summary>
         ///     Plays a 3D sound effect using the "SoundEffects" category.
         /// </summary>
-        public PooledAudioSource PlaySfx(AudioClip clip, Vector3 position, float volume = 1f, float pitch = 1f)
+        public PooledAudioSource PlaySfx(AudioClip clip, Vector3 position, float volume = 1f, float pitch = 1f, bool loop = false,
+            float spatialBlend = 1f)
         {
-            return PlaySound(clip, "SoundEffects", position, volume, pitch);
+            return PlaySound(clip, "SoundEffects", position, volume, pitch, loop, spatialBlend);
         }
 
         /// <summary>
@@ -401,7 +409,7 @@ namespace Audio
         #endregion
 
 
-        #region Debug Info
+        #region _logger Info
 
         /// <summary>
         ///     Gets the number of currently active audio sources.

@@ -14,8 +14,8 @@ namespace Items.Guns.Firing
         public BurstFireMode(Gun gun, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
             : base(gun, onShotFiredSubscribers)
         {
-            _burstCount = _gun.firingSettings.burstCount;
-            _burstDelay = _gun.firingSettings.burstDelay;
+            _burstCount = Gun.firingSettings.burstCount;
+            _burstDelay = Gun.firingSettings.burstDelay;
         }
 
 
@@ -53,7 +53,7 @@ namespace Items.Guns.Firing
                 if (i < _burstCount - 1) yield return new WaitForSeconds(_burstDelay);
             }
 
-            yield return new WaitForSeconds(_gun.firingSettings.fireRate - _burstDelay);
+            yield return new WaitForSeconds(Gun.firingSettings.fireRate - _burstDelay);
             _burstFireCoroutine = null;
         }
     }

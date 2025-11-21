@@ -15,27 +15,36 @@ MonoBehaviour:
   fire:
     clip: {fileID: 8300000, guid: 53071806d459ca3438716486550d5ec4, type: 3}
     pitchRange: {x: 0.98, y: 1.02}
+    spatialBlend: 1
   dryFire:
     clip: {fileID: 8300000, guid: ea1e6f76e7da6e14cbd6f0e835c722da, type: 3}
     pitchRange: {x: 0.98, y: 1.02}
+    spatialBlend: 1
   boltPullBack:
     clip: {fileID: 8300000, guid: 7197eeeec20df674096bb76e4908c4f4, type: 3}
     pitchRange: {x: 1, y: 1}
+    spatialBlend: 1
   boltRelease:
     clip: {fileID: 8300000, guid: d1d72178634fbb4468e0a1b3a73e54b6, type: 3}
     pitchRange: {x: 1, y: 1}
+    spatialBlend: 1
   magRemoved:
     clip: {fileID: 8300000, guid: 74c4ec3353cae2448b0c46322c729faf, type: 3}
     pitchRange: {x: 0.8, y: 1.2}
+    spatialBlend: 1
   magInserted:
     clip: {fileID: 8300000, guid: 504393248adb6bc49b61ce20967d6583, type: 3}
     pitchRange: {x: 0.8, y: 1.2}
+    spatialBlend: 1
   equip:
     clip: {fileID: 8300000, guid: 7197eeeec20df674096bb76e4908c4f4, type: 3}
     pitchRange: {x: 0, y: 0}
+    spatialBlend: 1
   bodyPartHit:
     clip: {fileID: 8300000, guid: f3533c62887639442b6c7edde66d1cb1, type: 3}
     pitchRange: {x: 0.97, y: 1.02}
+    spatialBlend: 0
   headPartHit:
     clip: {fileID: 8300000, guid: f3533c62887639442b6c7edde66d1cb1, type: 3}
     pitchRange: {x: 0.97, y: 1.02}
+    spatialBlend: 0
