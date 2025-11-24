@@ -8,9 +8,9 @@ using ILogger = General.Logging.ILogger;
 
 namespace Npcs.Sensors
 {
-    public class RaycastObjectSensor : MonoBehaviour, ISensor
+    public class LineOfSightSensor : MonoBehaviour, ISensor
     {
-        [Header("Detection Settings"), SerializeField]
+        [Header("Detection Settings")] [SerializeField]
         private Transform targetObject;
 
         [SerializeField] private float detectionRange = 10f;
@@ -18,16 +18,17 @@ namespace Npcs.Sensors
         [SerializeField] private LayerMask obstructionLayers = 1;
         [SerializeField] private float pollingInterval = 0.2f;
 
-        [Tooltip("The rate at which the player is detected, calculated by e^-(DistanceToTarget/200f) * detectionSpeed"),
-         SerializeField]
+        [Tooltip("The rate at which the player is detected, calculated by e^-(DistanceToTarget/200f) * detectionSpeed")]
+        [SerializeField]
         private float detectionSpeed;
+        [SerializeField] private float detectionMultiplier = 1f;
 
         [SerializeField] private float detectionMeterMaximum = 10;
 
-        [Header("Sensor Origin"), SerializeField]
+        [Header("Sensor Origin")] [SerializeField]
         private Transform sensorOrigin;
 
-        [Header("Debug"), SerializeField] private bool showDebugRays = true;
+        [Header("Debug")] [SerializeField] private bool showDebugRays = true;
         [SerializeField] private Color visibleColor = Color.green;
         [SerializeField] private Color obstructedColor = Color.red;
         [SerializeField] private Color outOfRangeColor = Color.yellow;
@@ -53,14 +54,12 @@ namespace Npcs.Sensors
         public float DistanceToTarget { get; private set; }
 
         public Vector3 LastKnownPosition { get; private set; }
+        public bool EmitEvents { get; set; } = true;
 
         private async void Start()
         {
             // If no sensor origin is specified, use this transform
-            if (sensorOrigin == null)
-            {
-                sensorOrigin = transform;
-            }
+            if (sensorOrigin == null) sensorOrigin = transform;
 
             // Initialize previous states
             _wasTargetVisible = false;
@@ -80,10 +79,7 @@ namespace Npcs.Sensors
         // Debug visualization
         private void OnDrawGizmos()
         {
-            if (!showDebugRays || sensorOrigin == null)
-            {
-                return;
-            }
+            if (!showDebugRays || sensorOrigin == null) return;
 
             var origin = sensorOrigin.position;
             var forward = sensorOrigin.forward;
@@ -117,17 +113,11 @@ namespace Npcs.Sensors
             if (targetObject != null)
             {
                 if (canSeeTarget)
-                {
                     Gizmos.color = visibleColor;
-                }
                 else if (IsTargetObstructed)
-                {
                     Gizmos.color = obstructedColor;
-                }
                 else
-                {
                     Gizmos.color = outOfRangeColor;
-                }
 
                 Gizmos.DrawLine(origin, targetObject.position);
 
@@ -138,26 +128,24 @@ namespace Npcs.Sensors
 
         public bool CanSeeTarget => canSeeTarget;
         public Transform Target => targetObject;
-        public bool EmitEvents { get; set; } = true;
+        public void OnDisable()
+        {
+            EmitEvents = false;
+        }
 
         private void HandleDetectionTimer()
         {
             if (IsTargetObstructed || !IsTargetInAngle)
-            {
                 _detectionMeter -= Time.deltaTime;
-            }
             else
-            {
-                _detectionMeter += Mathf.Exp(-(DistanceToTarget / 200f)) * Time.deltaTime * detectionSpeed;
-            }
+                _detectionMeter += Mathf.Exp(-(DistanceToTarget / 200f)) * Time.deltaTime * detectionSpeed *
+                                     detectionMultiplier;
 
             _detectionMeter = Mathf.Clamp(_detectionMeter, 0f, detectionMeterMaximum);
 
-            if(!EmitEvents) return;
+            if (!EmitEvents) return;
             UpdateDetectionMeterEvent();
             EventBus<DetectionMeterUpdatedEvent>.Raise(_detectionMeterUpdatedEvent);
-
-
         }
 
         private void UpdateDetectionMeterEvent()
@@ -174,7 +162,7 @@ namespace Npcs.Sensors
             while (!ct.IsCancellationRequested)
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(pollingInterval), cancellationToken: ct)
-                             .SuppressCancellationThrow();
+                    .SuppressCancellationThrow();
 
 
                 // Reset detection states
@@ -185,30 +173,21 @@ namespace Npcs.Sensors
                 DistanceToTarget = 0f;
 
                 // Early exit if no target is assigned
-                if (targetObject == null)
-                {
-                    continue;
-                }
+                if (targetObject == null) continue;
 
                 var directionToTarget = targetObject.position - sensorOrigin.position;
                 DistanceToTarget = directionToTarget.magnitude;
 
                 // Check if target is within range
                 IsTargetInRange = DistanceToTarget <= detectionRange;
-                if (!IsTargetInRange)
-                {
-                    continue;
-                }
+                if (!IsTargetInRange) continue;
 
                 // Check if target is within detection angle
                 var forwardDirection = sensorOrigin.forward;
                 var angleToTarget = Vector3.Angle(forwardDirection, directionToTarget);
                 IsTargetInAngle = angleToTarget <= detectionAngle / 2f;
 
-                if (!IsTargetInAngle)
-                {
-                    continue;
-                }
+                if (!IsTargetInAngle) continue;
 
                 // Perform raycast to check for obstructions
                 if (Physics.Raycast(sensorOrigin.position, directionToTarget.normalized, out _, DistanceToTarget,
@@ -219,10 +198,7 @@ namespace Npcs.Sensors
                 }
 
 
-                if (!(_detectionMeter >= detectionMeterMaximum))
-                {
-                    continue;
-                }
+                if (!(_detectionMeter >= detectionMeterMaximum)) continue;
 
                 LastKnownPosition = targetObject.position;
                 canSeeTarget = true;
@@ -237,13 +213,9 @@ namespace Npcs.Sensors
             if (canSeeTarget != _wasTargetVisible)
             {
                 if (canSeeTarget)
-                {
                     OnTargetSpotted?.Invoke();
-                }
                 else
-                {
                     OnTargetLost?.Invoke();
-                }
 
                 _wasTargetVisible = canSeeTarget;
             }
@@ -252,26 +224,34 @@ namespace Npcs.Sensors
             if (IsTargetObstructed != _wasTargetObstructed)
             {
                 if (IsTargetObstructed)
-                {
                     OnTargetObstructed?.Invoke();
-                }
                 else
-                {
                     OnTargetUnobstructed?.Invoke();
-                }
 
                 _wasTargetObstructed = IsTargetObstructed;
             }
         }
 
         // Public methods for external control
-        public void SetTarget(Transform newTarget) { targetObject = newTarget; }
+        public void SetTarget(Transform newTarget)
+        {
+            targetObject = newTarget;
+        }
 
-        public void SetDetectionRange(float newRange) { detectionRange = Mathf.Max(0f, newRange); }
+        public void SetDetectionRange(float newRange)
+        {
+            detectionRange = Mathf.Max(0f, newRange);
+        }
 
-        public void SetDetectionAngle(float newAngle) { detectionAngle = Mathf.Clamp(newAngle, 0f, 360f); }
+        public void SetDetectionAngle(float newAngle)
+        {
+            detectionAngle = Mathf.Clamp(newAngle, 0f, 360f);
+        }
 
-        public void SetObstructionLayers(LayerMask newLayers) { obstructionLayers = newLayers; }
+        public void SetObstructionLayers(LayerMask newLayers)
+        {
+            obstructionLayers = newLayers;
+        }
     }
 
     public struct DetectionMeterUpdatedEvent : IEvent
@@ -279,7 +259,7 @@ namespace Npcs.Sensors
         public float DetectionMeter { get; set; }
         public float DetectionMeterMaximum { get; set; }
         public Transform SensorTransform { get; set; }
-        
-        public RaycastObjectSensor Sensor { get; set; }
+
+        public LineOfSightSensor Sensor { get; set; }
     }
 }

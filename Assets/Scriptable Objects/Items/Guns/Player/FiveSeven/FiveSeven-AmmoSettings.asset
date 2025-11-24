@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcfd68b326674e4380feeaf80118dc35, type: 3}
   m_Name: FiveSeven-AmmoSettings
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.AmmoSettings
-  magazineSize: 15
+  magazineSize: 8
   magazineCount: 10
   reloadTime: 2
   magazineRotation: {x: 0, y: 90, z: 0}

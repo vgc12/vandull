@@ -2,7 +2,7 @@ using Environment;
 
 namespace Npcs.Sensors
 {
-    public class CoverPointSensor : MultiTargetSensor<CoverPoint>
+    public class CoverPatrolPointSensor : PatrolPointManager<CoverPoint>
     {
     }
 }

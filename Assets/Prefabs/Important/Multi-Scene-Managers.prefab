@@ -729,8 +729,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Levels.LevelManager
   AutoUnparentOnAwake: 1
+  currentLevel: {fileID: 0}
   levels:
-  - {fileID: 11400000, guid: ce4b03dd280fed84ca8e32c220dda400, type: 2}
+  - {fileID: 11400000, guid: b167897d8c30dc44ab0fb7fd040c4edd, type: 2}
+  - {fileID: 11400000, guid: c5daaa2cff0e3d74c9fa0867e3c43ad9, type: 2}
 --- !u!1 &4180388812367080287
 GameObject:
   m_ObjectHideFlags: 0

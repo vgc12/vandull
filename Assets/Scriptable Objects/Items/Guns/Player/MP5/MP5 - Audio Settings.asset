@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MP5 - Audio Settings
   m_EditorClassIdentifier: Assembly-CSharp::Items.Guns.AudioSettings
   fire:
-    clip: {fileID: 8300000, guid: 53071806d459ca3438716486550d5ec4, type: 3}
+    clip: {fileID: 8300000, guid: fb8e66a82997bac49bbe64f848d3009c, type: 3}
     pitchRange: {x: 0.98, y: 1.02}
     spatialBlend: 1
   dryFire:

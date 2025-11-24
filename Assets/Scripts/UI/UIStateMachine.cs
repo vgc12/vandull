@@ -166,10 +166,7 @@ namespace UI
             _stateMachine.AddTransition(_quitMenuState, _mainMenuState,
                 () => IsCommand(UICommand.Back) || IsCommand(UICommand.QuitToMenu));
 
-            if (LevelManager.Instance.IsLevelActive)
-                _stateMachine.SetStateAndEnter(_inGameState);
-            else
-                _stateMachine.SetStateAndEnter(_mainMenuState);
+            _stateMachine.SetStateAndEnter(LevelManager.Instance.IsLevelActive ? _inGameState : _mainMenuState);
         }
 
 

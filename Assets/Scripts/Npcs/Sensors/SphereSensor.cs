@@ -6,7 +6,7 @@ using Random = UnityEngine.Random;
 
 namespace Npcs.Sensors
 {
-    public class MultiTargetSensor<T> : MonoBehaviour, ISensor where T : MonoBehaviour
+    public class PatrolPointManager<T> : MonoBehaviour, ISensor where T : MonoBehaviour
     {
         [Header("Patrol Settings")] [SerializeField]
         private List<T> patrolPoints = new();
@@ -62,6 +62,10 @@ namespace Npcs.Sensors
 
         public bool CanSeeTarget => CurrentPatrolPoint != null;
         public Transform Target => CurrentPatrolPoint?.transform;
+        public void OnDisable()
+        {
+            
+        }
 
         public event Action<T> OnPatrolPointChanged = delegate { };
         public event Action OnPatrolLooped = delegate { };

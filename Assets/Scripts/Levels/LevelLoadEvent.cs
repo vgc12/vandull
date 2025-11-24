@@ -4,9 +4,9 @@ namespace Levels
 {
     public class LevelLoadEvent : IEvent
     {
-        public readonly LevelConfig LevelConfig;
+        public readonly Level LevelConfig;
 
-        public LevelLoadEvent(LevelConfig levelConfig)
+        public LevelLoadEvent(Level levelConfig)
         {
             LevelConfig = levelConfig;
         }

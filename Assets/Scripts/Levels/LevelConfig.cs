@@ -6,10 +6,16 @@ namespace Levels
     public class LevelConfig : ScriptableObject
     {
         public string levelName;
+        public LevelType levelType = LevelType.TargetAssassination;
         public int enemyCount = 5;
-        public int hostageCount = 2;
-        public int bombCount = 3;
         public string levelDescription;
         public int difficultyLevel = 1;
+    }
+
+    public enum LevelType
+    {
+        TargetAssassination,
+        HostageRescue,
+        IntelSecuring
     }
 }

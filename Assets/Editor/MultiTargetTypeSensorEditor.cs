@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Editor
 {
-    [CustomEditor(typeof(MultiTargetSensor<>), true)]
+    [CustomEditor(typeof(PatrolPointManager<>), true)]
     public class MultiTargetTypeSensorEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()

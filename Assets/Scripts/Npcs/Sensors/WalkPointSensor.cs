@@ -2,7 +2,7 @@
 
 namespace Npcs.Sensors
 {
-    public class WalkPointSensor : MultiTargetSensor<WalkPoint>
+    public class WalkPointManager : PatrolPointManager<WalkPoint>
     {
     }
 }

@@ -7,10 +7,6 @@ namespace Levels.Strategies
     {
     }
 
-    public struct LevelLostEvent : IEvent
-    {
-    }
-
     public struct HostageRescuedEvent : IEvent
     {
         public GameObject Hostage;

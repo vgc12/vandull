@@ -1,5 +1,4 @@
-﻿using System;
-using Attributes;
+﻿using Attributes;
 using Environment;
 using EventBus;
 using General;
@@ -35,10 +34,13 @@ namespace Npcs
         [SerializeField] private float lookAtSpeed = 10f;
 
         [SerializeField] [Required] private Transform aimPoint;
-        [SerializeField] [Required] private RaycastObjectSensor playerSensor;
+        [SerializeField] [Required] private LineOfSightSensor playerSensor;
+        [SerializeField] [Required] private PatrolPointManager<WalkPoint> walkPatrolPointSensor;
+        [SerializeField] [Required] private MultiTargetTypeSensor<Enemy> enemySensor;
 
         [SerializeField] private Gun gun;
-        [SerializeField] [Required] private MultiTargetSensor<WalkPoint> walkPointSensor;
+
+
         private CountdownTimer _damagedTimer;
 
         private Vector3 _lastDamageDirection;
@@ -50,14 +52,15 @@ namespace Npcs
 
         public Gun Gun => gun;
         public Transform AimPoint => aimPoint;
-        public RaycastObjectSensor PlayerSensor => playerSensor;
-        public MultiTargetSensor<WalkPoint> WalkPointSensor => walkPointSensor;
+        public ISensor PlayerSensor => playerSensor;
+        public PatrolPointManager<WalkPoint> WalkPatrolPointSensor => walkPatrolPointSensor;
 
         public float LookAtSpeed => lookAtSpeed;
 
         public float PointFollowSpeed => pointFollowSpeed;
         public bool PlayerDetected => playerSensor.CanSeeTarget;
 
+        public bool OnGuard { get; private set; }
 
         private void Start()
         {
@@ -73,6 +76,7 @@ namespace Npcs
             _transform = NavMeshAgent.transform;
         }
 
+        
 
         protected override void SetUpTimers()
         {
@@ -109,6 +113,12 @@ namespace Npcs
             StateMachine.SetState(idleState);
         }
 
+        protected override void Update()
+        {
+            base.Update();
+            CheckOnGuardStatus();
+        }
+
         public void HandleTacticalMovement()
         {
             var distanceToTarget = Vector3.Distance(_transform.position, playerSensor.Target.transform.position);
@@ -140,7 +150,7 @@ namespace Npcs
             var strafeDirection = GetRandomStrafeDirection(toTarget);
             return currentPos + strafeDirection * strafeDistance;
         }
-        
+
         private static Vector3 GetRandomStrafeDirection(Vector3 toTarget)
         {
             var rightDirection = Vector3.Cross(toTarget, Vector3.up).normalized;
@@ -161,7 +171,6 @@ namespace Npcs
 
         public override void TakeDamage(float amount, Vector3 direction, Transform damageLocation)
         {
-            
             if (IsDead) return;
 
             base.TakeDamage(amount, direction, damageLocation);
@@ -173,13 +182,19 @@ namespace Npcs
         {
             base.Die();
             EventBus<EnemyKilledEvent>.Raise(new EnemyKilledEvent(this, transform.position));
-            playerSensor.EmitEvents = false;
         }
 
+        public void CheckOnGuardStatus()
+        {
+            if (!enemySensor.CanSeeTarget) return;
+            OnGuard = true;
+        }
+        
         public void StopSensors()
         {
             playerSensor.enabled = false;
-            walkPointSensor.enabled = false;
+            walkPatrolPointSensor.enabled = false;
+            enemySensor.enabled = false;
         }
     }
 }

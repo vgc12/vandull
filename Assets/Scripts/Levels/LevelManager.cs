@@ -1,101 +1,124 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Attributes;
+using DependencyInjection;
 using EventBus;
 using Levels.Strategies;
 using Singletons;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using ILogger = General.Logging.ILogger;
+
 
 namespace Levels
 {
-    /// <summary>
-    ///     LevelManager: Handles level loading, level-specific logic, and mission objectives
-    ///     Does NOT handle pause/game state - that's GameManager's job
-    /// </summary>
     public class LevelManager : PersistentSingleton<LevelManager>
     {
-        [ScriptableObjectDropdown] public List<LevelConfig> levels;
+        [SerializeField] private Level currentLevel;
 
+        public List<Level> levels;
 
-        private LevelConfig _currentLevel;
+        private EventBinding<EnemyKilledEvent> _enemyKilledBinding;
 
-        private EventBinding<LevelLoadEvent> _levelLoadBinding;
-        private int _remainingBombs;
+        private EventBinding<LevelLoadEvent> _levelLoadEventBinding;
 
-        private int _remainingEnemies;
-        private int _remainingHostages;
+        private ILogger _logger;
+        private EventBinding<PlayerKilledEvent> _playerKilledBinding;
 
+        private EventBinding<TargetEnemyKilledEvent> _targetEnemyKilledBinding;
 
+        public bool IsLoading { get; private set; }
         public bool IsLevelActive { get; private set; }
 
-        private bool LevelWon => _remainingEnemies <= 0 && _remainingHostages <= 0 && _remainingBombs <= 0;
-        public bool IsLoading { get; private set; }
+        public bool IsCompleted { get; private set; }
 
 
-        protected override void Awake()
+        public Level GetCurrentLevel
         {
-            base.Awake();
-
-            levels ??= new List<LevelConfig>();
-
-            // Register events
-            _levelLoadBinding = new EventBinding<LevelLoadEvent>(OnLevelLoadRequested);
-            EventBus<LevelLoadEvent>.Register(_levelLoadBinding);
-
-
-            var bombDiffusedEventBinding = new EventBinding<BombDefusedEvent>(BombDefused);
-            var enemyKilledEventBinding = new EventBinding<EnemyKilledEvent>(EnemyKilled);
-            var hostageRescuedEventBinding = new EventBinding<HostageRescuedEvent>(HostageRescued);
-            var levelLostEventBinding = new EventBinding<PlayerKilledEvent>(LevelFailed);
-
-            EventBus<PlayerKilledEvent>.Register(levelLostEventBinding);
-            EventBus<BombDefusedEvent>.Register(bombDiffusedEventBinding);
-            EventBus<EnemyKilledEvent>.Register(enemyKilledEventBinding);
-            EventBus<HostageRescuedEvent>.Register(hostageRescuedEventBinding);
+            get => currentLevel;
+            set
+            {
+                currentLevel = value;
+                currentLevel.InitializeLevel();
+            }
         }
 
-
-        private void OnDestroy()
+        private void Start()
         {
-            EventBus<LevelLoadEvent>.Deregister(_levelLoadBinding);
+            _enemyKilledBinding = new EventBinding<EnemyKilledEvent>(OnEnemyKilled);
+            _targetEnemyKilledBinding = new EventBinding<TargetEnemyKilledEvent>(OnTargetKilled);
+            _levelLoadEventBinding = new EventBinding<LevelLoadEvent>(OnLevelLoadEvent);
+            _playerKilledBinding = new EventBinding<PlayerKilledEvent>(OnPlayerKilled);
+
+            EventBus<LevelLoadEvent>.Register(_levelLoadEventBinding);
+            EventBus<TargetEnemyKilledEvent>.Register(_targetEnemyKilledBinding);
+            EventBus<PlayerKilledEvent>.Register(_playerKilledBinding);
+            EventBus<EnemyKilledEvent>.Register(_enemyKilledBinding);
         }
 
+        private void OnEnable()
+        {
+            RuntimeResolver.Instance.TryResolve(out _logger);
+        }
 
-        private void BombDefused()
+        private void OnPlayerKilled(PlayerKilledEvent obj)
+        {
+            OnLevelFailed();
+        }
+
+        private void OnLevelLoadEvent(LevelLoadEvent e)
+        {
+            LoadLevel(e.LevelConfig);
+        }
+
+        private void OnTargetKilled(TargetEnemyKilledEvent obj)
+        {
+            CheckLevelComplete();
+        }
+
+        private void OnEnemyKilled(EnemyKilledEvent obj)
+        {
+            CheckLevelComplete();
+        }
+
+        private void CheckLevelComplete()
         {
             if (!IsLevelActive) return;
-            _remainingBombs--;
-            if (LevelWon) LevelCompleted();
+
+            currentLevel.CheckLevelCompletion();
+
+            if (currentLevel.IsLevelCompleted()) OnLevelComplete();
         }
 
-        private void HostageRescued()
+
+        private void OnLevelComplete()
         {
-            if (!IsLevelActive) return;
-            _remainingHostages--;
-            if (LevelWon) LevelCompleted();
+            IsLevelActive = false;
+            IsCompleted = true;
+            _logger.Log($"Level '{currentLevel.LevelName}' completed!");
+            EventBus<LevelWonEvent>.Raise(new LevelWonEvent());
         }
 
+        private void OnLevelFailed()
+        {
+            IsLevelActive = false;
+            _logger.Log($"Level '{currentLevel.LevelName}' failed!");
+            EventBus<LevelLostEvent>.Raise(new LevelLostEvent());
+        }
 
-        public void LoadLevel(LevelConfig config)
+        public void LoadLevel(Level config)
         {
             if (config == null)
             {
-                Debug.LogError("Attempted to load null level config!");
+                _logger.LogError("Attempted to load null level config!");
                 return;
             }
 
             StartCoroutine(LoadLevelCoroutine(config));
         }
 
-        private IEnumerator LoadLevelCoroutine(LevelConfig config)
+        private IEnumerator LoadLevelCoroutine(Level config)
         {
-            // Cleanup previous level
-            CleanupCurrentLevel();
-
-            // Load the scene
-
-            var asyncLoad = SceneManager.LoadSceneAsync(config.levelName);
+            var asyncLoad = SceneManager.LoadSceneAsync(config.GetSceneName);
 
             while (asyncLoad is { isDone: false })
             {
@@ -105,94 +128,19 @@ namespace Levels
             }
 
             // Initialize new level
-            _currentLevel = config;
-            InitializeLevel(config);
+            currentLevel = config;
 
-            IsLoading = false;
-        }
-
-        private void InitializeLevel(LevelConfig config)
-        {
-            _remainingEnemies = config.enemyCount;
+            if (currentLevel != null)
+                currentLevel.InitializeLevel();
             IsLevelActive = true;
-
-
-            // Setup mission strategy based on level type
-
-
+            IsLoading = false;
             EventBus<LevelStartedEvent>.Raise(new LevelStartedEvent(config));
         }
 
 
-        private void EnemyKilled()
-        {
-            if (!IsLevelActive) return;
-
-            _remainingEnemies--;
-
-            if (LevelWon) LevelCompleted();
-        }
-
-        private void LevelCompleted()
-        {
-            IsLevelActive = false;
-            EventBus<LevelWonEvent>.Raise(new LevelWonEvent());
-        }
-
-        public void LevelFailed()
-        {
-            IsLevelActive = false;
-            EventBus<LevelLostEvent>.Raise(new LevelLostEvent());
-        }
-
         public void ReloadLevel()
         {
-            if (_currentLevel != null) LoadLevel(_currentLevel);
-        }
-
-
-        public void UnloadCurrentLevel()
-        {
-            CleanupCurrentLevel();
-            _currentLevel = null;
-        }
-
-        private void CleanupCurrentLevel()
-        {
-            IsLevelActive = false;
-        }
-
-        private void OnLevelLoadRequested(LevelLoadEvent evt)
-        {
-            LoadLevel(evt.LevelConfig);
-        }
-    }
-
-    // ========================
-    // EVENT DEFINITIONS
-    // ========================
-
-    public struct LevelLoadProgressEvent : IEvent
-    {
-        public float Progress;
-
-        public LevelLoadProgressEvent(float progress)
-        {
-            Progress = progress;
-        }
-    }
-
-    public struct LevelStartedEvent : IEvent
-    {
-        public LevelConfig Level;
-
-        public LevelStartedEvent(LevelConfig level)
-        {
-            Level = level;
+            if (currentLevel != null) LoadLevel(currentLevel);
         }
     }
 }
-
-// ========================
-// ENEMY INTEGRATION EXAMPLE
-// ========================

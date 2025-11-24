@@ -70,7 +70,7 @@ namespace UI.InGame.Models
 
     public class DetectionIndicatorModel : IndicatorModel
     {
-        public RaycastObjectSensor SensorKey { get; set; } // RaycastObjectSensor
+        public LineOfSightSensor SensorKey { get; set; } // RaycastObjectSensor
     }
 
     public class DamageIndicatorModel : IndicatorModel
@@ -333,7 +333,7 @@ namespace UI.States
         private static readonly Color LowDetectionColor = new(1f, 1f, 0f, 0.3f);
 
         // Indicator management
-        private readonly Dictionary<RaycastObjectSensor, (DetectionIndicatorModel model, IIndicatorView view)>
+        private readonly Dictionary<ISensor, (DetectionIndicatorModel model, IIndicatorView view)>
             _activeDetectionIndicators = new();
 
         private readonly Color _damageColor = new(1f, 0.2f, 0.2f, 1f);
@@ -555,7 +555,7 @@ namespace UI.States
                 HighDetectionColor);
         }
 
-        private async UniTask AnimateDetectionIndicator(RaycastObjectSensor sensor)
+        private async UniTask AnimateDetectionIndicator(LineOfSightSensor sensor)
         {
             if (!_activeDetectionIndicators.TryGetValue(sensor, out var indicator))
                 return;
@@ -568,7 +568,7 @@ namespace UI.States
             RemoveDetectionIndicator(sensor);
         }
 
-        private void RemoveDetectionIndicator(RaycastObjectSensor sensor)
+        private void RemoveDetectionIndicator(ISensor sensor)
         {
             if (_activeDetectionIndicators.Remove(sensor, out var indicator))
             {

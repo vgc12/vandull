@@ -6,5 +6,7 @@ namespace Npcs.Sensors
     {
         public bool CanSeeTarget { get; }
         public Transform Target { get; }
+        
+        public void OnDisable();
     }
 }

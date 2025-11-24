@@ -7,7 +7,7 @@ namespace UI.States
 {
     public class LevelSelectUIState : UIBaseState
     {
-        private readonly List<LevelConfig> _addedLevels = new(10);
+        private readonly List<Level> _addedLevels = new(10);
 
         public LevelSelectUIState(VisualElement rootElement, UIStateMachine stateMachine) : base(rootElement,
             stateMachine, UIStateType.LevelSelect)
@@ -21,10 +21,10 @@ namespace UI.States
             var container = RootPageElement.Q<VisualElement>("level-button-container");
             foreach (var level in levels)
             {
-                if (level.levelName == "Main Menu" || _addedLevels.Contains(level)) continue;
+                if (level.LevelName == "Main Menu" || _addedLevels.Contains(level)) continue;
                 var button = new Button(() => EventBus<LevelLoadEvent>.Raise(new LevelLoadEvent(level)))
                 {
-                    text = level.levelName
+                    text = level.LevelName
                 };
                 button.AddToClassList("settings-button");
                 button.AddToClassList("level-select-button");
