@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace General.Logging
 {
-    public class VandullLogger : ILogger
+    public sealed class VandullLogger : ILogger
     {
         public void Log(object message,
             [CallerMemberName] string member = "",

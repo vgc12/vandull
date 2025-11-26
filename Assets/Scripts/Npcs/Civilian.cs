@@ -2,7 +2,7 @@
 
 namespace Npcs
 {
-    public class Civilian : Npc
+    public sealed class Civilian : Npc
     {
         protected override void InitializeStateMachine()
         {

@@ -60,7 +60,7 @@ namespace General
         public abstract void Tick(float deltaTime);
     }
 
-    public class CountdownTimer : Timer
+    public sealed class CountdownTimer : Timer
     {
         public CountdownTimer(float value) : base(value)
         {

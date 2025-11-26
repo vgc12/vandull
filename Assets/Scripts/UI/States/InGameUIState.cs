@@ -28,7 +28,7 @@ using Object = UnityEngine.Object;
 namespace UI.InGame.Models
 {
     // Model: Holds data only, no logic
-    public class HealthModel
+    public sealed class HealthModel
     {
         public float CurrentHealth { get; private set; }
         public float MaxHealth { get; private set; }
@@ -44,7 +44,7 @@ namespace UI.InGame.Models
         }
     }
 
-    public class WeaponModel
+    public sealed class WeaponModel
     {
         public bool IsAiming { get; private set; }
         public bool HasWeapon { get; private set; }
@@ -68,12 +68,12 @@ namespace UI.InGame.Models
         public bool IsActive { get; set; }
     }
 
-    public class DetectionIndicatorModel : IndicatorModel
+    public sealed class DetectionIndicatorModel : IndicatorModel
     {
         public LineOfSightSensor SensorKey { get; set; } // RaycastObjectSensor
     }
 
-    public class DamageIndicatorModel : IndicatorModel
+    public sealed class DamageIndicatorModel : IndicatorModel
     {
         public float RemainingDuration { get; set; }
         public float TotalDuration { get; set; }
@@ -92,7 +92,7 @@ namespace UI.InGame.Views
         void SetCrosshairActive(bool active);
     }
 
-    public class InGameView : IInGameView
+    public sealed class InGameView : IInGameView
     {
         private readonly GameObject _crosshair;
         private readonly Image _healthBar;
@@ -125,7 +125,7 @@ namespace UI.InGame.Views
         void SetActive(bool active);
     }
 
-    public class DirectionalIndicatorView : IIndicatorView
+    public sealed class DirectionalIndicatorView : IIndicatorView
     {
         private readonly Image _indicatorImage;
 
@@ -166,7 +166,7 @@ namespace UI.InGame.Views
 namespace UI.InGame.Controllers
 {
     // Controller: Handles business logic and coordinates Model-View
-    public class HealthController
+    public sealed class HealthController
     {
         private readonly HealthModel _model;
         private readonly IInGameView _view;
@@ -194,7 +194,7 @@ namespace UI.InGame.Controllers
         }
     }
 
-    public class WeaponController
+    public sealed class WeaponController
     {
         private readonly WeaponModel _model;
         private readonly IInGameView _view;
@@ -222,7 +222,7 @@ namespace UI.InGame.Controllers
         }
     }
 
-    public class IndicatorController
+    public sealed class IndicatorController
     {
         private readonly Camera _camera;
         private readonly CancellationTokenSource _cancellationTokenSource;
@@ -326,7 +326,7 @@ namespace UI.InGame.Controllers
 namespace UI.States
 {
     // This is now just the coordinator that wires up MVC components
-    public class InGameUIState : UIBaseState
+    public sealed class InGameUIState : UIBaseState
     {
         private const float DamageFadeDuration = 2f;
         private static readonly Color HighDetectionColor = new(1f, 0, 0, 1f);

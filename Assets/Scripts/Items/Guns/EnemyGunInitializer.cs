@@ -8,7 +8,7 @@ namespace Items.Guns
 {
     [CreateAssetMenu(fileName = "Enemy Gun Initializer", menuName = "Guns/Initialization/Enemy Gun Initializer",
         order = 1)]
-    public class EnemyGunInitializer : GunInitializer
+    public sealed class EnemyGunInitializer : GunInitializer
     {
         public override GunSystems CreateGunSystems(Gun gun)
         {

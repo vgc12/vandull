@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace Items.Guns.Trail
 {
-    public class TrailSystem : ITrailSystem
+    public sealed class TrailSystem : ITrailSystem
     {
         private readonly UnityEngine.Pool.ObjectPool<TrailRenderer> _trailPool;
         private readonly TrailSettings _trailSettings;

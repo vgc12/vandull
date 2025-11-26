@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Art.Shaders
 {
-    public class ShaderController : Singleton<ShaderController>
+    public sealed class ShaderController : Singleton<ShaderController>
     {
         private static readonly int XRayAlpha = Shader.PropertyToID("_Alpha");
         private static readonly int XRayEnabled = Shader.PropertyToID("_XRayEnabled");

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Player
 {
-    public class PlayerHitEvent : IEvent
+    public sealed class PlayerHitEvent : IEvent
     {
         public readonly Transform DamageTransform;
         public readonly Vector3 HitDirection;

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Items.Guns.Aiming
 {
-    public class AimChangedEvent : IEvent
+    public sealed class AimChangedEvent : IEvent
     {
         public AimChangedEvent(bool isAiming, Transform gunPosition)
         {

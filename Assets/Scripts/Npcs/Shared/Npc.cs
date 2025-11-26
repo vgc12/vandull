@@ -7,7 +7,7 @@ using UnityEngine.AI;
 
 namespace Npcs.Shared
 {
-    [RequireComponent(typeof(NavMeshAgent), typeof(RagdollController))]
+    [RequireComponent(typeof(NavMeshAgent), typeof(RagdollController), typeof(Rigidbody))]
     public abstract class Npc : MonoBehaviour, IDamageable, IKillable
     {
         #region Animation
@@ -54,6 +54,7 @@ namespace Npcs.Shared
         protected RagdollController RagdollController;
         protected bool CanWalk = true;
 
+        protected Rigidbody Rigidbody;
         #endregion
 
         #region Private Fields
@@ -70,6 +71,7 @@ namespace Npcs.Shared
             StateMachine = new StateMachine.StateMachine();
             NavMeshAgent = GetComponent<NavMeshAgent>();
             RagdollController = GetComponent<RagdollController>();
+            Rigidbody = GetComponent<Rigidbody>();
             Timers = new List<Timer>(10);
             SetUpTimers();
             InitializeStateMachine();
@@ -126,6 +128,8 @@ namespace Npcs.Shared
         public virtual void Die()
         {
             RagdollController.EnableRagdoll(true);
+            Rigidbody.isKinematic = true;   
+            Rigidbody.detectCollisions = false;
             NavMeshAgent.enabled = false;
         }
 

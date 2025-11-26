@@ -3,7 +3,7 @@ using StateMachine;
 
 namespace Player.States
 {
-    public class JumpState : BaseState
+    public sealed class JumpState : BaseState
     {
         private readonly PlayerStateMachine _sm;
         private readonly PlayerMovementEnteredEvent _stateEntered;

@@ -1,6 +1,6 @@
 ﻿namespace Npcs.States.Enemy
 {
-    public class EnemyDamagedState : NpcState
+    public sealed class EnemyDamagedState : NpcState
     {
         private readonly Npcs.Enemy _npc;
 

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class FreeCamera : MonoBehaviour{
+public sealed class FreeCamera : MonoBehaviour{
 
 	public float movementSpeed = 5.0f;
 

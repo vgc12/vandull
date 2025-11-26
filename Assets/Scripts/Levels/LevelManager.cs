@@ -11,7 +11,7 @@ using ILogger = General.Logging.ILogger;
 
 namespace Levels
 {
-    public class LevelManager : PersistentSingleton<LevelManager>
+    public sealed class LevelManager : PersistentSingleton<LevelManager>
     {
         [SerializeField] private Level currentLevel;
 

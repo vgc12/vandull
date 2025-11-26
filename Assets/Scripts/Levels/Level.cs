@@ -6,7 +6,7 @@ using ILogger = General.Logging.ILogger;
 namespace Levels
 {
     [CreateAssetMenu(fileName = "New Level", menuName = "Level/Level")]
-    public class Level : ScriptableObject
+    public sealed class Level : ScriptableObject
     {
         [SerializeField] private string levelName;
         [SerializeField] private string sceneName;

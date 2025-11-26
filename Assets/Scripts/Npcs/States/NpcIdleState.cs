@@ -2,7 +2,7 @@
 
 namespace Npcs.States
 {
-    public class NpcIdleState : NpcState
+    public sealed class NpcIdleState : NpcState
     {
         public NpcIdleState(Npc npc) : base(npc)
         {

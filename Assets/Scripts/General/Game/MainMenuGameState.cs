@@ -2,7 +2,7 @@
 
 namespace General.Game
 {
-    public class MainMenuGameState : BaseGameState
+    public sealed class MainMenuGameState : BaseGameState
     {
         public MainMenuGameState(GameManager gameManager) : base(gameManager)
         {

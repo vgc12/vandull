@@ -6128,6 +6128,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 163877103997551572, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: showDebugGizmos
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2492855227637926017, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.2000002
@@ -6184,29 +6188,33 @@ PrefabInstance:
       propertyPath: targetObject
       value: 
       objectReference: {fileID: 6695815483535161782}
+    - target: {fileID: 4368283709335114039, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: showDebugRays
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5606121478481030807, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.82
+      value: -9.08
       objectReference: {fileID: 0}
     - target: {fileID: 5606121478481030807, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 10.04
+      value: 9.87
       objectReference: {fileID: 0}
     - target: {fileID: 8465456563511633446, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.02
+      value: -10.58
       objectReference: {fileID: 0}
     - target: {fileID: 8465456563511633446, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.88
+      value: -1.48
       objectReference: {fileID: 0}
     - target: {fileID: 8503023991138012656, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.01
+      value: 0.68
       objectReference: {fileID: 0}
     - target: {fileID: 8503023991138012656, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -8.16
+      value: 9.22
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -9138,6 +9146,50 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 117796571}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1002856675
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1002856677}
+  - component: {fileID: 1002856676}
+  m_Layer: 0
+  m_Name: RuntimeResolver Auto-Generated
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1002856676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1002856675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 121551dbe0ecc6843b7f001c89cc778d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DependencyInjection.RuntimeResolver
+--- !u!4 &1002856677
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1002856675}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1021664201
 PrefabInstance:
@@ -16465,6 +16517,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 555024425965603325, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
+      propertyPath: m_ImplicitCom
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2492855227637926017, guid: ddbd83c45b7a4354bae0ed28c4f84f66, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.2000002
@@ -86081,6 +86137,7 @@ MeshRenderer:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 1002856677}
   - {fileID: 832575519}
   - {fileID: 117796571}
   - {fileID: 8295962042149751990}

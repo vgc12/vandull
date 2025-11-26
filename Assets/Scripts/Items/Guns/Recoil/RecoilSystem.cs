@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Items.Guns.Recoil
 {
-    public class RecoilSystem : IRecoilSystem
+    public sealed class RecoilSystem : IRecoilSystem
     {
         private readonly EventBinding<AimChangedEvent> _aimChangedEventBinding;
         private readonly MonoBehaviour _behaviour;

@@ -12,9 +12,7 @@ namespace Items.Guns.Firing
     public abstract class BaseFireMode : IFireSystem
     {
         protected readonly Gun Gun;
-        private readonly ILogger _logger;
         protected readonly MonoBehaviour Behaviour;
-        protected readonly RaycastHit[] HitResults = new RaycastHit[10];
         protected readonly Transform Transform;
 
 
@@ -27,7 +25,6 @@ namespace Items.Guns.Firing
             Transform = gun.transform;
             Behaviour = gun;
             MuzzleTransform = gun.muzzleTransform;
-            _logger = RuntimeResolver.Instance.Resolve<ILogger>();
             if (onShotFiredSubscribers == null) return;
 
             foreach (var subscriber in onShotFiredSubscribers) OnShotFired += subscriber;
@@ -119,35 +116,6 @@ namespace Items.Guns.Firing
                 damageable.TakeDamage(Gun.damageSettings.damage, MuzzleTransform.forward, MuzzleTransform);
             }
         }
-
-        private void ProcessHits(int hitCount, Vector3 startPoint)
-        {
-            for (var i = 0; i < 1; i++)
-            {
-                var hit = HitResults[i];
-
-                if (hit.collider == null) continue;
-
-                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
-
-
-                if (!hit.collider.transform.root.TryGetComponent<IDamageable>(out var damageable) &&
-                    !hit.collider.transform.root.TryGetComponent(out damageable))
-                    continue;
-
-                if (hit.collider.TryGetComponent<BodyPart>(out var bodyPart))
-                {
-                    damageable.TakeDamage(Gun.damageSettings.damage * bodyPart.damageMultiplier,
-                        MuzzleTransform.forward, MuzzleTransform);
-                    EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
-                        Gun.damageSettings.damage));
-                }
-                else
-                {
-                    damageable.TakeDamage(Gun.damageSettings.damage, MuzzleTransform.forward,
-                        MuzzleTransform);
-                }
-            }
-        }
+        
     }
 }

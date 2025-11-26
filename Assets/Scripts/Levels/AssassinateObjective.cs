@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Levels
 {
     [CreateAssetMenu(fileName = "New Assassinate Objective", menuName = "Level/Objectives/Assassinate")]
-    public class AssassinateObjective : Objective
+    public sealed class AssassinateObjective : Objective
     {
         private List<AssassinationTarget> _aliveTargets;
         private List<AssassinationTarget> _targetEntities;

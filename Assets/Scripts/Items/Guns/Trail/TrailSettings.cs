@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Items.Guns.Trail
 {
     [CreateAssetMenu(fileName = "Trail Config", menuName = "Guns/Trail Config", order = 4)]
-    public class TrailSettings : ScriptableObject, ICloneable
+    public sealed class TrailSettings : ScriptableObject, ICloneable
     {
         public Material material;
         public AnimationCurve widthCurve;

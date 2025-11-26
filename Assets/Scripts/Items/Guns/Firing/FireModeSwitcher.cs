@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Items.Guns.Firing
 {
-    public class FireModeSwitcher : IFireModeSystem
+    public sealed class FireModeSwitcher : IFireModeSystem
     {
         private int _currentIndex;
 

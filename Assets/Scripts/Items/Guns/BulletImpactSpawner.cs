@@ -7,7 +7,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Items.Guns
 {
-    public class BulletImpactSpawner : MonoBehaviour
+    public sealed class BulletImpactSpawner : MonoBehaviour
     {
         [SerializeField] private Material decalMaterial;
 

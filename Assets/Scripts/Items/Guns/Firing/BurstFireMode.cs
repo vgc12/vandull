@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Items.Guns.Firing
 {
-    public class BurstFireMode : BaseFireMode
+    public sealed class BurstFireMode : BaseFireMode
     {
         private readonly int _burstCount;
         private readonly float _burstDelay;

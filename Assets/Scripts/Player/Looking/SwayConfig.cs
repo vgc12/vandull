@@ -3,7 +3,7 @@
 namespace Player.Looking
 {
     [CreateAssetMenu(fileName = "SwayConfig", menuName = "Configs/Player/Movement/SwayConfig", order = 1)]
-    public class SwayConfig : ScriptableObject
+    public sealed class SwayConfig : ScriptableObject
     {
         [Range(0.0001f, 5f)] public float horizontalSwayAmount;
 

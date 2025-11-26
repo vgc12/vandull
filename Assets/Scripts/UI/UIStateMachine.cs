@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 namespace UI
 {
     [RequireComponent(typeof(UIDocument))]
-    public class UIStateMachine : PersistentSingleton<UIStateMachine>
+    public sealed class UIStateMachine : PersistentSingleton<UIStateMachine>
     {
         // This is the start of the refactor to usin uGUI becausse UI Toolkit is proving to be dogshit for the usecases i have.
         [SerializeField] [Required] private GameObject _inGameUIPanel;

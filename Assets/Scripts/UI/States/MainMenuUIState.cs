@@ -2,7 +2,7 @@
 
 namespace UI.States
 {
-    public class MainMenuUIState : UIBaseState
+    public sealed class MainMenuUIState : UIBaseState
     {
         private readonly Button _playButton;
         private readonly Button _quitButton;

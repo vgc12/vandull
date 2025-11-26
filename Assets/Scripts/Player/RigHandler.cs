@@ -4,7 +4,7 @@ using UnityEngine.Animations.Rigging;
 
 namespace Player
 {
-    public class RigHandler : MonoBehaviour
+    public sealed class RigHandler : MonoBehaviour
     {
         [Required] public TwoBoneIKConstraint leftHandConstraint;
         public TwoBoneIKConstraint rightHandConstraint;

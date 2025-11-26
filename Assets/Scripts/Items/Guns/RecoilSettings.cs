@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Items.Guns
 {
     [CreateAssetMenu(fileName = "Recoil Settings", menuName = "Guns/Recoil Settings", order = 4)]
-    public class RecoilSettings : ScriptableObject, ICloneable
+    public sealed class RecoilSettings : ScriptableObject, ICloneable
     {
         [Header("Visual Recoil (Camera)")] public float verticalRecoil = 2f;
 

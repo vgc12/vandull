@@ -2,7 +2,7 @@
 
 namespace Npcs.States.Enemy
 {
-    public class EnemyWanderState : NpcWanderState
+    public sealed class EnemyWanderState : NpcWanderState
     {
         public EnemyWanderState(Npc npc) : base(npc)
         {

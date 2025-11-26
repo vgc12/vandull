@@ -2,7 +2,7 @@
 
 namespace UI.States
 {
-    public class MissionFailedUIState : MissionOverUIState
+    public sealed class MissionFailedUIState : MissionOverUIState
     {
         public MissionFailedUIState(VisualElement rootElement, UIStateMachine stateMachine, Data stateData) : base(
             rootElement, stateMachine, stateData, UIStateType.MissionFailed)

@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 
 namespace UI.States
 {
-    public class PausedUIState : UIBaseState
+    public sealed class PausedUIState : UIBaseState
     {
         private readonly Action _quitButtonClicked;
         private readonly Button _quitMenu;

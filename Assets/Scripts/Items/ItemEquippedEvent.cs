@@ -5,7 +5,7 @@ namespace Items
     /// <summary>
     /// Event raised when an item is equipped by the player.
     /// </summary>
-    public class ItemEquippedEvent : IEvent
+    public sealed class ItemEquippedEvent : IEvent
     {
         /// <summary>
         /// Initializes a new instance of the ItemEquippedEvent.

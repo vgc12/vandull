@@ -2,7 +2,7 @@
 
 namespace Items
 {
-    public class ItemSwitchedEvent : IEvent
+    public sealed class ItemSwitchedEvent : IEvent
     {
         public ItemSwitchedEvent(Item newItem)
         {

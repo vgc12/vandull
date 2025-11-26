@@ -15,7 +15,7 @@ namespace Player.Looking
     ///     Handles camera bobbing effects based on player movement state and aiming status.
     ///     Provides smooth transitions between different bob configurations.
     /// </summary>
-    public class Bobber : MonoBehaviour
+    public sealed class Bobber : MonoBehaviour
     {
         #region Dependencies
 

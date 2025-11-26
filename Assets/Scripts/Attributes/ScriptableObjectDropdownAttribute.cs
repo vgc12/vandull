@@ -2,7 +2,7 @@
 
 namespace Attributes
 {
-    public class ScriptableObjectDropdownAttribute : PropertyAttribute
+    public sealed class ScriptableObjectDropdownAttribute : PropertyAttribute
     {
     }
 }

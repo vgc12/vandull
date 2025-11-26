@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Items.Guns
 {
-    public class ItemInputHandler : MonoBehaviour
+    public sealed class ItemInputHandler : MonoBehaviour
     {
         [Inject] private readonly IPlayerInput _input;
 

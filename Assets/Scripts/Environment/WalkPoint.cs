@@ -2,7 +2,7 @@
 
 namespace Environment
 {
-    public class WalkPoint : MonoBehaviour
+    public sealed class WalkPoint : MonoBehaviour
     {
     }
 }

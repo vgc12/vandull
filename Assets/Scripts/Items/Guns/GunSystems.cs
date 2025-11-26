@@ -5,7 +5,7 @@ using Items.Guns.Trail;
 
 namespace Items.Guns
 {
-    public class GunSystems
+    public sealed class GunSystems
     {
         public IRecoilSystem RecoilSystem { get; init; }
         public ITrailSystem TrailSystem { get; init; }

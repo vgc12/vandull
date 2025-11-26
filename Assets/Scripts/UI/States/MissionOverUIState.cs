@@ -42,7 +42,7 @@ namespace UI.States
             _button.clicked -= LevelManager.Instance.ReloadLevel;
         }
 
-        public class Data
+        public sealed class Data
         {
             private Data()
             {
@@ -54,7 +54,7 @@ namespace UI.States
 
             public Color DescriptionLabelColor { get; private set; }
 
-            public class Builder : IBuilder<Data>
+            public sealed class Builder : IBuilder<Data>
             {
                 private readonly Data _data = new();
 

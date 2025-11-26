@@ -2,7 +2,7 @@
 
 namespace General.Game
 {
-    public class LoadingGameState : BaseGameState
+    public sealed class LoadingGameState : BaseGameState
     {
         public LoadingGameState(GameManager gameManager) : base(gameManager)
         {

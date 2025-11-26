@@ -4,11 +4,12 @@ using UnityEngine;
 
 namespace Npcs.Shared
 {
-    public class RagdollController : MonoBehaviour
+    public sealed class RagdollController : MonoBehaviour
     {
         [SerializeField] private Animator animator;
         [SerializeField] private RagdollBone[] ragdollBones;
         [SerializeField] private float transitionDuration = 0.5f;
+  
 
 
         public bool IsRagdollActive { get; private set; }
@@ -17,6 +18,7 @@ namespace Npcs.Shared
 
         private void Start()
         {
+      
             if (ragdollBones.Length == 0)
                 SetupRagdollBones();
 
@@ -27,8 +29,9 @@ namespace Npcs.Shared
         {
             var rbs = GetComponentsInChildren<Rigidbody>();
 
+       
             ragdollBones = new RagdollBone[rbs.Length];
-
+            
             for (var i = 0; i < rbs.Length; i++)
                 ragdollBones[i] = new RagdollBone
                 {
@@ -144,6 +147,7 @@ namespace Npcs.Shared
 
         private void SetRagdollPhysics(bool enable)
         {
+         
             foreach (var bone in ragdollBones)
             {
                 if (bone.rigidbody != null)

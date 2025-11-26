@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Environment
 {
-    public class Barrier : MonoBehaviour
+    public sealed class Barrier : MonoBehaviour
     {
         private void OnTriggerExit(Collider other)
         {

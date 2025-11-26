@@ -2,7 +2,7 @@
 
 namespace Items.Guns
 {
-    public class PlayerItemAnimationSystem : IItemAnimationSystem
+    public sealed class PlayerItemAnimationSystem : IItemAnimationSystem
     {
         public void PlayAnimation(ItemAnimation animation, float startTime = 0f)
         {

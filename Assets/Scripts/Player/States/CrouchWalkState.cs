@@ -3,7 +3,7 @@ using StateMachine;
 
 namespace Player.States
 {
-    public class CrouchWalkState : BaseState
+    public sealed class CrouchWalkState : BaseState
     {
         private readonly PlayerStateMachine _sm;
         private readonly PlayerMovementEnteredEvent _stateEntered;

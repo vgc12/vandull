@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 
 namespace UI.States
 {
-    public class QuitUIState : UIBaseState
+    public sealed class QuitUIState : UIBaseState
     {
         private readonly Button _backButton;
         private readonly Button _quitToDesktopButton;

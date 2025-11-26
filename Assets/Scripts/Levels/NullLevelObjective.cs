@@ -3,7 +3,7 @@
 namespace Levels
 {
     [CreateAssetMenu(fileName = "Null Level Objective", menuName = "Level/Objectives/Null Objective", order = 1)]
-    public class NullLevelObjective : Objective
+    public sealed class NullLevelObjective : Objective
     {
         public override void Reset()
         {

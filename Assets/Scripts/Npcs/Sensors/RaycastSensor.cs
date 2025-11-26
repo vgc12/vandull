@@ -8,7 +8,7 @@ using ILogger = General.Logging.ILogger;
 
 namespace Npcs.Sensors
 {
-    public class LineOfSightSensor : MonoBehaviour, ISensor
+    public sealed class LineOfSightSensor : MonoBehaviour, ISensor
     {
         [Header("Detection Settings")] [SerializeField]
         private Transform targetObject;
@@ -69,7 +69,7 @@ namespace Npcs.Sensors
 
         private void Update()
         {
-            _logger.Log(canSeeTarget);
+       
             HandleDetectionTimer();
 
             CheckForStateChanges();

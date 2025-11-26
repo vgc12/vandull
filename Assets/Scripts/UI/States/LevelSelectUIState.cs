@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace UI.States
 {
-    public class LevelSelectUIState : UIBaseState
+    public sealed class LevelSelectUIState : UIBaseState
     {
         private readonly List<Level> _addedLevels = new(10);
 

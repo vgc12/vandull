@@ -53,7 +53,7 @@ public class ThresholdFilter : IProcessor<float, bool>
     public bool Process(float score) => score >= getThreshold();
 }
 
-public class ScoredChain : FluentChain<Vector3, float, ScoredChain>
+public sealed class ScoredChain : FluentChain<Vector3, float, ScoredChain>
 {
     public ScoredChain(IProcessor<Vector3, float> processor) : base(processor)
     {
@@ -71,7 +71,7 @@ public class ScoredChain : FluentChain<Vector3, float, ScoredChain>
         Then<bool, FilteredChain, TProcessor>(filter, CreateFilteredChain);
 }
 
-public class FilteredChain : FluentChain<Vector3, bool, FilteredChain>
+public sealed class FilteredChain : FluentChain<Vector3, bool, FilteredChain>
 {
     public FilteredChain(IProcessor<Vector3, bool> processor) : base(processor)
     {
@@ -85,7 +85,7 @@ public class FilteredChain : FluentChain<Vector3, bool, FilteredChain>
 }
 
 
-public class ClampByMaxDistance : IProcessor<float, float>
+public sealed class ClampByMaxDistance : IProcessor<float, float>
 {
     private readonly float _maxDistanceScoreThreshold;
 
@@ -94,7 +94,7 @@ public class ClampByMaxDistance : IProcessor<float, float>
     public float Process(float score) => score < _maxDistanceScoreThreshold ? 0f : score;
 }
 
-public class DistanceChain : FluentChain<Vector3, float, DistanceChain>
+public sealed class DistanceChain : FluentChain<Vector3, float, DistanceChain>
 {
     public DistanceChain(IProcessor<Vector3, float> processor) : base(processor)
     {
@@ -115,7 +115,7 @@ public static class Chain
 }
 
 
-internal class Combined<TA, TB, TC> : IProcessor<TA, TC>
+internal sealed class Combined<TA, TB, TC> : IProcessor<TA, TC>
 {
     private readonly IProcessor<TA, TB> _first;
     private readonly IProcessor<TB, TC> _second;
@@ -135,7 +135,7 @@ public class DistanceScorer : IProcessor<float, float>
     public float Process(float distance) => 1f / (1f + distance);
 }
 
-public class DistanceFromTransform : IProcessor<Vector3, float>
+public sealed class DistanceFromTransform : IProcessor<Vector3, float>
 {
     private readonly Transform _transform;
 

@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace UI
 {
-    public class LoadingUIState : UIBaseState
+    public sealed class LoadingUIState : UIBaseState
     {
         private readonly EventBinding<LevelLoadProgressEvent> _levelLoadProgressEventBinding;
         private readonly ProgressBar _progressBar;

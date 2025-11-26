@@ -12,7 +12,7 @@ namespace Levels
     /// <summary>
     ///     GameManager: Handles global game state, pause, time scale, and cross-level concerns
     /// </summary>
-    public class GameManager : PersistentSingleton<GameManager>
+    public sealed class GameManager : PersistentSingleton<GameManager>
     {
         private ISpawner<Enemy> _enemySpawner;
         private IState _inGame;
@@ -118,7 +118,7 @@ namespace Levels
         }
     }
 
-    public class PlayerCaughtGameState : BaseGameState
+    public sealed class PlayerCaughtGameState : BaseGameState
     {
         public PlayerCaughtGameState(GameManager gameManager) : base(gameManager)
         {

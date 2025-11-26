@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Items.Guns.Firing
 {
-    public class SemiAutoFireMode : BaseFireMode
+    public sealed class SemiAutoFireMode : BaseFireMode
     {
         public SemiAutoFireMode(Gun gun, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null)
             : base(gun, onShotFiredSubscribers)

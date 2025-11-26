@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Npcs.Shared
 {
-    public class ArmAnimationController : Singleton<ArmAnimationController>
+    public sealed class ArmAnimationController : Singleton<ArmAnimationController>
     {
         // Static cache shared across all instances (perfect for singletons)
         private static readonly Dictionary<int, float> AnimationLengths = new();

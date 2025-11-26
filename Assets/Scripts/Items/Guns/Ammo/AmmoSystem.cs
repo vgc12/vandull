@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace Items.Guns.Ammo
 {
-    public class AmmoSystem : IAmmoSystem
+    public sealed class AmmoSystem : IAmmoSystem
     {
         private readonly MonoBehaviour _behaviour;
         private readonly Gun _gun;

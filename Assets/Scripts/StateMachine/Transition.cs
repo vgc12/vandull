@@ -1,6 +1,6 @@
 ﻿namespace StateMachine
 {
-    public class Transition : ITransition
+    public sealed class Transition : ITransition
     {
         public Transition(IState to, IPredicate predicate)
         {

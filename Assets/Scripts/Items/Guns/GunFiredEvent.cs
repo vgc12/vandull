@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Items.Guns
 {
-    internal class GunFiredEvent : IEvent
+    internal sealed class GunFiredEvent : IEvent
     {
         public GunFiredEvent(Vector3 position, float damage)
         {

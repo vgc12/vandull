@@ -33,7 +33,7 @@ namespace Levels
             // Create tasks for all spawns
             var spawnTasks = new List<UniTask<T>>(amount);
 
-            for (var i = 0; i < amount; i++) spawnTasks.Add(SpawnSingleAsync<T>(onSpawn, ct));
+            for (var i = 0; i < amount; i++) spawnTasks.Add(SpawnSingleAsync(onSpawn, ct));
 
             // Wait for all spawns to complete in parallel
             var components = await UniTask.WhenAll(spawnTasks);
@@ -44,8 +44,8 @@ namespace Levels
         /// <summary>
         ///     Helper method to spawn a single component asynchronously.
         /// </summary>
-        private async UniTask<T> SpawnSingleAsync<T>(Action<GameObject> onSpawn, CancellationToken ct)
-            where T : Component
+        private async UniTask<T> SpawnSingleAsync(Action<GameObject> onSpawn, CancellationToken ct)
+      
         {
             ct.ThrowIfCancellationRequested();
 

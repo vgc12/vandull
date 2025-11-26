@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Player.Looking
 {
     [RequireComponent(typeof(GroundChecker), typeof(Rigidbody))]
-    public class PlayerLooking : MonoBehaviour
+    public sealed class PlayerLooking : MonoBehaviour
     {
         #region Variables
 

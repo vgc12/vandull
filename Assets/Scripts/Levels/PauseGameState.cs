@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Levels
 {
-    public class PauseGameState : BaseGameState
+    public sealed class PauseGameState : BaseGameState
     {
         public PauseGameState(GameManager gameManager) : base(gameManager)
         {

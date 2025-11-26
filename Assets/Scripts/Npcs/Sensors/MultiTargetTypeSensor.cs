@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using General.Extensions;
 using UnityEngine;
 
 namespace Npcs.Sensors
@@ -142,11 +143,14 @@ namespace Npcs.Sensors
 
             // Find all objects of type T in range
             var colliders = Physics.OverlapSphere(sensorOrigin.position, detectionRadius, detectionLayers);
-
+            
+            
             foreach (var col in colliders)
             {
-                var targetComponent = col.GetComponent<T>();
-                if (targetComponent == null) continue;
+           
+                var targetComponent = col.GetComponentInParent<T>();
+                
+                if (!targetComponent) continue;
                 AllDetectedTargets.Add(targetComponent);
 
                 var isVisible = !requireLineOfSight || HasLineOfSight(targetComponent);

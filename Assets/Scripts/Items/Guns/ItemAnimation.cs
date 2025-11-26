@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Items.Guns
 {
     [CreateAssetMenu(fileName = "New Grip Type", menuName = "Animation/Item Animation", order = 1)]
-    public class ItemAnimation : ScriptableObject
+    public sealed class ItemAnimation : ScriptableObject
     {
         public string displayName;
         public string animationStateName;

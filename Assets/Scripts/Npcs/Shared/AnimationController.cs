@@ -2,7 +2,7 @@
 
 namespace Npcs.Shared
 {
-    public class AnimationController : MonoBehaviour
+    public sealed class AnimationController : MonoBehaviour
     {
         public int HorizontalMovement { get; set; } = Animator.StringToHash("HorizontalMovement");
         public int VerticalMovement { get; set; } = Animator.StringToHash("VerticalMovement");

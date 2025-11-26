@@ -17,7 +17,7 @@ namespace Items.Guns
 
         #region Builder
 
-        protected class Builder : IGunSystemsBuilder
+        protected sealed class Builder : IGunSystemsBuilder
         {
             private readonly EventHandlers _eventHandlers;
             private readonly SystemFactories _factories;

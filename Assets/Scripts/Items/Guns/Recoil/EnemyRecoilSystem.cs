@@ -2,7 +2,7 @@
 
 namespace Items.Guns.Recoil
 {
-    public class NullRecoilSystem : IRecoilSystem
+    public sealed class NullRecoilSystem : IRecoilSystem
     {
         public Vector3 CurrentRecoil { get; private set; }
 

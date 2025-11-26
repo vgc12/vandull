@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Items.Guns
 {
-    public class ShotHitEvent : IEvent
+    public sealed class ShotHitEvent : IEvent
     {
         public RaycastHit Hit;
 

@@ -9,7 +9,9 @@ using Npcs.Shared;
 using Npcs.States;
 using Npcs.States.Enemy;
 using Player;
+using Reflex.Attributes;
 using UnityEngine;
+using ILogger = General.Logging.ILogger;
 using Random = UnityEngine.Random;
 
 namespace Npcs
@@ -17,7 +19,7 @@ namespace Npcs
     [RequireComponent(typeof(RigHandler))]
     public class Enemy : Npc
     {
-        [Header("Movement Settings")] [SerializeField]
+        [Header("Movement Settings"), SerializeField] 
         private float strafeDistance = 8f;
 
         [SerializeField] private float closeRangeMultiplier = 0.7f;
@@ -28,15 +30,15 @@ namespace Npcs
         [SerializeField] private float pointFollowSpeed = 5f;
 
 
-        [Header("Combat Settings")] [SerializeField]
+        [Header("Combat Settings"), SerializeField] 
         private float damagedDuration = 4f;
 
         [SerializeField] private float lookAtSpeed = 10f;
 
-        [SerializeField] [Required] private Transform aimPoint;
-        [SerializeField] [Required] private LineOfSightSensor playerSensor;
-        [SerializeField] [Required] private PatrolPointManager<WalkPoint> walkPatrolPointSensor;
-        [SerializeField] [Required] private MultiTargetTypeSensor<Enemy> enemySensor;
+        [SerializeField, Required]  private Transform aimPoint;
+        [SerializeField, Required]  private LineOfSightSensor playerSensor;
+        [SerializeField, Required]  private PatrolPointManager<WalkPoint> walkPatrolPointSensor;
+        [SerializeField, Required]  private MultiTargetTypeSensor<Enemy> enemySensor;
 
         [SerializeField] private Gun gun;
 
@@ -76,7 +78,6 @@ namespace Npcs
             _transform = NavMeshAgent.transform;
         }
 
-        
 
         protected override void SetUpTimers()
         {
@@ -123,7 +124,10 @@ namespace Npcs
         {
             var distanceToTarget = Vector3.Distance(_transform.position, playerSensor.Target.transform.position);
 
-            if (NavMeshAgent.hasPath && NavMeshAgent.remainingDistance > pathCompletionThreshold) return;
+            if (NavMeshAgent.hasPath && NavMeshAgent.remainingDistance > pathCompletionThreshold)
+            {
+                return;
+            }
 
             var strafePosition = GetStrafePosition(distanceToTarget);
             NavMeshAgent.SetDestination(strafePosition);
@@ -157,10 +161,7 @@ namespace Npcs
             return Random.value > 0.5f ? rightDirection : -rightDirection;
         }
 
-        public void LookAtDamageDirection()
-        {
-            LookAtTarget(playerSensor.Target.position, lookAtSpeed);
-        }
+        public void LookAtDamageDirection() { LookAtTarget(playerSensor.Target.position, lookAtSpeed); }
 
         public void LookAtTarget(Vector3 target, float turnSpeed)
         {
@@ -171,7 +172,10 @@ namespace Npcs
 
         public override void TakeDamage(float amount, Vector3 direction, Transform damageLocation)
         {
-            if (IsDead) return;
+            if (IsDead)
+            {
+                return;
+            }
 
             base.TakeDamage(amount, direction, damageLocation);
             _lastDamageDirection = -direction;
@@ -184,12 +188,21 @@ namespace Npcs
             EventBus<EnemyKilledEvent>.Raise(new EnemyKilledEvent(this, transform.position));
         }
 
+        [Inject] private readonly ILogger _logger;
+
         public void CheckOnGuardStatus()
         {
-            if (!enemySensor.CanSeeTarget) return;
+            _logger.Log(enemySensor.CanSeeTarget);
+            if (!enemySensor.CanSeeTarget || OnGuard || IsDead)
+            {
+                return;
+            }
+            
+
+            _logger.LogWarning("Enemy is now on guard!");
             OnGuard = true;
         }
-        
+
         public void StopSensors()
         {
             playerSensor.enabled = false;

@@ -2,7 +2,7 @@
 
 namespace StateMachine
 {
-    public class FuncPredicate : IPredicate
+    public sealed class FuncPredicate : IPredicate
     {
         private readonly Func<bool> _predicate;
 

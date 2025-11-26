@@ -5,7 +5,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
 using UnityEngine.Rendering.Universal;
 
-public class MandlebrotRenderFeature : ScriptableRendererFeature
+public sealed class MandlebrotRenderFeature : ScriptableRendererFeature
 {
     [SerializeField] private MandlebrotRenderFeatureSettings settings;
     private MandelbrotRenderFeaturePass m_ScriptablePass;

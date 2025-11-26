@@ -3,7 +3,7 @@
 namespace Levels
 {
     [CreateAssetMenu(fileName = "New Rescue Hostage Objective", menuName = "Level/Objectives/Rescue Hostage")]
-    public class RescueHostageObjective : Objective
+    public sealed class RescueHostageObjective : Objective
     {
         [SerializeField] private int hostagesToRescue = 1;
         private int _hostagesRescued;

@@ -2,7 +2,7 @@
 
 namespace Environment
 {
-    public class CoverPoint : MonoBehaviour
+    public sealed class CoverPoint : MonoBehaviour
     {
     }
 }

@@ -5,7 +5,7 @@ using ILogger = General.Logging.ILogger;
 namespace Items.Guns.Ammo
 {
     [RequireComponent(typeof(Rigidbody), typeof(Collider))]
-    public class Magazine : MonoBehaviour, IEquippable
+    public sealed class Magazine : MonoBehaviour, IEquippable
     {
         [Inject] private readonly ILogger _logger;
 

@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Items.Consumables.Healing
 {
-    public class HealingItem : Item
+    public sealed class HealingItem : Item
     {
         public float healingAmount = 45f;
 

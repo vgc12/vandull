@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Items.Guns.Aiming
 {
-    public class AimingSystem : IAimingSystem
+    public sealed class AimingSystem : IAimingSystem
     {
         private readonly Gun _gun;
 

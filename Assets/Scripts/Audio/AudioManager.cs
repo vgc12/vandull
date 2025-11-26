@@ -19,7 +19,7 @@ namespace Audio
     ///     Manages audio playback with object pooling and easy mixer group configuration.
     ///     Supports multiple audio categories with customizable settings per category.
     /// </summary>
-    public class AudioManager : PersistentSingleton<AudioManager>
+    public sealed class AudioManager : PersistentSingleton<AudioManager>
     {
         
         #region Public API - Main Play Method
@@ -435,7 +435,7 @@ namespace Audio
     ///     Wrapper component for pooled audio sources.
     ///     Handles automatic return to pool when audio finishes.
     /// </summary>
-    public class PooledAudioSource : MonoBehaviour
+    public sealed class PooledAudioSource : MonoBehaviour
     {
         private AudioSource _audioSource;
         private AudioManager _manager;

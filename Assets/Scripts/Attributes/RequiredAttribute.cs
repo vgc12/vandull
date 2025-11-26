@@ -2,7 +2,7 @@
 
 namespace Attributes
 {
-    public class RequiredAttribute : PropertyAttribute
+    public sealed class RequiredAttribute : PropertyAttribute
     {
         public RequiredAttribute()
         {

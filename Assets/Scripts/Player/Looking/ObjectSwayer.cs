@@ -16,7 +16,7 @@ namespace Player.Looking
     /// It integrates with the EventBus system to respond to player state changes and uses
     /// dependency injection for input handling.
     /// </remarks>
-    public class ObjectSwayer : MonoBehaviour
+    public sealed class ObjectSwayer : MonoBehaviour
     {
         #region Inspector Fields
 

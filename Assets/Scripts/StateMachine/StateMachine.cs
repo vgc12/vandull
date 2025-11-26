@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace StateMachine
 {
-    public class StateMachine
+    public sealed class StateMachine
     {
         private readonly HashSet<ITransition> _anyTransitions = new();
 

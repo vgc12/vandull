@@ -13,7 +13,7 @@ using ILogger = General.Logging.ILogger;
 namespace Player
 {
     [RequireComponent(typeof(GroundChecker), typeof(PlayerMovement), typeof(PlayerLooking))]
-    public class PlayerStateMachine : MonoBehaviour, IKillable, IDamageable
+    public sealed class PlayerStateMachine : MonoBehaviour, IKillable, IDamageable
     {
         [SerializeField] private bool invulnerable;
 

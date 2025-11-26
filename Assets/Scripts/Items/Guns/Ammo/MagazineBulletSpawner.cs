@@ -14,7 +14,7 @@ namespace Items.Guns.Ammo
     }
 
     [ExecuteAlways]
-    public class MagazineBulletSpawner : MonoBehaviour
+    public sealed class MagazineBulletSpawner : MonoBehaviour
     {
         [Header("Bullet Settings")] public GameObject bulletPrefab;
 

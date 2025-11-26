@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DependencyInjection
 {
-    public class SceneInstaller : MonoBehaviour, IInstaller
+    public sealed class SceneInstaller : MonoBehaviour, IInstaller
     {
         public void InstallBindings(ContainerBuilder builder)
         {

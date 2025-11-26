@@ -7,7 +7,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Settings
 {
-    public class OutlineRenderFeature : ScriptableRendererFeature
+    public sealed class OutlineRenderFeature : ScriptableRendererFeature
     {
         public Settings settings = new();
         private OutlinePass _outlinePass;

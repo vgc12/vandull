@@ -2,7 +2,7 @@
 
 namespace General.Game
 {
-    public class InGameState : BaseGameState
+    public sealed class InGameState : BaseGameState
     {
         public InGameState(GameManager gameManager) : base(gameManager)
         {

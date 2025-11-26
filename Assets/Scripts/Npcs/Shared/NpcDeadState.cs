@@ -2,7 +2,7 @@
 
 namespace Npcs.Shared
 {
-    public class EnemyDeadState : NpcState
+    public sealed class EnemyDeadState : NpcState
     {
         private readonly Enemy _npc;
 

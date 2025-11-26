@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Items.Guns.Aiming
 {
-    public class EnemyAimingSystem : IAimingSystem
+    public sealed class EnemyAimingSystem : IAimingSystem
     {
         private readonly Transform _aimPoint;
         private Transform _target;

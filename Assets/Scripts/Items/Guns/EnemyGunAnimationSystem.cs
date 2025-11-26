@@ -1,6 +1,6 @@
 ﻿namespace Items.Guns
 {
-    public class EnemyGunAnimationSystem : IItemAnimationSystem
+    public sealed class EnemyGunAnimationSystem : IItemAnimationSystem
     {
         //noop for now
 

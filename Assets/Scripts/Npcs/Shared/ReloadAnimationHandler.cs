@@ -9,7 +9,7 @@ using AudioSettings = Items.Guns.AudioSettings;
 
 namespace Npcs.Shared
 {
-    public class ReloadAnimationHandler : MonoBehaviour
+    public sealed class ReloadAnimationHandler : MonoBehaviour
     {
         [SerializeField] [Required] private RigHandler rigHandler;
         private Gun _currentGun;

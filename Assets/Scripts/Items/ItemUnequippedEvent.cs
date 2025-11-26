@@ -5,7 +5,7 @@ namespace Items
     /// <summary>
     /// Event raised when an item is unequipped by the player.
     /// </summary>
-    public class ItemUnequippedEvent : IEvent
+    public sealed class ItemUnequippedEvent : IEvent
     {
         /// <summary>
         /// Initializes a new instance of the ItemUnequippedEvent.

@@ -6,7 +6,7 @@ namespace Player.Looking
 {
     [CreateAssetMenu(fileName = "PlayerLookingConfig", menuName = "Configs/Player/Movement/PlayerLookingConfig",
         order = 1)]
-    public class PlayerLookingConfig : ScriptableObject
+    public sealed class PlayerLookingConfig : ScriptableObject
     {
         public enum AimType
         {

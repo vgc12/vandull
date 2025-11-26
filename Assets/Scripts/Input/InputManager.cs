@@ -12,7 +12,7 @@ using ILogger = General.Logging.ILogger;
 
 namespace Player.Input
 {
-    public class InputManager : IInputService, IPlayerActions, IUIActions
+    public sealed class InputManager : IInputService, IPlayerActions, IUIActions
     {
         private readonly float _checkMagazineHoldTime = 0.5f;
         private readonly EventBinding<SettingsUIState.ControlSettingsChangedEvent> _controlsChangedEventBinding;

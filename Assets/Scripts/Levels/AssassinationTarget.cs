@@ -4,7 +4,7 @@ using Npcs;
 
 namespace Levels
 {
-    public class AssassinationTarget : Enemy
+    public sealed class AssassinationTarget : Enemy
     {
         public override void Die()
         {

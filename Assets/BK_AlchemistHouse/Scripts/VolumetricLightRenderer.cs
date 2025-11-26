@@ -33,7 +33,7 @@ using UnityEngine.Rendering;
 using System;
 
 [RequireComponent(typeof(Camera))]
-public class VolumetricLightRenderer : MonoBehaviour
+public sealed class VolumetricLightRenderer : MonoBehaviour
 {
     public enum VolumtericResolution
     {

@@ -33,7 +33,7 @@ using UnityEngine.Rendering;
 using System;
 
 [RequireComponent(typeof(Light))]
-public class VolumetricLight : MonoBehaviour 
+public sealed class VolumetricLight : MonoBehaviour 
 {
     public event Action<VolumetricLightRenderer, VolumetricLight, CommandBuffer, Matrix4x4> CustomRenderEvent;
 

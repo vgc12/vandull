@@ -3,7 +3,7 @@ using Items.Guns.Firing;
 
 namespace Npcs.States.Enemy
 {
-    public class AttackPlayerState : NpcState
+    public sealed class AttackPlayerState : NpcState
     {
         private readonly Gun _gun;
         private readonly Npcs.Enemy _npc;

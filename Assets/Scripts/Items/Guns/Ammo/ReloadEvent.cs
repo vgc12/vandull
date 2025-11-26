@@ -2,7 +2,7 @@
 
 namespace Items.Guns.Ammo
 {
-    public class ReloadEvent : IEvent
+    public sealed class ReloadEvent : IEvent
     {
         public ReloadEvent(Magazine currentMagazine)
         {

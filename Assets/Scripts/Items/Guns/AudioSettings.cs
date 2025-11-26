@@ -6,7 +6,7 @@ using Random = UnityEngine.Random;
 namespace Items.Guns
 {
     [CreateAssetMenu(fileName = "AudioSettings", menuName = "Guns/AudioSettings", order = 1)]
-    public class AudioSettings : ScriptableObject
+    public sealed class AudioSettings : ScriptableObject
     {
         public GunAudioClip fire;
         public GunAudioClip dryFire;

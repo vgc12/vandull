@@ -2,7 +2,7 @@
 
 namespace EventBus
 {
-    public class EventBinding<T> : IEventBinding<T> where T : IEvent
+    public sealed class EventBinding<T> : IEventBinding<T> where T : IEvent
     {
         public EventBinding(Action<T> onEvent)
         {

@@ -1175,6 +1175,7 @@ MonoBehaviour:
     m_Bits: 385
   pollingInterval: 0.1
   detectionSpeed: 30
+  detectionMultiplier: 1
   detectionMeterMaximum: 100
   sensorOrigin: {fileID: 1093138773505210709}
   showDebugRays: 1
@@ -5180,16 +5181,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5d03c28c0664edabda829fa4c7b3273, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Npcs.Sensors.EnemySensor
-  detectionRadius: 10
+  detectionRadius: 100
   detectionLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
-  updateInterval: 0.5
+    m_Bits: 512
+  updateInterval: 0.2
   requireLineOfSight: 1
   obstructionLayers:
     serializedVersion: 2
-    m_Bits: 1
-  sensorOrigin: {fileID: 0}
+    m_Bits: 385
+  sensorOrigin: {fileID: 1519307787667690592}
   prioritizeClosest: 1
   maxTargets: 10
   showDebugGizmos: 1

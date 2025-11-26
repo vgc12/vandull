@@ -6,7 +6,7 @@ using ILogger = General.Logging.ILogger;
 
 namespace DependencyInjection
 {
-    public class ProjectInstaller : MonoBehaviour, IInstaller
+    public sealed class ProjectInstaller : MonoBehaviour, IInstaller
     {
         public void InstallBindings(ContainerBuilder builder)
         {

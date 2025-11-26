@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 
 namespace Items.Guns.Firing
 {
-    public class EnemyAutomaticFireMode : AutomaticFireMode
+    public sealed class EnemyAutomaticFireMode : AutomaticFireMode
     {
         public EnemyAutomaticFireMode(Gun gun, List<Action<ShotFiredEvent>> onShotFiredSubscribers = null) : base(gun,
             onShotFiredSubscribers)

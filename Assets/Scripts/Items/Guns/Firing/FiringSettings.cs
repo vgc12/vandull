@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Items.Guns.Firing
 {
     [CreateAssetMenu(fileName = "Firing Settings", menuName = "Guns/Firing Settings", order = 0)]
-    public class FiringSettings : ScriptableObject, ICloneable
+    public sealed class FiringSettings : ScriptableObject, ICloneable
     {
         public float fireRate = 0.2f;
         public int burstCount = 3;

@@ -6,7 +6,7 @@ using StateMachine;
 
 namespace Player.States
 {
-    public class CrouchState : BaseState
+    public sealed class CrouchState : BaseState
     {
         [Inject] private readonly ILogger _logger;
 

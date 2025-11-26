@@ -3,7 +3,7 @@
 namespace Items.Guns.Ammo
 {
     [CreateAssetMenu(fileName = "Ammo Settings", menuName = "Guns/Ammo Settings", order = 1)]
-    public class AmmoSettings : ScriptableObject
+    public sealed class AmmoSettings : ScriptableObject
     {
         [Range(1, 150)] public int magazineSize;
 

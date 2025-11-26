@@ -3,7 +3,7 @@
 namespace Levels
 {
     [CreateAssetMenu(fileName = "LevelConfig", menuName = "Game/Level Config")]
-    public class LevelConfig : ScriptableObject
+    public sealed class LevelConfig : ScriptableObject
     {
         public string levelName;
         public LevelType levelType = LevelType.TargetAssassination;

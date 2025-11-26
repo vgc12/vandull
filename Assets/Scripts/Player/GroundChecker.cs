@@ -2,7 +2,7 @@
 
 namespace Player
 {
-    public class GroundChecker : MonoBehaviour
+    public sealed class GroundChecker : MonoBehaviour
     {
         [SerializeField] [Range(0.1f, 5f)] private float groundCheckRadius = 0.3f;
         [SerializeField] private Vector3 groundCheckOffset = new(0, .4f, 0);

@@ -3,7 +3,7 @@
 namespace Player.Movement
 {
     [CreateAssetMenu(fileName = "PlayerMovementConfig", menuName = "Configs/Player/Movement/PlayerMovementConfig")]
-    public class PlayerMovementConfig : ScriptableObject
+    public sealed class PlayerMovementConfig : ScriptableObject
     {
         [Header("Movement")] [SerializeField] [Range(10, 100)]
         private int crouchWalkSpeed = 25;

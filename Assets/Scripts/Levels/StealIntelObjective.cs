@@ -3,7 +3,7 @@
 namespace Levels
 {
     [CreateAssetMenu(fileName = "New Steal Intel Objective", menuName = "Level/Objectives/Steal Intel")]
-    public class StealIntelObjective : Objective
+    public sealed class StealIntelObjective : Objective
     {
         [SerializeField] private int intelItemsRequired = 1;
 

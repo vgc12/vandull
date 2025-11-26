@@ -2,7 +2,7 @@
 
 namespace Levels
 {
-    public class LevelLoadEvent : IEvent
+    public sealed class LevelLoadEvent : IEvent
     {
         public readonly Level LevelConfig;
 

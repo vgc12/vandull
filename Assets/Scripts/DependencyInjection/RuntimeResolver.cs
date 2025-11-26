@@ -14,7 +14,7 @@ namespace DependencyInjection
     ///     then falls back to the Project container (broader scope). Container references are cached
     ///     for performance optimization and cleared automatically on destruction.
     /// </remarks>
-    public class RuntimeResolver : Singleton<RuntimeResolver>
+    public sealed class RuntimeResolver : Singleton<RuntimeResolver>
     {
         /// <summary>
         ///     Cached reference to the project-scoped DI container.

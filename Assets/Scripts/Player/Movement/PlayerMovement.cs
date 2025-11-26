@@ -8,7 +8,7 @@ using ILogger = General.Logging.ILogger;
 namespace Player.Movement
 {
     [RequireComponent(typeof(Rigidbody), typeof(GroundChecker))]
-    public class PlayerMovement : MonoBehaviour
+    public sealed class PlayerMovement : MonoBehaviour
     {
         [Header("Transforms")] [Required] public Transform orientation;
 

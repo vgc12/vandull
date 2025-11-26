@@ -8,7 +8,7 @@ namespace Audio
     ///     Configure this in the Inspector to easily separate audio into different mixer groups.
     /// </summary>
     [CreateAssetMenu(fileName = "Audio Category Configuration", menuName = "Audio Category Configuration")]
-    public class AudioCategory : ScriptableObject
+    public sealed class AudioCategory : ScriptableObject
     {
         [Header("Mixer Group")] [Tooltip("Assign the AudioMixerGroup for this category here")]
         public AudioMixerGroup mixerGroup;
