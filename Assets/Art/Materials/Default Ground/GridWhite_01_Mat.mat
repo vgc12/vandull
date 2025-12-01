@@ -240,7 +240,7 @@ Material:
     - _Mode: 0
     - _NormalReplacementValue: 0.999993
     - _NormalStrength: 1
-    - _NormalThreshold: 0.999965
+    - _NormalThreshold: 1
     - _OcclusionStrength: 0
     - _OublineWidth: 0.3
     - _OutlineMethod: 1

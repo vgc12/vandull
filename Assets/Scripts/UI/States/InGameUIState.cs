@@ -133,14 +133,12 @@ namespace UI.InGame.Views
         {
             Container = container;
             _indicatorImage = indicatorImage;
+            Container.name = "Directional Indicator : " + Guid.NewGuid();
         }
 
         public GameObject Container { get; }
 
-        public void UpdateRotation(float angle)
-        {
-            Container.transform.localEulerAngles = new Vector3(0, 0, -angle);
-        }
+        public void UpdateRotation(float angle) => Container.transform.localEulerAngles = new Vector3(0, 0, -angle);
 
         public void UpdateColor(Color color)
         {
@@ -154,10 +152,7 @@ namespace UI.InGame.Views
                 _indicatorImage.fillAmount = amount;
         }
 
-        public void SetActive(bool active)
-        {
-            Container.SetActive(active);
-        }
+        public void SetActive(bool active) => Container?.SetActive(active);
     }
 }
 
@@ -178,20 +173,11 @@ namespace UI.InGame.Controllers
             _model.OnHealthChanged += OnHealthChanged;
         }
 
-        private void OnHealthChanged(float current, float max)
-        {
-            _view.UpdateHealthBar(_model.HealthPercentage);
-        }
+        private void OnHealthChanged(float current, float max) => _view.UpdateHealthBar(_model.HealthPercentage);
 
-        public void UpdateHealth(float current, float max)
-        {
-            _model.UpdateHealth(current, max);
-        }
+        public void UpdateHealth(float current, float max) => _model.UpdateHealth(current, max);
 
-        public void Dispose()
-        {
-            _model.OnHealthChanged -= OnHealthChanged;
-        }
+        public void Dispose() => _model.OnHealthChanged -= OnHealthChanged;
     }
 
     public sealed class WeaponController
@@ -206,20 +192,11 @@ namespace UI.InGame.Controllers
             _model.OnAimStateChanged += OnAimStateChanged;
         }
 
-        private void OnAimStateChanged(bool isAiming)
-        {
-            _view.SetCrosshairActive(!isAiming);
-        }
+        private void OnAimStateChanged(bool isAiming) => _view.SetCrosshairActive(!isAiming);
 
-        public void UpdateWeaponState(bool isAiming, bool hasWeapon)
-        {
-            _model.UpdateAimState(isAiming, hasWeapon);
-        }
+        public void UpdateWeaponState(bool isAiming, bool hasWeapon) => _model.UpdateAimState(isAiming, hasWeapon);
 
-        public void Dispose()
-        {
-            _model.OnAimStateChanged -= OnAimStateChanged;
-        }
+        public void Dispose() => _model.OnAimStateChanged -= OnAimStateChanged;
     }
 
     public sealed class IndicatorController
@@ -379,6 +356,7 @@ namespace UI.States
             Image healthBar = null;
 
             foreach (Transform child in _inGameUIRoot.transform)
+            {
                 switch (child.name)
                 {
                     case "Crosshair":
@@ -395,6 +373,7 @@ namespace UI.States
                         _detectionIndicatorPrefab = child.gameObject;
                         break;
                 }
+            }
 
             _mainView = new InGameView(healthBar, crosshair);
             _cam = Object.FindFirstObjectByType<Camera>();
@@ -522,8 +501,6 @@ namespace UI.States
 
             if (evt.Sensor.enabled && evt.DetectionMeter > threshold)
                 UpdateDetectionIndicator(evt);
-            else
-                RemoveDetectionIndicator(evt.Sensor);
         }
 
         private void UpdateDetectionIndicator(DetectionMeterUpdatedEvent evt)
@@ -555,6 +532,14 @@ namespace UI.States
                 HighDetectionColor);
         }
 
+        public void ClearAllIndicators()
+        {
+            foreach (var sensor in new List<ISensor>(_activeDetectionIndicators.Keys))
+            {
+                RemoveDetectionIndicator(sensor);
+            }
+        }
+
         private async UniTask AnimateDetectionIndicator(LineOfSightSensor sensor)
         {
             if (!_activeDetectionIndicators.TryGetValue(sensor, out var indicator))
@@ -572,23 +557,20 @@ namespace UI.States
         {
             if (_activeDetectionIndicators.Remove(sensor, out var indicator))
             {
-                indicator.view.SetActive(false);
+                indicator.view.Container.SetActive(false);
+              
                 _detectionIndicatorPool.Release(indicator.view);
             }
         }
 
-        private void OnEnemyKilled(EnemyKilledEvent evt)
-        {
-            RemoveDetectionIndicator(evt.Enemy.PlayerSensor);
-        }
+        private void OnEnemyKilled(EnemyKilledEvent evt) => RemoveDetectionIndicator(evt.Enemy.PlayerSensor);
 
-        private void OnItemSwitched(ItemSwitchedEvent evt)
-        {
-            _gun = evt.NewItem as Gun;
-        }
+        private void OnItemSwitched(ItemSwitchedEvent evt) => _gun = evt.NewItem as Gun;
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            _cancellationTokenSource.Cancel();
+            ClearAllIndicators();
             _cancellationTokenSource = new CancellationTokenSource();
             _activeDetectionIndicators.Clear();
             _damageIndicatorPool.Clear();
@@ -612,10 +594,7 @@ namespace UI.States
             _detectionIndicatorPool.Clear();
         }
 
-        protected override void ChangeMouseState()
-        {
-            LockCursorAndHideMouse();
-        }
+        protected override void ChangeMouseState() => LockCursorAndHideMouse();
 
         ~InGameUIState()
         {

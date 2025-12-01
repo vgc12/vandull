@@ -21,6 +21,7 @@ namespace Npcs.Sensors
         [Tooltip("The rate at which the player is detected, calculated by e^-(DistanceToTarget/200f) * detectionSpeed")]
         [SerializeField]
         private float detectionSpeed;
+
         [SerializeField] private float detectionMultiplier = 1f;
 
         [SerializeField] private float detectionMeterMaximum = 10;
@@ -48,6 +49,19 @@ namespace Npcs.Sensors
 
         public Action OnTargetSpotted;
         public Action OnTargetUnobstructed;
+
+        public float DetectionRange
+        {
+            get => detectionSpeed;
+            set => detectionSpeed = value;
+        }
+
+        public float DetectionMultiplier
+        {
+            get => detectionMultiplier;
+            set => detectionMultiplier = value;
+        }
+
         public bool IsTargetInRange { get; private set; }
         public bool IsTargetInAngle { get; private set; }
         public bool IsTargetObstructed { get; private set; }
@@ -69,7 +83,6 @@ namespace Npcs.Sensors
 
         private void Update()
         {
-       
             HandleDetectionTimer();
 
             CheckForStateChanges();
@@ -128,18 +141,16 @@ namespace Npcs.Sensors
 
         public bool CanSeeTarget => canSeeTarget;
         public Transform Target => targetObject;
-        public void OnDisable()
-        {
-            EmitEvents = false;
-        }
+
+        public void OnDisable() => EmitEvents = false;
 
         private void HandleDetectionTimer()
         {
             if (IsTargetObstructed || !IsTargetInAngle)
-                _detectionMeter -= Time.deltaTime;
+                _detectionMeter -= Time.deltaTime * detectionSpeed * detectionMultiplier;
             else
                 _detectionMeter += Mathf.Exp(-(DistanceToTarget / 200f)) * Time.deltaTime * detectionSpeed *
-                                     detectionMultiplier;
+                                   detectionMultiplier;
 
             _detectionMeter = Mathf.Clamp(_detectionMeter, 0f, detectionMeterMaximum);
 
@@ -233,25 +244,13 @@ namespace Npcs.Sensors
         }
 
         // Public methods for external control
-        public void SetTarget(Transform newTarget)
-        {
-            targetObject = newTarget;
-        }
+        public void SetTarget(Transform newTarget) => targetObject = newTarget;
 
-        public void SetDetectionRange(float newRange)
-        {
-            detectionRange = Mathf.Max(0f, newRange);
-        }
+        public void SetDetectionRange(float newRange) => detectionRange = Mathf.Max(0f, newRange);
 
-        public void SetDetectionAngle(float newAngle)
-        {
-            detectionAngle = Mathf.Clamp(newAngle, 0f, 360f);
-        }
+        public void SetDetectionAngle(float newAngle) => detectionAngle = Mathf.Clamp(newAngle, 0f, 360f);
 
-        public void SetObstructionLayers(LayerMask newLayers)
-        {
-            obstructionLayers = newLayers;
-        }
+        public void SetObstructionLayers(LayerMask newLayers) => obstructionLayers = newLayers;
     }
 
     public struct DetectionMeterUpdatedEvent : IEvent

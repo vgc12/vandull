@@ -9,7 +9,6 @@ namespace Npcs.Shared
         [SerializeField] private Animator animator;
         [SerializeField] private RagdollBone[] ragdollBones;
         [SerializeField] private float transitionDuration = 0.5f;
-  
 
 
         public bool IsRagdollActive { get; private set; }
@@ -18,7 +17,6 @@ namespace Npcs.Shared
 
         private void Start()
         {
-      
             if (ragdollBones.Length == 0)
                 SetupRagdollBones();
 
@@ -29,16 +27,18 @@ namespace Npcs.Shared
         {
             var rbs = GetComponentsInChildren<Rigidbody>();
 
-       
+
             ragdollBones = new RagdollBone[rbs.Length];
-            
+
             for (var i = 0; i < rbs.Length; i++)
+            {
                 ragdollBones[i] = new RagdollBone
                 {
                     transform = rbs[i].transform,
                     rigidbody = rbs[i],
                     collider = rbs[i].GetComponent<Collider>()
                 };
+            }
         }
 
         public void ToggleRagdoll()
@@ -117,10 +117,8 @@ namespace Npcs.Shared
                 var t = elapsedTime / transitionDuration;
                 t = Mathf.SmoothStep(0f, 1f, t); // Smooth transition curve
 
-                for (var i = 0; i < ragdollBones.Length; i++)
+                foreach (var bone in ragdollBones)
                 {
-                    var bone = ragdollBones[i];
-
                     // Blend position and rotation
                     bone.transform.position = Vector3.Lerp(bone.storedPosition, bone.transform.position, t);
                     bone.transform.rotation = Quaternion.Lerp(bone.storedRotation, bone.transform.rotation, t);
@@ -147,7 +145,6 @@ namespace Npcs.Shared
 
         private void SetRagdollPhysics(bool enable)
         {
-         
             foreach (var bone in ragdollBones)
             {
                 if (bone.rigidbody != null)
@@ -166,8 +163,10 @@ namespace Npcs.Shared
             if (!IsRagdollActive) EnableRagdoll(true);
 
             foreach (var bone in ragdollBones)
+            {
                 if (bone.rigidbody != null)
                     bone.rigidbody.AddExplosionForce(force, position, radius);
+            }
         }
 
         // Apply directional force

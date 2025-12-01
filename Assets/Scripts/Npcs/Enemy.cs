@@ -10,6 +10,7 @@ using Npcs.States;
 using Npcs.States.Enemy;
 using Player;
 using Reflex.Attributes;
+using UnityEditor;
 using UnityEngine;
 using ILogger = General.Logging.ILogger;
 using Random = UnityEngine.Random;
@@ -19,7 +20,7 @@ namespace Npcs
     [RequireComponent(typeof(RigHandler))]
     public class Enemy : Npc
     {
-        [Header("Movement Settings"), SerializeField] 
+        [Header("Movement Settings")] [SerializeField]
         private float strafeDistance = 8f;
 
         [SerializeField] private float closeRangeMultiplier = 0.7f;
@@ -30,20 +31,25 @@ namespace Npcs
         [SerializeField] private float pointFollowSpeed = 5f;
 
 
-        [Header("Combat Settings"), SerializeField] 
+        [Header("Combat Settings")] [SerializeField]
         private float damagedDuration = 4f;
 
         [SerializeField] private float lookAtSpeed = 10f;
 
-        [SerializeField, Required]  private Transform aimPoint;
-        [SerializeField, Required]  private LineOfSightSensor playerSensor;
-        [SerializeField, Required]  private PatrolPointManager<WalkPoint> walkPatrolPointSensor;
-        [SerializeField, Required]  private MultiTargetTypeSensor<Enemy> enemySensor;
+        [SerializeField] [Required] private Transform aimPoint;
+        [SerializeField] [Required] private LineOfSightSensor playerSensor;
+        [SerializeField] [Required] private PatrolPointManager<WalkPoint> walkPatrolPointSensor;
+        [SerializeField] [Required] private MultiTargetTypeSensor<Enemy> enemySensor;
 
         [SerializeField] private Gun gun;
 
+        [SerializeField] private float onGuardDuration = 30f;
+
+        [Inject] private readonly ILogger _logger;
+
 
         private CountdownTimer _damagedTimer;
+        private CountdownTimer _guardTimer;
 
         private Vector3 _lastDamageDirection;
 
@@ -64,11 +70,13 @@ namespace Npcs
 
         public bool OnGuard { get; private set; }
 
+
         private void Start()
         {
             gun.Equip();
             _rigHandler = GetComponent<RigHandler>();
 
+            name = "Enemy : " + GUID.Generate();
             _rigHandler.SetLeftHandData(Gun.leftHandTarget, Gun.leftHandHint);
             _rigHandler.LeftHandFollowItemHint = true;
             _rigHandler.LeftHandFollowItemTarget = true;
@@ -79,9 +87,30 @@ namespace Npcs
         }
 
 
+        protected override void Update()
+        {
+            base.Update();
+            CheckOnGuardStatus();
+        }
+
+
         protected override void SetUpTimers()
         {
             base.SetUpTimers();
+            _guardTimer = new CountdownTimer(onGuardDuration);
+            _guardTimer.OnTimerStart += () =>
+            {
+                _logger.LogWarning($"{name} is now on guard!");
+                playerSensor.DetectionMultiplier = 2f;
+                OnGuard = true;
+            };
+            _guardTimer.OnTimerStop += () =>
+            {
+                OnGuard = false;
+                playerSensor.DetectionMultiplier = 1f;
+                _logger.LogWarning($"{name} is no longer on guard.");
+            };
+            Timers.Add(_guardTimer);
             _damagedTimer = new CountdownTimer(damagedDuration);
             _damagedTimer.OnTimerStart += () => _recentlyDamaged = true;
             _damagedTimer.OnTimerStop += () => _recentlyDamaged = false;
@@ -112,12 +141,6 @@ namespace Npcs
                 () => CanWalk && !playerSensor.CanSeeTarget);
 
             StateMachine.SetState(idleState);
-        }
-
-        protected override void Update()
-        {
-            base.Update();
-            CheckOnGuardStatus();
         }
 
         public void HandleTacticalMovement()
@@ -161,7 +184,7 @@ namespace Npcs
             return Random.value > 0.5f ? rightDirection : -rightDirection;
         }
 
-        public void LookAtDamageDirection() { LookAtTarget(playerSensor.Target.position, lookAtSpeed); }
+        public void LookAtDamageDirection() => LookAtTarget(playerSensor.Target.position, lookAtSpeed);
 
         public void LookAtTarget(Vector3 target, float turnSpeed)
         {
@@ -188,8 +211,6 @@ namespace Npcs
             EventBus<EnemyKilledEvent>.Raise(new EnemyKilledEvent(this, transform.position));
         }
 
-        [Inject] private readonly ILogger _logger;
-
         public void CheckOnGuardStatus()
         {
             _logger.Log(enemySensor.CanSeeTarget);
@@ -197,9 +218,10 @@ namespace Npcs
             {
                 return;
             }
-            
 
-            _logger.LogWarning("Enemy is now on guard!");
+            playerSensor.DetectionMultiplier = 2f;
+
+            _logger.LogWarning($"{name} is now on guard!");
             OnGuard = true;
         }
 

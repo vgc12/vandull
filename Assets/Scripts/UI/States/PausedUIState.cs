@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace UI.States
@@ -25,7 +26,7 @@ namespace UI.States
         public override void Enter()
         {
             base.Enter();
-
+            Time.timeScale = 0;
             if (_resumeButton != null) _resumeButton.clicked += UIStateMachine.ResumeButtonClicked;
             if (_settingsButton != null) _settingsButton.clicked += UIStateMachine.PauseSettingsButtonClicked;
             if (_quitMenu != null) _quitMenu.clicked += UIStateMachine.QuitButtonClicked;
@@ -33,6 +34,7 @@ namespace UI.States
 
         public override void Exit()
         {
+            Time.timeScale = 1;
             if (_resumeButton != null) _resumeButton.clicked += UIStateMachine.ResumeButtonClicked;
             if (_settingsButton != null) _settingsButton.clicked += UIStateMachine.PauseSettingsButtonClicked;
             if (_quitMenu != null) _quitMenu.clicked += UIStateMachine.QuitButtonClicked;
