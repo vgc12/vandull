@@ -7,6 +7,7 @@ using Items.Guns.Ammo;
 using Items.Guns.Firing;
 using Items.Guns.Recoil;
 using Items.Guns.Trail;
+using Markers;
 using UnityEngine;
 
 namespace Items.Guns
@@ -52,10 +53,7 @@ namespace Items.Guns
 
         #endregion
 
-        public async void CheckAmmo()
-        {
-            await AmmoSystem.CheckAmmo();
-        }
+        public async void CheckAmmo() => await AmmoSystem.CheckAmmo();
 
         #region Settings
 
@@ -242,7 +240,9 @@ namespace Items.Guns
             // Unsubscribe from fire mode events
             if (FireModeSystem?.AvailableFireModes != null)
                 foreach (var fireMode in FireModeSystem.AvailableFireModes)
+                {
                     fireMode.OnShotFired = null;
+                }
 
             // Unsubscribe from ammo events
             if (AmmoSystem != null)
@@ -267,15 +267,9 @@ namespace Items.Guns
         /// <summary>
         ///     This method is called when the gun is used (fired).
         /// </summary>
-        public override void Use()
-        {
-            Fire();
-        }
+        public override void Use() => Fire();
 
-        public override void StopUse()
-        {
-            StopFiring();
-        }
+        public override void StopUse() => StopFiring();
 
         #endregion
 
@@ -309,35 +303,23 @@ namespace Items.Guns
         ///     Gets a read-only list of available fire modes for this weapon.
         /// </summary>
         /// <returns>List of available fire types (semi-auto, burst, full-auto, etc.).</returns>
-        public IReadOnlyList<FireType> GetAvailableFireModes()
-        {
-            return fireModeSettings.availableFireModes;
-        }
+        public IReadOnlyList<FireType> GetAvailableFireModes() => fireModeSettings.availableFireModes;
 
         /// <summary>
         ///     Cycles to the next available fire mode.
         /// </summary>
-        public void CycleFireMode()
-        {
-            FireModeSystem.CycleFireMode();
-        }
+        public void CycleFireMode() => FireModeSystem.CycleFireMode();
 
         #endregion
 
         #region Firing
 
-        private void Fire()
-        {
-            FireModeSystem.CurrentFireSystem.Fire();
-        }
+        private void Fire() => FireModeSystem.CurrentFireSystem.Fire();
 
         /// <summary>
         ///     Immediately stops all firing activity.
         /// </summary>
-        private void StopFiring()
-        {
-            FireModeSystem.CurrentFireSystem.StopFire();
-        }
+        private void StopFiring() => FireModeSystem.CurrentFireSystem.StopFire();
 
         #endregion
 

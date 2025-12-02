@@ -91,12 +91,12 @@ namespace Player
         }
 
 
-        public async void SetLeftHandData(Transform leftHandTarget, Transform leftHandHint)
+        public void SetLeftHandData(Transform leftHandTarget, Transform leftHandHint)
         {
             ApplyConstraint(leftHandConstraint, leftHandTarget, leftHandHint);
         }
 
-        public async void SetRightHandData(Transform rightHandTarget, Transform rightHandHint)
+        public void SetRightHandData(Transform rightHandTarget, Transform rightHandHint)
         {
             ApplyConstraint(rightHandConstraint, rightHandTarget, rightHandHint);
         }

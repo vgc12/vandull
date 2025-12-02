@@ -12,7 +12,7 @@ namespace Items.Guns.Firing
         {
         }
 
-        protected override void PerformRaycast()
+        protected override void PerformRaycasts()
         {
             var startPoint = MuzzleTransform.position;
             var horizontalSpread = Gun.recoilSettings.horizontalRecoil;

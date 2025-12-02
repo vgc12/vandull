@@ -500,13 +500,22 @@ namespace UI.States
             var threshold = evt.DetectionMeterMaximum * 0.01f;
 
             if (evt.Sensor.enabled && evt.DetectionMeter > threshold)
+            {
+                _logger.LogWarning("Updating detection indicator for sensor " + evt.Sensor.GetHashCode());
                 UpdateDetectionIndicator(evt);
+            }
+            else if (_activeDetectionIndicators.TryGetValue(evt.Sensor, out var indicator))
+            {
+                _logger.LogWarning("Removing detection indicator for sensor " + evt.Sensor.GetHashCode());
+                indicator.view.SetActive(false);
+            }
         }
 
         private void UpdateDetectionIndicator(DetectionMeterUpdatedEvent evt)
         {
             var intensity = evt.DetectionMeter / evt.DetectionMeterMaximum;
 
+            
             if (!_activeDetectionIndicators.TryGetValue(evt.Sensor, out var indicator))
             {
                 var view = _detectionIndicatorPool.Get();
@@ -523,6 +532,8 @@ namespace UI.States
 
                 AnimateDetectionIndicator(evt.Sensor).Forget();
             }
+            
+            indicator.view.SetActive(true);
 
             _indicatorController.UpdateDetectionIndicatorAppearance(
                 indicator.model,
@@ -548,22 +559,29 @@ namespace UI.States
             await _indicatorController.AnimateDetectionIndicator(
                 indicator.model,
                 indicator.view,
-                () => _activeDetectionIndicators.ContainsKey(sensor));
+                () => sensor != null && _activeDetectionIndicators.ContainsKey(sensor) && sensor.enabled );
 
             RemoveDetectionIndicator(sensor);
         }
 
         private void RemoveDetectionIndicator(ISensor sensor)
         {
-            if (_activeDetectionIndicators.Remove(sensor, out var indicator))
-            {
-                indicator.view.Container.SetActive(false);
-              
-                _detectionIndicatorPool.Release(indicator.view);
-            }
+            if (!_activeDetectionIndicators.Remove(sensor, out var indicator)) return;
+            indicator.view.SetActive(false);
+
+            _detectionIndicatorPool.Release(indicator.view);
         }
 
-        private void OnEnemyKilled(EnemyKilledEvent evt) => RemoveDetectionIndicator(evt.Enemy.PlayerSensor);
+        private void OnEnemyKilled(EnemyKilledEvent evt)
+        {
+            if (evt.Enemy.PlayerSensor != null)
+            {
+                _logger?.Log(
+                    $"Enemy killed. Sensor: {evt.Enemy?.PlayerSensor?.GetHashCode()}, Contains: {_activeDetectionIndicators.ContainsKey(evt.Enemy.PlayerSensor)}");
+            }
+
+            RemoveDetectionIndicator(evt.Enemy.PlayerSensor);
+        }
 
         private void OnItemSwitched(ItemSwitchedEvent evt) => _gun = evt.NewItem as Gun;
 

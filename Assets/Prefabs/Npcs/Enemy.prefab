@@ -1552,6 +1552,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8293536009506699379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2314907334074114958
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5832574279256212258}
+  - component: {fileID: 952375289789164112}
+  m_Layer: 13
+  m_Name: ThreatDetectionZone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5832574279256212258
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2314907334074114958}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2492855227637926017}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &952375289789164112
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2314907334074114958}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 3.4
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2334514241637760579
 GameObject:
   m_ObjectHideFlags: 0
@@ -1767,6 +1820,7 @@ Transform:
   - {fileID: 8510546303671675002}
   - {fileID: 1093138773505210709}
   - {fileID: 1519307787667690592}
+  - {fileID: 5832574279256212258}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 87.79, z: 0}
 --- !u!195 &1983178125010302328
@@ -1880,6 +1934,7 @@ MonoBehaviour:
   walkPatrolPointSensor: {fileID: 9134213461162812417}
   enemySensor: {fileID: 163877103997551572}
   gun: {fileID: 582899987885221944}
+  onGuardDuration: 30
 --- !u!114 &7853281144675610928
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -46,16 +46,16 @@ namespace Npcs
         [SerializeField] private float onGuardDuration = 30f;
 
         [Inject] private readonly ILogger _logger;
-
-
-        private CountdownTimer _damagedTimer;
         private CountdownTimer _guardTimer;
 
-        private Vector3 _lastDamageDirection;
 
         private bool _recentlyDamaged;
         private RigHandler _rigHandler;
+
+
+        private CountdownTimer _threatTimer;
         private Transform _transform;
+        public EventBinding<ThreatEvent> ThreatEventBinding;
 
 
         public Gun Gun => gun;
@@ -68,13 +68,17 @@ namespace Npcs
         public float PointFollowSpeed => pointFollowSpeed;
         public bool PlayerDetected => playerSensor.CanSeeTarget;
 
-        public bool OnGuard { get; private set; }
+        private bool OnGuard { get; set; }
+
+        private Vector3 LastThreatDirection { get; set; }
 
 
         private void Start()
         {
             gun.Equip();
             _rigHandler = GetComponent<RigHandler>();
+            ThreatEventBinding = new EventBinding<ThreatEvent>(OnThreatDetected);
+            EventBus<ThreatEvent>.Register(ThreatEventBinding);
 
             name = "Enemy : " + GUID.Generate();
             _rigHandler.SetLeftHandData(Gun.leftHandTarget, Gun.leftHandHint);
@@ -92,6 +96,8 @@ namespace Npcs
             base.Update();
             CheckOnGuardStatus();
         }
+
+        private void OnDestroy() => EventBus<ThreatEvent>.Deregister(ThreatEventBinding);
 
 
         protected override void SetUpTimers()
@@ -111,10 +117,10 @@ namespace Npcs
                 _logger.LogWarning($"{name} is no longer on guard.");
             };
             Timers.Add(_guardTimer);
-            _damagedTimer = new CountdownTimer(damagedDuration);
-            _damagedTimer.OnTimerStart += () => _recentlyDamaged = true;
-            _damagedTimer.OnTimerStop += () => _recentlyDamaged = false;
-            Timers.Add(_damagedTimer);
+            _threatTimer = new CountdownTimer(damagedDuration);
+            _threatTimer.OnTimerStart += () => _recentlyDamaged = true;
+            _threatTimer.OnTimerStop += () => _recentlyDamaged = false;
+            Timers.Add(_threatTimer);
         }
 
         protected override void InitializeStateMachine()
@@ -184,12 +190,21 @@ namespace Npcs
             return Random.value > 0.5f ? rightDirection : -rightDirection;
         }
 
-        public void LookAtDamageDirection() => LookAtTarget(playerSensor.Target.position, lookAtSpeed);
+        public void LookAtDamageDirection() => LookAtTarget(LastThreatDirection, lookAtSpeed);
 
-        public void LookAtTarget(Vector3 target, float turnSpeed)
+        public void LookAtTarget(Vector3 direction, float turnSpeed)
         {
-            _transform.LookAt(target);
-            _transform.rotation = Quaternion.Euler(0, _transform.rotation.eulerAngles.y, 0);
+            direction.y = 0;
+
+            if (direction == Vector3.zero) return;
+            var targetRotation = Quaternion.LookRotation(direction);
+
+            // Smoothly interpolate (turnSpeed should be between 0-1, or multiply by Time.deltaTime)
+            _transform.rotation = Quaternion.Slerp(
+                _transform.rotation,
+                targetRotation,
+                turnSpeed * Time.deltaTime
+            );
         }
 
 
@@ -200,9 +215,21 @@ namespace Npcs
                 return;
             }
 
+            LastThreatDirection = -direction;
             base.TakeDamage(amount, direction, damageLocation);
-            _lastDamageDirection = -direction;
-            _damagedTimer.Start();
+        }
+
+        private void OnEnemyThreatened(Vector3 direction)
+        {
+            if (IsDead) return;
+            LastThreatDirection = direction;
+            _threatTimer.Start();
+        }
+
+        public void OnThreatDetected(ThreatEvent evt)
+        {
+            if (evt.Enemy != this) return;
+            OnEnemyThreatened(transform.position - evt.ThreatSourcePosition);
         }
 
         public override void Die()
@@ -213,7 +240,6 @@ namespace Npcs
 
         public void CheckOnGuardStatus()
         {
-            _logger.Log(enemySensor.CanSeeTarget);
             if (!enemySensor.CanSeeTarget || OnGuard || IsDead)
             {
                 return;

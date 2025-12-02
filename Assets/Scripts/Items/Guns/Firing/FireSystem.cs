@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using Audio;
-using DependencyInjection;
 using EventBus;
 using General;
+using Npcs;
 using UnityEngine;
-using ILogger = General.Logging.ILogger;
 
 namespace Items.Guns.Firing
 {
     public abstract class BaseFireMode : IFireSystem
     {
-        protected readonly Gun Gun;
         protected readonly MonoBehaviour Behaviour;
+        protected readonly Gun Gun;
         protected readonly Transform Transform;
 
 
@@ -66,25 +65,47 @@ namespace Items.Guns.Firing
             AudioManager.Instance.PlaySfx(sound.clip, MuzzleTransform.position, pitch: sound.RandomPitch);
 
             LastFireTime = Time.time;
-            PerformRaycast();
+            PerformRaycasts();
         }
 
-        protected virtual void PerformRaycast()
+        protected virtual void PerformRaycasts()
         {
             var startPoint = MuzzleTransform.position;
             var endPoint = startPoint + MuzzleTransform.forward * Gun.damageSettings.range;
 
+            if (PerformEnemyHitRaycast(startPoint, endPoint))
+            {
+                return;
+            }
+
+            PerformSensorHitRaycast(startPoint);
+        }
+
+        private void PerformSensorHitRaycast(Vector3 startPoint)
+        {
+            //Raycast to see if this is in an enemies bullet sensor
             if (Physics.Raycast(startPoint, MuzzleTransform.forward, out var hit, Gun.damageSettings.range,
-                    ~LayerMask.GetMask("Ignore Raycast")))
+                    LayerMask.GetMask("ThreatZone")) &&
+                hit.collider.transform.root.TryGetComponent<Enemy>(out var enemy))
+            {
+                EventBus<ThreatEvent>.Raise(new ThreatEvent(enemy, hit.point));
+            }
+        }
+
+        //Returns a true if an enemy was hit else false
+        private bool PerformEnemyHitRaycast(Vector3 startPoint, Vector3 endPoint)
+        {
+            if (Physics.Raycast(startPoint, MuzzleTransform.forward, out var hit, Gun.damageSettings.range,
+                    ~LayerMask.GetMask("Ignore Raycast", "ThreatZone")))
             {
                 OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
 
                 ApplyDamage(hit);
+                return true;
             }
-            else
-            {
-                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, endPoint, new RaycastHit()));
-            }
+
+            OnShotFired?.Invoke(new ShotFiredEvent(startPoint, endPoint, new RaycastHit()));
+            return false;
         }
 
         protected void ApplyDamage(RaycastHit hit)
@@ -103,7 +124,8 @@ namespace Items.Guns.Firing
                     var randomRange = clip.RandomPitch;
 
 
-                    AudioManager.Instance.PlaySfx(clip.clip, hit.point, spatialBlend: clip.spatialBlend, pitch: randomRange);
+                    AudioManager.Instance.PlaySfx(clip.clip, hit.point, spatialBlend: clip.spatialBlend,
+                        pitch: randomRange);
                 }
 
                 damageable.TakeDamage(Gun.damageSettings.damage * bodyPart.damageMultiplier,
@@ -116,6 +138,5 @@ namespace Items.Guns.Firing
                 damageable.TakeDamage(Gun.damageSettings.damage, MuzzleTransform.forward, MuzzleTransform);
             }
         }
-        
     }
 }
