@@ -129,13 +129,13 @@ namespace Items.Guns.Firing
                 }
 
                 damageable.TakeDamage(Gun.damageSettings.damage * bodyPart.damageMultiplier,
-                    MuzzleTransform.forward, MuzzleTransform);
+                    -MuzzleTransform.forward, MuzzleTransform);
                 EventBus<GunFiredEvent>.Raise(new GunFiredEvent(Transform.position,
                     Gun.damageSettings.damage));
             }
             else
             {
-                damageable.TakeDamage(Gun.damageSettings.damage, MuzzleTransform.forward, MuzzleTransform);
+                damageable.TakeDamage(Gun.damageSettings.damage, -MuzzleTransform.forward, MuzzleTransform);
             }
         }
     }

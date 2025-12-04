@@ -9,16 +9,13 @@ namespace Npcs.Shared
 
         public Animator Animator { get; private set; }
 
-        private void Awake()
-        {
-            Animator = GetComponent<Animator>();
-        }
+        private void Awake() => Animator = GetComponent<Animator>();
 
         public void HandleMovementBlendTree(Vector3 velocity)
         {
             var vel = velocity;
             var localVelocity = transform.InverseTransformDirection(vel).normalized;
-            var speed = vel.magnitude;
+            var speed = vel.sqrMagnitude;
 
 
             if (speed > 0.01f)

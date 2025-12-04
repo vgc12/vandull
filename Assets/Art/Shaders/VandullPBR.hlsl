@@ -239,6 +239,8 @@ CBUFFER_START(UnityPerMaterial)
     float4 _EmissionColor;
     float4 _NormalEffectsColor;
     float4 _SpecularColor;
+    float4 _TextureTiling;
+    float4 _TextureOffset;
     float _Metallic;
     float _Roughness;
     float _AO;
@@ -263,7 +265,7 @@ Varyings VandullPBRVert(Attributes input)
     output.normalWS = normalInputs.normalWS;
     output.tangentWS = float4(normalInputs.tangentWS, input.tangentOS.w);
     output.fogFactor = ComputeFogFactor(positionInputs.positionCS.z);
-    output.uv = TRANSFORM_TEX(input.uv, _AlbedoMap);
+    output.uv = input.uv * _TextureTiling.xy + _TextureOffset.xy;
 
     // Lightmap UVs
     OUTPUT_LIGHTMAP_UV(input.staticLightmapUV, unity_LightmapST, output.staticLightmapUV);

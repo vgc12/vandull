@@ -30,6 +30,10 @@ Shader "Custom/Vandull"
         _EmissionColor("Emission Color", Color) = (0,0,0,1)
         _EmissionStrength("Emission Strength", Range(0,10)) = 1.0
 
+        [Header(Texture Tiling and Offset)]
+        _TextureTiling("Texture Tiling", Vector) = (1,1,0,0)
+        _TextureOffset("Texture Offset", Vector) = (0,0,0,0)
+
         [Header(Cell Shading)]
         _VandullCelBandsRadiance("Cel Shading Bands", Range(1, 30)) = 6.0
 

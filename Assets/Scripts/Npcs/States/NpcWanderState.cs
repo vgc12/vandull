@@ -20,17 +20,12 @@ namespace Npcs.States
         }
 
 
-        public override void Update()
-        {
-            Npc.HandleMovementBlendTree();
-        }
+        public override void Update() => Npc.HandleMovementBlendTree();
 
         public override void FixedUpdate()
         {
         }
 
-        public override void Exit()
-        {
-        }
+        public override void Exit() => Npc.StopMoving();
     }
 }

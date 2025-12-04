@@ -3,12 +3,42 @@ using UnityEngine;
 
 public class VandullShaderGUI : ShaderGUI
 {
-    private bool cellShadingFoldout = true;
-    private bool mainTexturesFoldout = true;
-    private bool normalEffectsFoldout = true;
-    private bool outlineFoldout = true;
-    private bool renderingFoldout = true;
-    private bool xRayFoldout;
+    private static readonly int NormalMap = Shader.PropertyToID("_NormalMap");
+    private static readonly int MainTex = Shader.PropertyToID("_MainTex");
+    private static readonly int BumpMap = Shader.PropertyToID("_BumpMap");
+    private static readonly int MetallicGlossMap = Shader.PropertyToID("_MetallicGlossMap");
+    private static readonly int SpecGlossMap = Shader.PropertyToID("_SpecGlossMap");
+    private static readonly int OcclusionMap = Shader.PropertyToID("_OcclusionMap");
+    private static readonly int EmissionMap = Shader.PropertyToID("_EmissionMap");
+    private static readonly int Color1 = Shader.PropertyToID("_Color");
+    private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
+    private static readonly int SpecColor = Shader.PropertyToID("_SpecColor");
+    private static readonly int Metallic = Shader.PropertyToID("_Metallic");
+    private static readonly int Glossiness = Shader.PropertyToID("_Glossiness");
+    private static readonly int BumpScale = Shader.PropertyToID("_BumpScale");
+    private static readonly int OcclusionStrength = Shader.PropertyToID("_OcclusionStrength");
+    private static readonly int AlbedoMap = Shader.PropertyToID("_AlbedoMap");
+    private static readonly int WorkflowMode = Shader.PropertyToID("_WorkflowMode");
+    private static readonly int SpecularMap = Shader.PropertyToID("_SpecularMap");
+    private static readonly int SpecularColor = Shader.PropertyToID("_SpecularColor");
+    private static readonly int MetallicMap = Shader.PropertyToID("_MetallicMap");
+    private static readonly int RoughnessMap = Shader.PropertyToID("_RoughnessMap");
+    private static readonly int UseOutline = Shader.PropertyToID("_UseOutline");
+    private static readonly int OutlineWidth = Shader.PropertyToID("_OutlineWidth");
+    private static readonly int VandullCelBandsRadiance = Shader.PropertyToID("_VandullCelBandsRadiance");
+    private static readonly int AO = Shader.PropertyToID("_AO");
+    private static readonly int NormalStrength = Shader.PropertyToID("_NormalStrength");
+    private static readonly int Roughness = Shader.PropertyToID("_Roughness");
+    private static readonly int Albedo = Shader.PropertyToID("_Albedo");
+    private static readonly int AOMap = Shader.PropertyToID("_AOMap");
+    
+    private bool _cellShadingFoldout = true;
+    private bool _mainTexturesFoldout = true;
+    private bool _tilingFoldout = true;
+    private bool _normalEffectsFoldout = true;
+    private bool _outlineFoldout = true;
+    private bool _renderingFoldout = true;
+    private bool _xRayFoldout;
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
@@ -19,8 +49,8 @@ public class VandullShaderGUI : ShaderGUI
         EditorGUILayout.Space(5);
 
         // Main Textures Section
-        mainTexturesFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(mainTexturesFoldout, "Main Textures");
-        if (mainTexturesFoldout)
+        _mainTexturesFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(_mainTexturesFoldout, "Main Textures");
+        if (_mainTexturesFoldout)
         {
             EditorGUI.indentLevel++;
             DrawTextureSection(materialEditor, properties, material);
@@ -29,10 +59,20 @@ public class VandullShaderGUI : ShaderGUI
 
         EditorGUILayout.EndFoldoutHeaderGroup();
         EditorGUILayout.Space(5);
-
+        
+        _tilingFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(_tilingFoldout, "Texture Tiling");
+        if (_tilingFoldout)
+        {
+            EditorGUI.indentLevel++;
+            DrawTilingSection(materialEditor, properties);
+            EditorGUI.indentLevel--;
+        }
+        EditorGUILayout.EndFoldoutHeaderGroup();
+        EditorGUILayout.Space(5);
+        
         // Cell Shading Section
-        cellShadingFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(cellShadingFoldout, "Cell Shading");
-        if (cellShadingFoldout)
+        _cellShadingFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(_cellShadingFoldout, "Cell Shading");
+        if (_cellShadingFoldout)
         {
             EditorGUI.indentLevel++;
             DrawCellShadingSection(materialEditor, properties);
@@ -43,8 +83,8 @@ public class VandullShaderGUI : ShaderGUI
         EditorGUILayout.Space(5);
 
         // Outline Section
-        outlineFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(outlineFoldout, "Outline");
-        if (outlineFoldout)
+        _outlineFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(_outlineFoldout, "Outline");
+        if (_outlineFoldout)
         {
             EditorGUI.indentLevel++;
             DrawOutlineSection(materialEditor, properties, material);
@@ -58,8 +98,8 @@ public class VandullShaderGUI : ShaderGUI
 
         if (material && material.shader.name.ToLower().Contains("xray"))
         {
-            xRayFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(xRayFoldout, "XRay");
-            if (xRayFoldout)
+            _xRayFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(_xRayFoldout, "XRay");
+            if (_xRayFoldout)
             {
                 EditorGUI.indentLevel++;
                 DrawXRaySection(materialEditor, properties);
@@ -71,8 +111,8 @@ public class VandullShaderGUI : ShaderGUI
         }
 
         // Normal Effects Section
-        normalEffectsFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(normalEffectsFoldout, "Normal Effects");
-        if (normalEffectsFoldout)
+        _normalEffectsFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(_normalEffectsFoldout, "Normal Effects");
+        if (_normalEffectsFoldout)
         {
             EditorGUI.indentLevel++;
             DrawNormalEffectsSection(materialEditor, properties);
@@ -83,8 +123,8 @@ public class VandullShaderGUI : ShaderGUI
         EditorGUILayout.Space(5);
 
         // Rendering Section
-        renderingFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(renderingFoldout, "Rendering");
-        if (renderingFoldout)
+        _renderingFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(_renderingFoldout, "Rendering");
+        if (_renderingFoldout)
         {
             EditorGUI.indentLevel++;
             DrawRenderingSection(materialEditor, properties);
@@ -94,7 +134,49 @@ public class VandullShaderGUI : ShaderGUI
 
         EditorGUILayout.EndFoldoutHeaderGroup();
     }
+    private void DrawTilingSection(MaterialEditor materialEditor, MaterialProperty[] properties)
+    {
+        var textureTiling = FindProperty("_TextureTiling", properties);
+        var textureOffset = FindProperty("_TextureOffset", properties);
 
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        
+        EditorGUILayout.LabelField("Tiling", EditorStyles.boldLabel);
+        Vector4 tiling = textureTiling.vectorValue;
+        Vector2 tilingXY = new Vector2(tiling.x, tiling.y);
+        tilingXY = EditorGUILayout.Vector2Field("", tilingXY);
+        textureTiling.vectorValue = new Vector4(tilingXY.x, tilingXY.y, 0, 0);
+
+        EditorGUILayout.Space(3);
+
+        EditorGUILayout.LabelField("Offset", EditorStyles.boldLabel);
+        Vector4 offset = textureOffset.vectorValue;
+        Vector2 offsetXY = new Vector2(offset.x, offset.y);
+        offsetXY = EditorGUILayout.Vector2Field("", offsetXY);
+        textureOffset.vectorValue = new Vector4(offsetXY.x, offsetXY.y, 0, 0);
+
+        EditorGUILayout.Space(3);
+        EditorGUILayout.HelpBox("Applies the same tiling and offset to all textures.", MessageType.Info);
+
+        // Quick preset buttons
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Reset"))
+        {
+            textureTiling.vectorValue = new Vector4(1, 1, 0, 0);
+            textureOffset.vectorValue = new Vector4(0, 0, 0, 0);
+        }
+        if (GUILayout.Button("2x Tile"))
+        {
+            textureTiling.vectorValue = new Vector4(2, 2, 0, 0);
+        }
+        if (GUILayout.Button("4x Tile"))
+        {
+            textureTiling.vectorValue = new Vector4(4, 4, 0, 0);
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+    }
     private void DrawTextureSection(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
     {
         // Albedo
@@ -112,7 +194,7 @@ public class VandullShaderGUI : ShaderGUI
         var normalStrength = FindProperty("_NormalStrength", properties);
 
         materialEditor.TexturePropertySingleLine(new GUIContent("Normal Map"), normalMap);
-        if (material.GetTexture("_NormalMap") != null)
+        if (material.GetTexture(NormalMap) != null)
         {
             EditorGUI.indentLevel++;
             materialEditor.ShaderProperty(normalStrength, "Strength");
@@ -333,23 +415,23 @@ public class VandullShaderGUI : ShaderGUI
     public override void AssignNewShaderToMaterial(Material material, Shader oldShader, Shader newShader)
     {
         // Store old texture references
-        var albedo = material.GetTexture("_MainTex");
-        var normal = material.GetTexture("_BumpMap");
-        var metallic = material.GetTexture("_MetallicGlossMap");
-        var specular = material.GetTexture("_SpecGlossMap");
-        var occlusion = material.GetTexture("_OcclusionMap");
-        var emission = material.GetTexture("_EmissionMap");
+        var albedo = material.GetTexture(MainTex);
+        var normal = material.GetTexture(BumpMap);
+        var metallic = material.GetTexture(MetallicGlossMap);
+        var specular = material.GetTexture(SpecGlossMap);
+        var occlusion = material.GetTexture(OcclusionMap);
+        var emission = material.GetTexture(EmissionMap);
 
-        var albedoColor = material.HasProperty("_Color") ? material.GetColor("_Color") : Color.white;
-        var emissionColor = material.HasProperty("_EmissionColor") ? material.GetColor("_EmissionColor") : Color.black;
-        var specularColorOld = material.HasProperty("_SpecColor")
-            ? material.GetColor("_SpecColor")
+        var albedoColor = material.HasProperty(Color1) ? material.GetColor(Color1) : Color.white;
+        var emissionColor = material.HasProperty(EmissionColor) ? material.GetColor(EmissionColor) : Color.black;
+        var specularColorOld = material.HasProperty(SpecColor)
+            ? material.GetColor(SpecColor)
             : new Color(0.2f, 0.2f, 0.2f, 1f);
-        var metallicValue = material.HasProperty("_Metallic") ? material.GetFloat("_Metallic") : 0f;
-        var smoothness = material.HasProperty("_Glossiness") ? material.GetFloat("_Glossiness") : 0.5f;
-        var normalScale = material.HasProperty("_BumpScale") ? material.GetFloat("_BumpScale") : 1f;
+        var metallicValue = material.HasProperty(Metallic) ? material.GetFloat(Metallic) : 0f;
+        var smoothness = material.HasProperty(Glossiness) ? material.GetFloat(Glossiness) : 0.5f;
+        var normalScale = material.HasProperty(BumpScale) ? material.GetFloat(BumpScale) : 1f;
         var occlusionStrength =
-            material.HasProperty("_OcclusionStrength") ? material.GetFloat("_OcclusionStrength") : 1f;
+            material.HasProperty(OcclusionStrength) ? material.GetFloat(OcclusionStrength) : 1f;
 
         // Detect old workflow mode
         var wasSpecularWorkflow = oldShader != null && oldShader.name.Contains("Specular");
@@ -360,73 +442,73 @@ public class VandullShaderGUI : ShaderGUI
         // Map textures to your shader's properties
         if (albedo != null)
         {
-            material.SetTexture("_AlbedoMap", albedo);
+            material.SetTexture(AlbedoMap, albedo);
         }
 
         if (normal != null)
         {
-            material.SetTexture("_NormalMap", normal);
+            material.SetTexture(NormalMap, normal);
         }
 
         if (wasSpecularWorkflow)
         {
             // Coming from specular workflow
-            material.SetFloat("_WorkflowMode", 1f);
+            material.SetFloat(WorkflowMode, 1f);
             if (specular != null)
             {
-                material.SetTexture("_SpecularMap", specular);
+                material.SetTexture(SpecularMap, specular);
             }
 
-            material.SetColor("_SpecularColor", specularColorOld);
+            material.SetColor(SpecularColor, specularColorOld);
             material.DisableKeyword("_WORKFLOWMODE_METALLIC");
             material.EnableKeyword("_WORKFLOWMODE_SPECULAR");
         }
         else
         {
             // Coming from metallic workflow
-            material.SetFloat("_WorkflowMode", 0f);
+            material.SetFloat(WorkflowMode, 0f);
             if (metallic != null)
             {
-                material.SetTexture("_MetallicMap", metallic);
-                material.SetTexture("_RoughnessMap", metallic);
+                material.SetTexture(MetallicMap, metallic);
+                material.SetTexture(RoughnessMap, metallic);
             }
 
-            material.SetFloat("_Metallic", metallicValue);
+            material.SetFloat(Metallic, metallicValue);
             material.EnableKeyword("_WORKFLOWMODE_METALLIC");
             material.DisableKeyword("_WORKFLOWMODE_SPECULAR");
         }
 
         if (occlusion != null)
         {
-            material.SetTexture("_AOMap", occlusion);
+            material.SetTexture(AOMap, occlusion);
         }
 
         if (emission != null)
         {
-            material.SetTexture("_EmissionMap", emission);
+            material.SetTexture(EmissionMap, emission);
         }
 
         // Map property values
-        material.SetColor("_Albedo", albedoColor);
-        material.SetColor("_EmissionColor", emissionColor);
-        material.SetFloat("_Roughness", 1.0f - smoothness);
-        material.SetFloat("_NormalStrength", normalScale);
-        material.SetFloat("_AO", occlusionStrength);
+        material.SetColor(Albedo, albedoColor);
+        material.SetColor(EmissionColor, emissionColor);
+        material.SetFloat(Roughness, 1.0f - smoothness);
+        material.SetFloat(NormalStrength, normalScale);
+        material.SetFloat(AO, occlusionStrength);
 
         // Set default values for new properties
-        if (!material.HasProperty("_VandullCelBandsRadiance"))
+        if (!material.HasProperty(VandullCelBandsRadiance))
         {
-            material.SetFloat("_VandullCelBandsRadiance", 6f);
+            material.SetFloat(VandullCelBandsRadiance, 6f);
         }
 
-        if (!material.HasProperty("_UseOutline"))
+        if (!material.HasProperty(UseOutline))
         {
-            material.SetFloat("_UseOutline", 1f);
+            material.SetFloat(UseOutline, 1f);
         }
 
-        if (!material.HasProperty("_OutlineWidth"))
+        if (!material.HasProperty(OutlineWidth))
         {
-            material.SetFloat("_OutlineWidth", 0.02f);
+            material.SetFloat(OutlineWidth, 0.02f);
         }
     }
 }

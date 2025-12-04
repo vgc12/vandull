@@ -28,7 +28,7 @@ namespace Npcs.States.Enemy
             var sensor = _npc.PlayerSensor;
 
             _npc.Gun.StartAiming();
-            _npc.LookAtTarget(sensor.Target.transform.position, _npc.LookAtSpeed);
+            _npc.LookAtPoint(sensor.Target.transform.position, _npc.LookAtSpeed);
 
             _npc.HandleTacticalMovement();
 

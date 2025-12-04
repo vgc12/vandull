@@ -47,10 +47,10 @@ namespace Npcs
 
         [Inject] private readonly ILogger _logger;
         private CountdownTimer _guardTimer;
-
-
-        private bool _recentlyDamaged;
         private RigHandler _rigHandler;
+
+
+        private bool _threatDetected;
 
 
         private CountdownTimer _threatTimer;
@@ -70,7 +70,7 @@ namespace Npcs
 
         private bool OnGuard { get; set; }
 
-        private Vector3 LastThreatDirection { get; set; }
+        private Vector3 LastThreatPosition { get; set; }
 
 
         private void Start()
@@ -118,8 +118,8 @@ namespace Npcs
             };
             Timers.Add(_guardTimer);
             _threatTimer = new CountdownTimer(damagedDuration);
-            _threatTimer.OnTimerStart += () => _recentlyDamaged = true;
-            _threatTimer.OnTimerStop += () => _recentlyDamaged = false;
+            _threatTimer.OnTimerStart += () => _threatDetected = true;
+            _threatTimer.OnTimerStop += () => _threatDetected = false;
             Timers.Add(_threatTimer);
         }
 
@@ -135,7 +135,7 @@ namespace Npcs
             StateMachine.AddAnyTransition(deadState, () => IsDead);
             StateMachine.AddAnyTransition(attackState, () => playerSensor.CanSeeTarget && !IsDead);
             StateMachine.AddAnyTransition(damagedState,
-                () => !playerSensor.CanSeeTarget && _recentlyDamaged && !IsDead);
+                () => !playerSensor.CanSeeTarget && _threatDetected && !IsDead);
             StateMachine.AddTransition(attackState, idleState,
                 () => !playerSensor.CanSeeTarget && !NavMeshAgent.pathPending);
             StateMachine.AddTransition(attackState, wanderState,
@@ -190,23 +190,22 @@ namespace Npcs
             return Random.value > 0.5f ? rightDirection : -rightDirection;
         }
 
-        public void LookAtDamageDirection() => LookAtTarget(LastThreatDirection, lookAtSpeed);
+        public void LookAtDamageDirection() => LookAtPoint(LastThreatPosition, lookAtSpeed);
 
-        public void LookAtTarget(Vector3 direction, float turnSpeed)
+        public void LookAtPoint(Vector3 targetPoint, float turnSpeed)
         {
-            direction.y = 0;
+            // Calculate direction from enemy to target point
+            var direction = targetPoint - _transform.position;
 
-            if (direction == Vector3.zero) return;
             var targetRotation = Quaternion.LookRotation(direction);
 
-            // Smoothly interpolate (turnSpeed should be between 0-1, or multiply by Time.deltaTime)
             _transform.rotation = Quaternion.Slerp(
                 _transform.rotation,
                 targetRotation,
                 turnSpeed * Time.deltaTime
             );
+            transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
         }
-
 
         public override void TakeDamage(float amount, Vector3 direction, Transform damageLocation)
         {
@@ -215,21 +214,22 @@ namespace Npcs
                 return;
             }
 
-            LastThreatDirection = -direction;
+            OnEnemyThreatened(damageLocation.position);
+
             base.TakeDamage(amount, direction, damageLocation);
         }
 
-        private void OnEnemyThreatened(Vector3 direction)
+        private void OnEnemyThreatened(Vector3 position)
         {
-            if (IsDead) return;
-            LastThreatDirection = direction;
+            if (IsDead || _threatDetected) return;
+            LastThreatPosition = position;
             _threatTimer.Start();
         }
 
         public void OnThreatDetected(ThreatEvent evt)
         {
             if (evt.Enemy != this) return;
-            OnEnemyThreatened(transform.position - evt.ThreatSourcePosition);
+            OnEnemyThreatened(evt.ThreatSourcePosition);
         }
 
         public override void Die()
