@@ -14,6 +14,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MandelbrotBlit
   m_Active: 1
   settings: {}
+--- !u!114 &-4577836858685799872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4003164cb8c704f48bdd25dc48da054d, type: 3}
+  m_Name: OutlineRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::Settings.OutlineRenderFeature
+  m_Active: 1
+  settings:
+    outlineMaterial: {fileID: 2100000, guid: 79459efec17a4d00a321bdcc27bbc385, type: 2}
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 1
+    outlineThreshold: 0.01
+    posterize: 1
+    posterizationCount: 8
 --- !u!114 &-1978849620679709921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DecalRendererFeature
   m_Active: 1
   m_Settings:
-    technique: 2
+    technique: 0
     maxDrawDistance: 1000
     decalLayers: 0
     dBufferSettings:
@@ -82,10 +102,11 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
   - {fileID: -1978849620679709921}
-  m_RendererFeatureMap: 1f2b781fc1b689e4
+  - {fileID: -4577836858685799872}
+  m_RendererFeatureMap: 1f2b781fc1b689e440c257a6a14178c0
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
-  postProcessData: {fileID: 0}
+  postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3
   m_PrepassLayerMask:
     serializedVersion: 2

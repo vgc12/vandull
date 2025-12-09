@@ -164,10 +164,7 @@ namespace Items.Guns.Ammo
         }
 
 
-        ~AmmoSystem()
-        {
-            EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedBinding);
-        }
+        ~AmmoSystem() => EventBus<ItemSwitchedEvent>.Deregister(_itemSwitchedBinding);
 
         // Magazine Management
         private void InitializeMagazines()
@@ -210,6 +207,7 @@ namespace Items.Guns.Ammo
             yield return seconds;
 
 
+            // Enemies call this here because its called through animation events on the player
             if (_gun.Owner == OwnerStatus.Enemy) EquipNewMagazine();
 
             IsReloading = false;
@@ -247,10 +245,7 @@ namespace Items.Guns.Ammo
         }
 
         // Debug/Display
-        public override string ToString()
-        {
-            return GetAllMagsStatus();
-        }
+        public override string ToString() => GetAllMagsStatus();
 
         public string GetAllMagsStatus()
         {
@@ -262,10 +257,8 @@ namespace Items.Guns.Ammo
             return sb.ToString();
         }
 
-        private string GetCurrentMagazineStatus()
-        {
-            return $"{CurrentMagazine.CurrentAmmo}/{_gun.ammoSettings.magazineSize} | Magazines: {_magazines.Count}";
-        }
+        private string GetCurrentMagazineStatus() =>
+            $"{CurrentMagazine.CurrentAmmo}/{_gun.ammoSettings.magazineSize} | Magazines: {_magazines.Count}";
 
         private string GetMagazineStatus(int index)
         {

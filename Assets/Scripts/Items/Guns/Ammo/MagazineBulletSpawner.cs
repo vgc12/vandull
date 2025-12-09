@@ -5,7 +5,11 @@ using UnityEngine.Pool;
 
 namespace Items.Guns.Ammo
 {
-    public enum CurveMode { StraightLine, BezierCurve }
+    public enum CurveMode
+    {
+        StraightLine,
+        BezierCurve
+    }
 
     public enum SpacingMode
     {
@@ -44,6 +48,8 @@ namespace Items.Guns.Ammo
 
         [Header("Edit Mode Preview")] public bool showInEditMode;
 
+        public bool lastBulletOffset;
+
         private readonly List<GameObject> _spawnedBullets = new();
 
         // Instance-specific object pool
@@ -66,7 +72,7 @@ namespace Items.Guns.Ammo
 
 #endif
 
-        private void OnDisable() { ClearBullets(); }
+        private void OnDisable() => ClearBullets();
 
         private void OnDrawGizmos()
         {
@@ -123,11 +129,9 @@ namespace Items.Guns.Ammo
             }
         }
 
-        private void OnValidate()
-        {
+        private void OnValidate() =>
             // Update bullets when values change in edit mode
             UpdateSpacing();
-        }
 
         private ObjectPool<GameObject> GetOrCreatePool()
         {
@@ -136,25 +140,20 @@ namespace Items.Guns.Ammo
                 return null;
             }
 
-            if (_bulletPool == null)
-            {
-                _bulletPool = new ObjectPool<GameObject>(
-                    () =>
-                    {
-                        var bullet = Instantiate(bulletPrefab);
-                        bullet.SetActive(true);
-                        return bullet;
-                    },
-                    obj => obj.SetActive(true),
-                    obj => obj.SetActive(false),
-                    Destroy,
-                    true,
-                    30,
-                    100
-                );
-            }
-
-            return _bulletPool;
+            return _bulletPool ??= new ObjectPool<GameObject>(
+                () =>
+                {
+                    var bullet = Instantiate(bulletPrefab);
+                    bullet.SetActive(true);
+                    return bullet;
+                },
+                obj => obj.SetActive(true),
+                obj => obj.SetActive(false),
+                Destroy,
+                true,
+                30,
+                100
+            );
         }
 
         private void UpdateSpacing()
@@ -209,7 +208,9 @@ namespace Items.Guns.Ammo
 
 
         private Vector3 GetTangent(int i) =>
-            curveMode == CurveMode.BezierCurve ? GetBezierTangent(i) : endPoint.localPosition - startPoint.localPosition;
+            curveMode == CurveMode.BezierCurve
+                ? GetBezierTangent(i)
+                : endPoint.localPosition - startPoint.localPosition;
 
         private Quaternion GetBulletRotation(int i)
         {
@@ -266,8 +267,12 @@ namespace Items.Guns.Ammo
         [ContextMenu("Spawn Bullets")]
         public void SpawnBullets(int bulletCountOverride = -1)
         {
-            var countToSpawn = bulletCountOverride > 0 ? bulletCountOverride : bulletCount - 1;
+            var countToSpawn = bulletCountOverride >= 0 ? bulletCountOverride : bulletCount - 1;
 
+            if (countToSpawn <= 0)
+            {
+                return;
+            }
 
             ClearBullets();
 
@@ -308,8 +313,6 @@ namespace Items.Guns.Ammo
                 ApplyLastBulletOffset();
             }
         }
-
-        public bool lastBulletOffset;
 
 
         public void ReleaseAllBulletsToPool()
@@ -363,9 +366,7 @@ namespace Items.Guns.Ammo
             }
         }
 
-        public void ToggleXRayVisibility(bool visible)
-        {
+        public void ToggleXRayVisibility(bool visible) =>
             ShaderController.Instance.ToggleXrayShaderOnObject(gameObject, visible);
-        }
     }
 }

@@ -31,13 +31,13 @@ public class VandullShaderGUI : ShaderGUI
     private static readonly int Roughness = Shader.PropertyToID("_Roughness");
     private static readonly int Albedo = Shader.PropertyToID("_Albedo");
     private static readonly int AOMap = Shader.PropertyToID("_AOMap");
-    
+
     private bool _cellShadingFoldout = true;
     private bool _mainTexturesFoldout = true;
-    private bool _tilingFoldout = true;
     private bool _normalEffectsFoldout = true;
     private bool _outlineFoldout = true;
     private bool _renderingFoldout = true;
+    private bool _tilingFoldout = true;
     private bool _xRayFoldout;
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -59,7 +59,7 @@ public class VandullShaderGUI : ShaderGUI
 
         EditorGUILayout.EndFoldoutHeaderGroup();
         EditorGUILayout.Space(5);
-        
+
         _tilingFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(_tilingFoldout, "Texture Tiling");
         if (_tilingFoldout)
         {
@@ -67,9 +67,10 @@ public class VandullShaderGUI : ShaderGUI
             DrawTilingSection(materialEditor, properties);
             EditorGUI.indentLevel--;
         }
+
         EditorGUILayout.EndFoldoutHeaderGroup();
         EditorGUILayout.Space(5);
-        
+
         // Cell Shading Section
         _cellShadingFoldout = EditorGUILayout.BeginFoldoutHeaderGroup(_cellShadingFoldout, "Cell Shading");
         if (_cellShadingFoldout)
@@ -134,49 +135,45 @@ public class VandullShaderGUI : ShaderGUI
 
         EditorGUILayout.EndFoldoutHeaderGroup();
     }
+
     private void DrawTilingSection(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
-        var textureTiling = FindProperty("_TextureTiling", properties);
-        var textureOffset = FindProperty("_TextureOffset", properties);
+        var albedoMap = FindProperty("_AlbedoMap", properties);
 
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-        
-        EditorGUILayout.LabelField("Tiling", EditorStyles.boldLabel);
-        Vector4 tiling = textureTiling.vectorValue;
-        Vector2 tilingXY = new Vector2(tiling.x, tiling.y);
-        tilingXY = EditorGUILayout.Vector2Field("", tilingXY);
-        textureTiling.vectorValue = new Vector4(tilingXY.x, tilingXY.y, 0, 0);
 
-        EditorGUILayout.Space(3);
+        EditorGUILayout.LabelField("Texture Tiling & Offset", EditorStyles.boldLabel);
 
-        EditorGUILayout.LabelField("Offset", EditorStyles.boldLabel);
-        Vector4 offset = textureOffset.vectorValue;
-        Vector2 offsetXY = new Vector2(offset.x, offset.y);
-        offsetXY = EditorGUILayout.Vector2Field("", offsetXY);
-        textureOffset.vectorValue = new Vector4(offsetXY.x, offsetXY.y, 0, 0);
+        // This draws the standard Unity tiling/offset UI
+        materialEditor.TextureScaleOffsetProperty(albedoMap);
 
         EditorGUILayout.Space(3);
         EditorGUILayout.HelpBox("Applies the same tiling and offset to all textures.", MessageType.Info);
 
         // Quick preset buttons
+        var material = materialEditor.target as Material;
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("Reset"))
         {
-            textureTiling.vectorValue = new Vector4(1, 1, 0, 0);
-            textureOffset.vectorValue = new Vector4(0, 0, 0, 0);
+            material.SetTextureScale("_AlbedoMap", Vector2.one);
+            material.SetTextureOffset("_AlbedoMap", Vector2.zero);
         }
+
         if (GUILayout.Button("2x Tile"))
         {
-            textureTiling.vectorValue = new Vector4(2, 2, 0, 0);
+            material.SetTextureScale("_AlbedoMap", new Vector2(2, 2));
         }
+
         if (GUILayout.Button("4x Tile"))
         {
-            textureTiling.vectorValue = new Vector4(4, 4, 0, 0);
+            material.SetTextureScale("_AlbedoMap", new Vector2(4, 4));
         }
+
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();
     }
+
     private void DrawTextureSection(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
     {
         // Albedo

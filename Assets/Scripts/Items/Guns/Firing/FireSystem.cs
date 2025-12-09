@@ -96,15 +96,23 @@ namespace Items.Guns.Firing
         private bool PerformEnemyHitRaycast(Vector3 startPoint, Vector3 endPoint)
         {
             if (Physics.Raycast(startPoint, MuzzleTransform.forward, out var hit, Gun.damageSettings.range,
-                    ~LayerMask.GetMask("Ignore Raycast", "ThreatZone")))
+                    ~LayerMask.GetMask("Ignore Raycast", "ThreatZone", "Gun",
+                        Gun.Owner == OwnerStatus.Player ? "Player" : "Enemy")))
             {
-                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
+                if (hit.transform.gameObject.layer == LayerMask.NameToLayer("Player"))
+                {
+                    Debug.LogWarning(
+                        $"Gun {Gun.name} fired by {Gun.Owner} hit Player layer! This should be impossible.");
+                }
+
+                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, Gun.trailStartPoint.position, hit.point, hit));
 
                 ApplyDamage(hit);
                 return true;
             }
 
-            OnShotFired?.Invoke(new ShotFiredEvent(startPoint, endPoint, new RaycastHit()));
+            OnShotFired?.Invoke(
+                new ShotFiredEvent(startPoint, Gun.trailStartPoint.position, endPoint, new RaycastHit()));
             return false;
         }
 

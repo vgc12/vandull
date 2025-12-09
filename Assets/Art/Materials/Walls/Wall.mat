@@ -150,10 +150,10 @@ Material:
     - _GlossyReflections: 0
     - _Metallic: 0
     - _NormalStrength: 1
-    - _NormalThreshold: 0.93
+    - _NormalThreshold: 0.656
     - _OcclusionStrength: 1
     - _OutlineMethod: 0
-    - _OutlineWidth: 0.02
+    - _OutlineWidth: 0.015
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1

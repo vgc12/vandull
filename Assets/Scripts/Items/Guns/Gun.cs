@@ -133,6 +133,12 @@ namespace Items.Guns
         [SerializeField] [Required] [Tooltip("Position where bullets spawn and muzzle flash appears")]
         public Transform muzzleTransform;
 
+        /// <summary>
+        ///     Starting point for bullet trails.
+        /// </summary>
+        [SerializeField] [Required] [Tooltip("Starting point for bullet trails")]
+        public Transform trailStartPoint;
+
         #endregion
 
         #region Animations
@@ -262,6 +268,12 @@ namespace Items.Guns
             FireModeSystem?.Update();
             AmmoSystem?.Update();
             TrailSystem?.Update();
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawRay(muzzleTransform.position, muzzleTransform.forward);
         }
 
         /// <summary>

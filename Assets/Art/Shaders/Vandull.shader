@@ -3,36 +3,32 @@ Shader "Custom/Vandull"
     Properties
     {
         [Header(Main Textures)]
-        _AlbedoMap("Albedo Map", 2D) = "white" {}
+        [MainTexture] _AlbedoMap("Albedo Map", 2D) = "white" {}
         _Albedo("Albedo Tint", Color) = (1,1,1,1)
-        _NormalMap("Normal Map", 2D) = "bump" {}
+        [NoScaleOffset] _NormalMap("Normal Map", 2D) = "bump" {}
         _NormalStrength("Normal Strength", Range(0,2)) = 1.0
 
         [Header(Workflow)]
         [KeywordEnum(Metallic, Specular)] _WorkflowMode("Workflow Mode", Float) = 0
 
         [Header(Metallic Workflow)]
-        _MetallicMap("Metallic Map", 2D) = "white" {}
+        [NoScaleOffset] _MetallicMap("Metallic Map", 2D) = "white" {}
         _Metallic("Metallic", Range(0,1)) = 0.0
 
         [Header(Specular Workflow)]
-        _SpecularMap("Specular Map", 2D) = "white" {}
+        [NoScaleOffset]_SpecularMap("Specular Map", 2D) = "white" {}
         _SpecularColor("Specular Color", Color) = (0.2, 0.2, 0.2, 1)
 
         [Header(Smoothness)]
-        _RoughnessMap("Roughness Map", 2D) = "white" {}
+        [NoScaleOffset]_RoughnessMap("Roughness Map", 2D) = "white" {}
         _Roughness("Roughness", Range(0,1)) = 0.5
 
         [Header(Other Maps)]
-        _AOMap("AO Map", 2D) = "white" {}
+        [NoScaleOffset]_AOMap("AO Map", 2D) = "white" {}
         _AO("AO Strength", Range(0,1)) = 1.0
         _EmissionMap("Emission Map", 2D) = "black" {}
         _EmissionColor("Emission Color", Color) = (0,0,0,1)
         _EmissionStrength("Emission Strength", Range(0,10)) = 1.0
-
-        [Header(Texture Tiling and Offset)]
-        _TextureTiling("Texture Tiling", Vector) = (1,1,0,0)
-        _TextureOffset("Texture Offset", Vector) = (0,0,0,0)
 
         [Header(Cell Shading)]
         _VandullCelBandsRadiance("Cel Shading Bands", Range(1, 30)) = 6.0

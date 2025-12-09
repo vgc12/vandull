@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DependencyInjection;
@@ -308,6 +309,7 @@ namespace UI.States
         private const float DamageFadeDuration = 2f;
         private static readonly Color HighDetectionColor = new(1f, 0, 0, 1f);
         private static readonly Color LowDetectionColor = new(1f, 1f, 0f, 0.3f);
+        private readonly List<IIndicatorView> _activeDamageIndicators = new();
 
         // Indicator management
         private readonly Dictionary<ISensor, (DetectionIndicatorModel model, IIndicatorView view)>
@@ -363,7 +365,7 @@ namespace UI.States
                         crosshair = child.gameObject;
                         break;
                     case "HealthBar":
-                        healthBar = child.GetComponentInChildren<Image>();
+                        healthBar = child.GetComponentsInChildren<Image>().First(i => i.name.ToLower() == "bar");
                         healthBar.fillAmount = 1f;
                         break;
                     case "DamageIndicator":
@@ -479,6 +481,7 @@ namespace UI.States
         private async UniTask ShowDamageIndicator(Transform damageSource)
         {
             var view = _damageIndicatorPool.Get();
+            _activeDamageIndicators.Add(view);
             var model = new DamageIndicatorModel
             {
                 SourcePosition = damageSource,
@@ -491,6 +494,7 @@ namespace UI.States
             view.UpdateColor(_damageColor);
             await _indicatorController.AnimateDamageIndicator(model, view, _damageColor);
             _damageIndicatorPool.Release(view);
+            _activeDamageIndicators.Remove(view);
         }
 
         private void OnDetectionMeterUpdated(DetectionMeterUpdatedEvent evt)
@@ -501,12 +505,10 @@ namespace UI.States
 
             if (evt.Sensor.enabled && evt.DetectionMeter > threshold)
             {
-                _logger.LogWarning("Updating detection indicator for sensor " + evt.Sensor.GetHashCode());
                 UpdateDetectionIndicator(evt);
             }
             else if (_activeDetectionIndicators.TryGetValue(evt.Sensor, out var indicator))
             {
-                _logger.LogWarning("Removing detection indicator for sensor " + evt.Sensor.GetHashCode());
                 indicator.view.SetActive(false);
             }
         }
@@ -515,7 +517,7 @@ namespace UI.States
         {
             var intensity = evt.DetectionMeter / evt.DetectionMeterMaximum;
 
-            
+
             if (!_activeDetectionIndicators.TryGetValue(evt.Sensor, out var indicator))
             {
                 var view = _detectionIndicatorPool.Get();
@@ -532,7 +534,7 @@ namespace UI.States
 
                 AnimateDetectionIndicator(evt.Sensor).Forget();
             }
-            
+
             indicator.view.SetActive(true);
 
             _indicatorController.UpdateDetectionIndicatorAppearance(
@@ -549,7 +551,15 @@ namespace UI.States
             {
                 RemoveDetectionIndicator(sensor);
             }
+
+            foreach (var i in _activeDamageIndicators)
+            {
+                _damageIndicatorPool.Release(i);
+                i.SetActive(false);
+                Object.Destroy(i.Container);
+            }
         }
+
 
         private async UniTask AnimateDetectionIndicator(LineOfSightSensor sensor)
         {
@@ -559,7 +569,7 @@ namespace UI.States
             await _indicatorController.AnimateDetectionIndicator(
                 indicator.model,
                 indicator.view,
-                () => sensor != null && _activeDetectionIndicators.ContainsKey(sensor) && sensor.enabled );
+                () => sensor != null && _activeDetectionIndicators.ContainsKey(sensor) && sensor.enabled);
 
             RemoveDetectionIndicator(sensor);
         }
@@ -588,6 +598,7 @@ namespace UI.States
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
             ClearAllIndicators();
             _cancellationTokenSource = new CancellationTokenSource();
             _activeDetectionIndicators.Clear();
@@ -606,6 +617,7 @@ namespace UI.States
 
         private void OnSceneUnloaded(Scene scene)
         {
+            ClearAllIndicators();
             _cancellationTokenSource.Cancel();
             _activeDetectionIndicators.Clear();
             _damageIndicatorPool.Clear();

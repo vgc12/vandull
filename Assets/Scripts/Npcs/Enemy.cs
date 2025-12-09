@@ -1,4 +1,5 @@
-﻿using Attributes;
+﻿using System;
+using Attributes;
 using Environment;
 using EventBus;
 using General;
@@ -10,7 +11,6 @@ using Npcs.States;
 using Npcs.States.Enemy;
 using Player;
 using Reflex.Attributes;
-using UnityEditor;
 using UnityEngine;
 using ILogger = General.Logging.ILogger;
 using Random = UnityEngine.Random;
@@ -80,7 +80,7 @@ namespace Npcs
             ThreatEventBinding = new EventBinding<ThreatEvent>(OnThreatDetected);
             EventBus<ThreatEvent>.Register(ThreatEventBinding);
 
-            name = "Enemy : " + GUID.Generate();
+            name = "Enemy : " + Guid.NewGuid();
             _rigHandler.SetLeftHandData(Gun.leftHandTarget, Gun.leftHandHint);
             _rigHandler.LeftHandFollowItemHint = true;
             _rigHandler.LeftHandFollowItemTarget = true;

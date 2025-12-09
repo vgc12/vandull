@@ -3844,7 +3844,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6586829968063166092}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.1964694, y: -0.000000005384207, z: -0.0000000057480043, w: 0.98050994}
+  m_LocalRotation: {x: 0.1873018, y: -0.1013924, z: -0.072112754, w: -0.9743908}
   m_LocalPosition: {x: 0.207, y: 0.027, z: 0.262}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -4785,6 +4785,7 @@ MonoBehaviour:
   hipFireTransform: {fileID: 1938703912193529784}
   aimTransform: {fileID: 8510546303671675002}
   muzzleTransform: {fileID: 6426000435965816269}
+  trailStartPoint: {fileID: 6426000435965816269}
   reloadAnimation: {fileID: 11400000, guid: 2f4945bcdc2fea54fa0067f1e42bb08e, type: 2}
   quickReloadAnimation: {fileID: 0}
   checkingAmmoAnimation: {fileID: 0}

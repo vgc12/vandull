@@ -7,16 +7,17 @@ namespace Items.Guns.Firing
     {
         public Vector3 EndPoint;
         public RaycastHit Hit;
-        public Vector3 ShootPoint;
+        public Vector3 MuzzlePoint;
+        public Vector3 RaycastPoint;
 
-        public ShotFiredEvent(Vector3 shootPoint, Vector3 endPoint, RaycastHit hit)
+        public ShotFiredEvent(Vector3 raycastPoint, Vector3 muzzlePoint, Vector3 endPoint, RaycastHit hit)
         {
-            ShootPoint = shootPoint;
+            RaycastPoint = raycastPoint;
             EndPoint = endPoint;
-
+            MuzzlePoint = muzzlePoint;
             Hit = hit;
         }
 
-        public Vector3 Direction => (EndPoint - ShootPoint).normalized;
+        public Vector3 Direction => (EndPoint - RaycastPoint).normalized;
     }
 }

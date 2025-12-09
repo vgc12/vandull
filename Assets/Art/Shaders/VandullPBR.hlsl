@@ -216,6 +216,7 @@ struct Varyings
     float2 dynamicLightmapUV : TEXCOORD5;
     half3 vertexSH : TEXCOORD6;
     float2 uv : TEXCOORD7;
+    float4 shadowCoord : TEXCOORD8;
 };
 
 TEXTURE2D(_AlbedoMap);
@@ -239,8 +240,6 @@ CBUFFER_START(UnityPerMaterial)
     float4 _EmissionColor;
     float4 _NormalEffectsColor;
     float4 _SpecularColor;
-    float4 _TextureTiling;
-    float4 _TextureOffset;
     float _Metallic;
     float _Roughness;
     float _AO;
@@ -257,22 +256,63 @@ Varyings VandullPBRVert(Attributes input)
 {
     Varyings output = (Varyings)0;
 
-    VertexPositionInputs positionInputs = GetVertexPositionInputs(input.positionOS);
-    VertexNormalInputs normalInputs = GetVertexNormalInputs(input.normalOS, input.tangentOS);
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-    output.positionCS = positionInputs.positionCS;
-    output.positionWS = positionInputs.positionWS;
-    output.normalWS = normalInputs.normalWS;
-    output.tangentWS = float4(normalInputs.tangentWS, input.tangentOS.w);
-    output.fogFactor = ComputeFogFactor(positionInputs.positionCS.z);
-    output.uv = input.uv * _TextureTiling.xy + _TextureOffset.xy;
+    VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
 
-    // Lightmap UVs
+    // normalWS and tangentWS already normalize.
+    // this is required to avoid skewing the direction during interpolation
+    // also required for per-vertex lighting and SH evaluation
+    VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
+
+    half3 vertexLight = VertexLighting(vertexInput.positionWS, normalInput.normalWS);
+
+    half fogFactor = 0;
+    #if !defined(_FOG_FRAGMENT)
+        fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
+    #endif
+
+    output.uv = TRANSFORM_TEX(input.uv, _AlbedoMap);
+
+    // already normalized from normal transform to WS.
+    output.normalWS = normalInput.normalWS;
+    #if defined(REQUIRES_WORLD_SPACE_TANGENT_INTERPOLATOR) || defined(REQUIRES_TANGENT_SPACE_VIEW_DIR_INTERPOLATOR)
+    real sign = input.tangentOS.w * GetOddNegativeScale();
+    half4 tangentWS = half4(normalInput.tangentWS.xyz, sign);
+    #endif
+    #if defined(REQUIRES_WORLD_SPACE_TANGENT_INTERPOLATOR)
+    output.tangentWS = tangentWS;
+    #endif
+
+    #if defined(REQUIRES_TANGENT_SPACE_VIEW_DIR_INTERPOLATOR)
+    half3 viewDirWS = GetWorldSpaceNormalizeViewDir(vertexInput.positionWS);
+    half3 viewDirTS = GetViewDirectionTangentSpace(tangentWS, output.normalWS, viewDirWS);
+    output.viewDirTS = viewDirTS;
+    #endif
+
     OUTPUT_LIGHTMAP_UV(input.staticLightmapUV, unity_LightmapST, output.staticLightmapUV);
-    OUTPUT_LIGHTMAP_UV(input.dynamicLightmapUV, unity_DynamicLightmapST, output.dynamicLightmapUV);
+    #ifdef DYNAMICLIGHTMAP_ON
+    output.dynamicLightmapUV = input.dynamicLightmapUV.xy * unity_DynamicLightmapST.xy + unity_DynamicLightmapST.zw;
+    #endif
+    OUTPUT_SH4(vertexInput.positionWS, output.normalWS.xyz, GetWorldSpaceNormalizeViewDir(vertexInput.positionWS),
+               output.vertexSH, output.probeOcclusion);
+    #ifdef _ADDITIONAL_LIGHTS_VERTEX
+    output.fogFactorAndVertexLight = half4(fogFactor, vertexLight);
+    #else
+    output.fogFactor = fogFactor;
+    #endif
 
-    // SH/Light probe data for dynamic objects
-    OUTPUT_SH(output.normalWS, output.vertexSH);
+    #if defined(REQUIRES_WORLD_SPACE_POS_INTERPOLATOR)
+    output.positionWS = vertexInput.positionWS;
+    #endif
+
+    #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
+    output.shadowCoord = GetShadowCoord(vertexInput);
+    #endif
+
+    output.positionCS = vertexInput.positionCS;
 
     return output;
 }
@@ -322,7 +362,7 @@ float4 VandullPBRFrag(Varyings input) : SV_Target
     half3x3 tangentToWorld = half3x3(input.tangentWS.xyz, bitangent, input.normalWS);
 
     // Transform normal from tangent space to world space
-    half3 normalWS = normalize(mul(normalTS, tangentToWorld));
+    half3 normalWS = normalize(TransformTangentToWorld(normalTS, tangentToWorld));
 
     // Setup InputData
     InputData inputData;
@@ -330,7 +370,13 @@ float4 VandullPBRFrag(Varyings input) : SV_Target
     inputData.positionCS = input.positionCS;
     inputData.normalWS = normalWS;
     inputData.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
+    #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
+    inputData.shadowCoord = input.shadowCoord;
+    #elif defined(MAIN_LIGHT_CALCULATE_SHADOWS)
     inputData.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
+    #else
+    inputData.shadowCoord = float4(0, 0, 0, 0);
+    #endif
     inputData.fogCoord = InitializeInputDataFog(float4(input.positionWS, 1.0), input.fogFactor);
     inputData.vertexLighting = half3(0, 0, 0);
 

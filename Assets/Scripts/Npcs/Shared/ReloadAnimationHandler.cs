@@ -14,7 +14,21 @@ namespace Npcs.Shared
         [SerializeField] [Required] private RigHandler rigHandler;
         private Gun _currentGun;
 
-        private bool GunPresent => _currentGun && _currentGun.AmmoSystem.CurrentMagazine;
+        private Gun CurrentGun
+        {
+            get
+            {
+                if (!_currentGun)
+                {
+                    _currentGun = GetComponentsInChildren<Gun>().FirstOrDefault(g => g.IsEquipped);
+                }
+
+                return _currentGun;
+            }
+            set => _currentGun = value;
+        }
+
+        private bool GunPresent => CurrentGun && CurrentGun.AmmoSystem.CurrentMagazine;
 
         private void Awake()
         {
@@ -23,97 +37,73 @@ namespace Npcs.Shared
             EventBus<PlayerEquippedNewItemEvent>.Register(playerEquippedNewItemEventBinding);
         }
 
-        private void Start()
-        {
-            _currentGun = GetComponentsInChildren<Gun>().First(g => g.IsEquipped);
-        }
 
         private void OnPlayerEquippedNewItem(PlayerEquippedNewItemEvent obj)
         {
-            if (obj.Item is Gun gun) _currentGun = gun;
+            if (obj.Item is Gun gun) CurrentGun = gun;
         }
 
         public void UnEquipMagazine()
         {
-            if (!GunPresent) return;
+            if (!GunPresent)
+            {
+                return;
+            }
+
             PlayMagazineRemovedSound();
 
-            _currentGun.AmmoSystem.RemoveCurrentMagazine();
+            CurrentGun.AmmoSystem.RemoveCurrentMagazine();
         }
 
         public void DropMagazine()
         {
             if (!GunPresent) return;
             PlayMagazineRemovedSound();
-            _currentGun.AmmoSystem.CurrentMagazine.Drop();
+            CurrentGun.AmmoSystem.CurrentMagazine.Drop();
         }
 
         public void EquipNewMagazine()
         {
-            if (!_currentGun) return;
+            if (!CurrentGun) return;
             PlayMagazineInsertedSound();
-            _currentGun.AmmoSystem.EquipNewMagazine();
+            CurrentGun.AmmoSystem.EquipNewMagazine();
         }
 
 
-        public void PlayMagazineRemovedSound()
-        {
-            PlayGunSound(_currentGun?.audioSettings.magRemoved);
-        }
+        public void PlayMagazineRemovedSound() => PlayGunSound(CurrentGun?.audioSettings.magRemoved);
 
-        public void PlayMagazineInsertedSound()
-        {
-            PlayGunSound(_currentGun?.audioSettings.magInserted);
-        }
+        public void PlayMagazineInsertedSound() => PlayGunSound(CurrentGun?.audioSettings.magInserted);
 
-        public void PlayBoltPulledBackSound()
-        {
-            PlayGunSound(_currentGun?.audioSettings.boltPullBack);
-        }
+        public void PlayBoltPulledBackSound() => PlayGunSound(CurrentGun?.audioSettings.boltPullBack);
 
-        public void PlayBoltReleasedSound()
-        {
-            PlayGunSound(_currentGun?.audioSettings.boltRelease);
-        }
+        public void PlayBoltReleasedSound() => PlayGunSound(CurrentGun?.audioSettings.boltRelease);
 
         private void PlayGunSound(AudioSettings.GunAudioClip sound)
         {
             if (!sound.clip) return;
 
-            AudioManager.Instance.PlaySfx(sound.clip, _currentGun.transform.position, pitch: sound.RandomPitch);
+            AudioManager.Instance.PlaySfx(sound.clip, CurrentGun.transform.position, pitch: sound.RandomPitch);
         }
 
         public void TurnOnXRay()
         {
-            if (!_currentGun) return;
-            _currentGun.AmmoSystem.ToggleMagazineXRayVisibility(true);
+            if (!CurrentGun) return;
+            CurrentGun.AmmoSystem.ToggleMagazineXRayVisibility(true);
         }
 
         public void TurnOffXRay()
         {
-            if (!_currentGun) return;
-            _currentGun.AmmoSystem.ToggleMagazineXRayVisibility(false);
+            if (!CurrentGun) return;
+            CurrentGun.AmmoSystem.ToggleMagazineXRayVisibility(false);
         }
 
 
-        public void MakeLeftHandFollowItemTarget()
-        {
-            rigHandler.LeftHandFollowItemTarget = true;
-        }
+        public void MakeLeftHandFollowItemTarget() => rigHandler.LeftHandFollowItemTarget = true;
 
-        public void MakeLeftHandNotFollowItemTarget()
-        {
-            rigHandler.LeftHandFollowItemTarget = false;
-        }
+        public void MakeLeftHandNotFollowItemTarget() => rigHandler.LeftHandFollowItemTarget = false;
 
-        public void MakeLeftHandFollowItemHint()
-        {
-            rigHandler.LeftHandFollowItemHint = true;
-        }
+        public void MakeLeftHandFollowItemHint() => rigHandler.LeftHandFollowItemHint = true;
 
-        public void MakeLeftHandNotFollowItemHint()
-        {
-            rigHandler.LeftHandFollowItemHint = false;
-        }
+        public void MakeLeftHandNotFollowItemHint() => rigHandler.LeftHandFollowItemHint = false;
     }
 }

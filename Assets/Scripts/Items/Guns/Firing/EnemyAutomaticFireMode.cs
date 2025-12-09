@@ -31,14 +31,15 @@ namespace Items.Guns.Firing
             if (Physics.Raycast(startPoint, direction, out var hit, Gun.damageSettings.range,
                     ~LayerMask.GetMask("Ignore Raycast")))
             {
-                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, hit.point, hit));
+                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, Gun.trailStartPoint.position, hit.point, hit));
 
 
                 ApplyDamage(hit);
             }
             else
             {
-                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, direction * Gun.damageSettings.range,
+                OnShotFired?.Invoke(new ShotFiredEvent(startPoint, Gun.trailStartPoint.position,
+                    direction * Gun.damageSettings.range,
                     new RaycastHit()));
             }
         }
