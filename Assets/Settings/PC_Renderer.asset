@@ -28,12 +28,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Settings.OutlineRenderFeature
   m_Active: 1
   settings:
-    outlineMaterial: {fileID: 2100000, guid: 79459efec17a4d00a321bdcc27bbc385, type: 2}
+    outlineMaterial: {fileID: 2100000, guid: bd8b9b52800618646ae38c2d1e8d37a0, type: 2}
     outlineColor: {r: 0, g: 0, b: 0, a: 1}
-    outlineThickness: 1
-    outlineThreshold: 0.01
+    outlineThickness: 0
+    outlineThreshold: 0
+    depthThreshold: 0
+    normalThreshold: 0
     posterize: 1
-    posterizationCount: 8
+    posterizationCount: 25
+    useNormals: 1
+    useCanny: 0
 --- !u!114 &-1978849620679709921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,8 +130,8 @@ MonoBehaviour:
     zFailOperation: 0
   m_ShadowTransparentReceive: 1
   m_RenderingMode: 0
-  m_DepthPrimingMode: 0
-  m_CopyDepthMode: 1
+  m_DepthPrimingMode: 2
+  m_CopyDepthMode: 0
   m_DepthAttachmentFormat: 0
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0

@@ -4,13 +4,11 @@
     {
         private readonly Npcs.Enemy _npc;
 
-        public EnemyDamagedState(Npcs.Enemy npc) : base(npc)
-        {
-            _npc = npc;
-        }
+        public EnemyDamagedState(Npcs.Enemy npc) : base(npc) => _npc = npc;
 
         public override void Update()
         {
+            _npc.HandleMovementBlendTree();
             _npc.LookAtDamageDirection();
         }
     }

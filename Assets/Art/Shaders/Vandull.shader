@@ -80,6 +80,7 @@ Shader "Custom/Vandull"
             #include "VandullOutlinePass.hlsl"
             ENDHLSL
         }
+
         Pass
         {
             Name "ForwardLit"
