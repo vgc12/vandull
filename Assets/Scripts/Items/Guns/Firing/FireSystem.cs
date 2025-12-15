@@ -35,7 +35,7 @@ namespace Items.Guns.Firing
             Time.time > LastFireTime + Gun.firingSettings.fireRate;
 
 
-        public virtual bool OutOfAmmo => Gun.AmmoSystem.OutOfAmmo;
+        public bool OutOfAmmo => Gun.AmmoSystem.OutOfAmmo;
 
         public Action<ShotFiredEvent> OnShotFired { get; set; }
 
