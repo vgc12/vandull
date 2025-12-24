@@ -298,7 +298,7 @@ Material:
     - _UseNormalMap: 1
     - _UseNormalMapInLightCalculations: 0
     - _UseOutline: 1
-    - _VandullCelBandsRadiance: 6
+    - _VandullCelBandsRadiance: 2.12
     - _WorkflowMode: 0
     - _XRMotionVectorsPass: 1
     - _XRayIntensity: 5
