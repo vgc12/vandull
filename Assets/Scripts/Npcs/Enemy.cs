@@ -131,7 +131,6 @@ namespace Npcs
             var damagedState = new EnemyDamagedState(this);
             var deadState = new EnemyDeadState(this);
 
-
             StateMachine.AddAnyTransition(deadState, () => IsDead);
             StateMachine.AddAnyTransition(attackState, () => playerSensor.CanSeeTarget && !IsDead);
             StateMachine.AddAnyTransition(damagedState,
